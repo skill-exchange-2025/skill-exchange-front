@@ -8,6 +8,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: Check GitHub Token
+        run: |
+          if [ -z "${{ secrets.GH_TOKEN }}" ]; then
+            echo "❌ GitHub Token is missing!"
+            exit 1
+          else
+            echo "✅ GitHub Token is set."
+          fi
       - name: Get commit details
         id: get-commit
         run: |
