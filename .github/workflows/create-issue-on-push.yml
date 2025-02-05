@@ -19,7 +19,7 @@ jobs:
         with:
           filename: .github/ISSUE_TEMPLATE.md
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
           COMMIT_MESSAGE: ${{ env.COMMIT_MESSAGE }}
           COMMIT_AUTHOR: ${{ env.COMMIT_AUTHOR }}
           COMMIT_URL: ${{ env.COMMIT_URL }}
