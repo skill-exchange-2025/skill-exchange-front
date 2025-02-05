@@ -1,13 +1,9 @@
 ---
-title: 'Title: {{ env.COMMIT_MESSAGE }}'
-assignees: ['Atik203']
-labels: ['auto-generated']
+title: "${{ env.COMMIT_MESSAGE }}"
+labels: ["bug", "auto-generated"]
 ---
 
-### Issue Details
-
-**Description:** {{ env.COMMIT_MESSAGE }}
-**Author:** {{ env.COMMIT_AUTHOR }}
-**URL:** [{{ env.COMMIT_URL }}]({{ env.COMMIT_URL }})
-
----
+## Commit Details
+- **Commit Message:** ${{ env.COMMIT_MESSAGE }}
+- **Author:** ${{ env.COMMIT_AUTHOR }}
+- **Commit URL:** ${{ env.COMMIT_URL }}
