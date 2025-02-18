@@ -10,19 +10,19 @@ export const adminPaths: TUserPath[] = [
     path: "dashboard",
     element: <AdminDashboard />,
     icon: <Home size={16} />,
-    permissions: ["view:metrics"], // Example permission
+    permissions: ["view:metrics"],
   },
   {
     name: "User Management",
     icon: <Users size={16} />,
-    permissions: ["view:metrics"], // Parent permission
+    permissions: ["view:metrics"],
     children: [
       {
         name: "Create Student",
         path: "create-student",
         element: <AdminDashboard />,
         icon: <GraduationCap size={16} />,
-        permissions: ["view:metrics"], // Child-specific permission
+        permissions: ["view:metrics"],
       },
       {
         name: "Create Faculty",

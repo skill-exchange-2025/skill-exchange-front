@@ -1,12 +1,12 @@
 import { useState, useMemo } from 'react';
 import { Menu } from 'antd';
 import type { MenuProps } from 'antd';
-import { Link, useLocation } from 'react-router-dom';
+import {Link, useLocation, useNavigate} from 'react-router-dom';
 import { adminPaths } from '@/routes/admin.routes';
 import { userPaths } from "@/routes/user.routes.tsx";
 import { TUserPath } from '@/types';
-import { useAppSelector } from '@/redux/hooks';
-import { useCurrentUser } from '@/redux/features/auth/authSlice';
+import {useAppDispatch, useAppSelector} from '@/redux/hooks';
+import {logout, useCurrentUser} from '@/redux/features/auth/authSlice';
 import { ChevronLeft, ChevronRight, GraduationCap } from 'lucide-react';
 import React from 'react';
 import Sider from 'antd/es/layout/Sider';
@@ -87,19 +87,35 @@ const ToggleButton: React.FC<ToggleButtonProps> = ({ collapsed, onToggle }) => (
 );
 
 // User profile component
-const UserProfile: React.FC<UserProfileProps> = ({ user, collapsed }) => (
-    <div className="flex-shrink-0 p-4 border-t border-gray-200">
-      <div className="flex items-center gap-3">
-        <div className="w-8 h-8 rounded-full bg-gray-200" />
-        <div className={`flex-grow ${collapsed ? 'hidden' : ''}`}>
-          <div className="text-sm font-medium text-gray-700">
-            {user.roles?.join(', ')}
+const UserProfile: React.FC<UserProfileProps> = ({ user, collapsed }) => {
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate('/login');
+  };
+
+  return (
+      <div className="flex-shrink-0 p-4 border-t border-gray-200">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-full bg-gray-200" />
+          <div className={`flex-grow ${collapsed ? 'hidden' : ''}`}>
+            <div className="text-sm font-medium text-gray-700">
+              {user.roles?.join(', ')}
+            </div>
+            <div className="text-xs text-gray-500">{user.email}</div>
+            <button
+                onClick={handleLogout}
+                className="mt-2 text-xs text-red-600 hover:text-red-700"
+            >
+              Logout
+            </button>
           </div>
-          <div className="text-xs text-gray-500">{user.email}</div>
         </div>
       </div>
-    </div>
-);
+  );
+};
 
 // Menu generator hook
 const useMenuItems = (paths: TUserPath[], currentUser: User | null): MenuItem[] => {
