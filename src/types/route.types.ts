@@ -6,6 +6,7 @@ export type TUserPath = {
   element?: ComponentType | ReactElement | string;
   icon?: ReactNode;
   children?: TUserPath[];
+  permissions?: string[];
 };
 
 export type TRouteItem = {

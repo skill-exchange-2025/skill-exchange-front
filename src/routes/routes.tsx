@@ -4,11 +4,10 @@ import App from "../App";
 import Login from "../pages/Login";
 import MainLayout from "@/components/layout/MainLayout";
 import DashboardLayout from "@/components/layout/DashboardLayout";
-import { routeGenerator } from "@/utils/routeGenerator";
-import { adminPaths } from "./admin.routes";
 import ProtectedRoute from "@/components/layout/ProtectedRoute";
-import { userPaths } from "./user.routes";
-import Redirector from "@/components/Redirector"; // Add this import
+import Redirector from "@/components/Redirector";
+import AdminRoutes from "./AdminRoutes"; // Add new component imports
+import UserRoutes from "./UserRoutes";   // Add new component imports
 
 const router = createBrowserRouter([
   {
@@ -25,7 +24,7 @@ const router = createBrowserRouter([
         children: [
           {
             index: true,
-            element: <Redirector />, // Replace the Navigate with Redirector
+            element: <Redirector />,
           },
         ],
       },
@@ -36,7 +35,12 @@ const router = createBrowserRouter([
               <DashboardLayout />
             </ProtectedRoute>
         ),
-        children: routeGenerator(adminPaths),
+        children: [
+          {
+            path: "*",
+            element: <AdminRoutes />, // Use dynamic admin routes
+          },
+        ],
       },
       {
         path: "user",
@@ -45,7 +49,12 @@ const router = createBrowserRouter([
               <DashboardLayout />
             </ProtectedRoute>
         ),
-        children: routeGenerator(userPaths),
+        children: [
+          {
+            path: "*",
+            element: <UserRoutes />, // Use dynamic user routes
+          },
+        ],
       },
     ],
   },
