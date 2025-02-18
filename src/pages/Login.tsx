@@ -48,7 +48,11 @@ const LoginForm = () => {
         variant: 'default',
       });
 
-      navigate('/dashboard');
+      if (result.user.roles.includes('admin')) {
+        navigate('/admin/dashboard');
+      } else {
+        navigate('/user/dashboard');
+      }
     } catch (error) {
       toast({
         title: 'Error',

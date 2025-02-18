@@ -6,8 +6,8 @@ import MainLayout from "@/components/layout/MainLayout";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import ProtectedRoute from "@/components/layout/ProtectedRoute";
 import Redirector from "@/components/Redirector";
-import AdminRoutes from "./AdminRoutes"; // Add new component imports
-import UserRoutes from "./UserRoutes";   // Add new component imports
+import AdminRoutes from "./AdminRoutes";
+import UserRoutes from "./UserRoutes";
 
 const router = createBrowserRouter([
   {
@@ -38,7 +38,7 @@ const router = createBrowserRouter([
         children: [
           {
             path: "*",
-            element: <AdminRoutes />, // Use dynamic admin routes
+            element: <AdminRoutes />,
           },
         ],
       },
@@ -52,7 +52,7 @@ const router = createBrowserRouter([
         children: [
           {
             path: "*",
-            element: <UserRoutes />, // Use dynamic user routes
+            element: <UserRoutes />,
           },
         ],
       },

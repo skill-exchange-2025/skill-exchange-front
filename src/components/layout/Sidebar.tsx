@@ -1,8 +1,9 @@
-import {useState, useMemo, ReactPortal} from 'react';
+import { useState, useMemo } from 'react';
 import { Menu } from 'antd';
 import type { MenuProps } from 'antd';
 import { Link, useLocation } from 'react-router-dom';
 import { adminPaths } from '@/routes/admin.routes';
+import { userPaths } from "@/routes/user.routes.tsx";
 import { TUserPath } from '@/types';
 import { useAppSelector } from '@/redux/hooks';
 import { useCurrentUser } from '@/redux/features/auth/authSlice';
@@ -17,16 +18,13 @@ interface User {
   permissions?: string[];
 }
 
-type MenuItem = {
-  key: string;
-  icon?: React.ReactNode;
+type MenuItem = Required<MenuProps>['items'][number] & {
   label: React.ReactNode;
-  children?: MenuItem[] & ReactPortal;
+  icon?: React.ReactNode;
+  permissions?: string[];
+  children?: MenuItem[];
   disabled?: boolean;
-  style?: React.CSSProperties;
-  className?: string;
-  title?: string;
-} & Partial<MenuProps>;
+};
 
 interface SkillyLogoProps {
   collapsed?: boolean;
@@ -152,10 +150,11 @@ const useMenuItems = (paths: TUserPath[], currentUser: User | null): MenuItem[] 
 const Sidebar: React.FC = () => {
   const [collapsed, setCollapsed] = useState<boolean>(false);
   const currentUser = useAppSelector(useCurrentUser);
-  console.log(currentUser)
-  const location = useLocation();
 
-  const menuItems = useMenuItems(adminPaths, currentUser);
+  const location = useLocation();
+  const paths = currentUser?.roles?.includes("admin") ? adminPaths : userPaths;
+  const menuItems = useMenuItems(paths, currentUser);
+
   const currentPathKey = useMemo(() =>
           location.pathname.split('/').pop() || 'dashboard',
       [location]
