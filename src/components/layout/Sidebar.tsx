@@ -28,7 +28,8 @@ const Sidebar = () => {
 
   const generateMenuItems = (paths: TUserPath[]): MenuItem[] => {
     return paths.map((item) => {
-      const menuItem: MenuItem = {
+      // Create menu item with proper type
+      const menuItem: MenuItem & { children?: MenuItem[] } = {
         key: item.path || item.name,
         icon: item.icon,
         label: item.path ? (
@@ -38,8 +39,9 @@ const Sidebar = () => {
         ),
       };
 
+      // Add children if they exist
       if (item.children) {
-        menuItem?.children = generateMenuItems(item.children);
+        menuItem.children = generateMenuItems(item.children);
       }
 
       return menuItem;
