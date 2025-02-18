@@ -1,14 +1,14 @@
-import { ReactNode } from "react";
+import {ComponentType, ReactElement, ReactNode} from 'react';
 
-export interface TRouteItem {
-  path: string;
-  element: ReactNode;
-}
-
-export interface TUserPath {
+export type TUserPath = {
   name: string;
   path?: string;
-  element?: ReactNode;
-  children?: TUserPath[];
+  element?: ComponentType | ReactElement | string;
   icon?: ReactNode;
-}
+  children?: TUserPath[];
+};
+
+export type TRouteItem = {
+  path: string;
+  element: ReactElement;
+};

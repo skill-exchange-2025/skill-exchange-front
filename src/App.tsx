@@ -1,9 +1,11 @@
-import MainLayout from "./components/layout/MainLayout";
+import { Outlet } from "react-router-dom";
+import { Toaster } from "@/components/ui/toaster";
 
 const App = () => {
   return (
     <>
-      <MainLayout />
+      <Outlet />
+      <Toaster />
     </>
   );
 };

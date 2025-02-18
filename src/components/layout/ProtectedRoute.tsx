@@ -1,14 +1,18 @@
-import { ReactNode } from "react";
-import { Navigate } from "react-router-dom";
-import { useCurrentToken } from "../../redux/features/auth/authSlice";
-import { useAppSelector } from "../../redux/hooks";
+// src/components/layout/ProtectedRoute.tsx
+import { useCurrentUser } from '@/redux/features/auth/authSlice';
+import { useAppSelector } from '@/redux/hooks';
+import { Navigate, useLocation } from 'react-router-dom';
 
-const ProtectedRoute = ({ children }: { children: ReactNode }) => {
-  const token = useAppSelector(useCurrentToken);
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const user = useAppSelector(useCurrentUser);
+  const location = useLocation();
 
-  if (!token) {
-    return <Navigate to={"/login"} replace={true} />;
+  if (!user) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
+
+  // Optional: Check user role against route requirements
+  // Example: If you have admin-only routes, verify user.roles here
 
   return children;
 };

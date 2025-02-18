@@ -6,13 +6,4 @@ services:
     container_name: react_vite_nginx
     ports:
       - "3000:80"
-    depends_on:
-      - backend
-    restart: always
-
-  backend:
-    image: my-backend-image:latest  # Change this to your actual backend image
-    container_name: backend_service
-    ports:
-      - "8000:8000"
     restart: always

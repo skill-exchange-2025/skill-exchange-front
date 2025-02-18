@@ -1,11 +1,25 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { RootState } from "../../store";
 
+export type TSkill = {
+  name: string;
+  description: string;
+  proficiencyLevel: 'beginner' | 'intermediate' | 'advanced';
+};
+
+export type TDesiredSkill = {
+  name: string;
+  description: string;
+  desiredProficiencyLevel: 'beginner' | 'intermediate' | 'advanced';
+};
+
 export type TUser = {
-  id: string;
-  role: string;
-  iat: number;
-  exp: number;
+  _id: string;
+  email: string;
+  roles: string[];
+  permissions: string[];
+  skills?: TSkill[];
+  desiredSkills?: TDesiredSkill[];
 };
 
 export type TAuthState = {
@@ -20,7 +34,7 @@ const initialState: TAuthState = {
 
 const authSlice = createSlice({
   name: "auth",
-  initialState: initialState,
+  initialState,
   reducers: {
     setUser: (state, action) => {
       const { user, token } = action.payload;
@@ -31,12 +45,29 @@ const authSlice = createSlice({
       state.user = null;
       state.token = null;
     },
+    updateUserSkills: (state, action) => {
+      if (state.user) {
+        state.user.skills = action.payload;
+      }
+    },
+    updateDesiredSkills: (state, action) => {
+      if (state.user) {
+        state.user.desiredSkills = action.payload;
+      }
+    },
   },
 });
 
 export const useCurrentUser = (state: RootState) => state.auth.user;
 export const useCurrentToken = (state: RootState) => state.auth.token;
+export const useUserRoles = (state: RootState) => state.auth.user?.roles || [];
+export const useUserPermissions = (state: RootState) => state.auth.user?.permissions || [];
 
-export const { setUser, logout } = authSlice.actions;
+export const {
+  setUser,
+  logout,
+  updateUserSkills,
+  updateDesiredSkills
+} = authSlice.actions;
 
 export default authSlice.reducer;
