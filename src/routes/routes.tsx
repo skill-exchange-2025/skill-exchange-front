@@ -1,58 +1,79 @@
-// src/routes/routes.tsx
 import { createBrowserRouter } from "react-router-dom";
 import App from "../App";
-import Login from "../pages/Login";
-import MainLayout from "@/components/layout/MainLayout";
-import DashboardLayout from "@/components/layout/DashboardLayout";
+import { LandingPage } from "@/pages/landing";
+import { About } from "@/pages/about";
+import { Contact } from "@/pages/contact";
+import { Help } from "@/pages/help";
+import { Privacy } from "@/pages/privacy";
+import { Terms } from "@/pages/terms";
+import { SignIn } from "@/pages/auth/sign-in";
+import { SignUp } from "@/pages/auth/sign-up";
+import { Dashboard } from "@/pages/dashboard";
+import { ForgotPassword } from "@/pages/auth/forgot-password";
+import { Layout } from "@/components/layout/layout";
 import ProtectedRoute from "@/components/layout/ProtectedRoute";
-import Redirector from "@/components/Redirector";
-import AdminRoutes from "./AdminRoutes"; // Add new component imports
-import UserRoutes from "./UserRoutes";   // Add new component imports
+import { AuthProvider } from "../context/auth";
 
-const router = createBrowserRouter([
+const routes = createBrowserRouter([
   {
     path: "/",
-    element: <App />,
+    element: (
+      <AuthProvider>
+        <App />
+      </AuthProvider>
+    ),
+
     children: [
       {
-        path: "login",
-        element: <Login />,
-      },
-      {
         path: "/",
-        element: <MainLayout />,
+        element: <Layout />,
         children: [
+          // Public Routes
           {
             index: true,
-            element: <Redirector />,
+            element: <LandingPage />,
           },
-        ],
-      },
-      {
-        path: "admin",
-        element: (
-            <ProtectedRoute>
-              <DashboardLayout />
-            </ProtectedRoute>
-        ),
-        children: [
           {
-            path: "*",
-            element: <AdminRoutes />, // Use dynamic admin routes
+            path: "about",
+            element: <About />,
           },
-        ],
-      },
-      {
-        path: "user",
-        element: (
-            <ProtectedRoute>
-              <DashboardLayout />
-            </ProtectedRoute>
-        ),
-        children: [
           {
-            path: "*",
-            element: <UserRoutes />, // Use dynamic user routes
+            path: "contact",
+            element: <Contact />,
+          },
+          {
+            path: "help",
+            element: <Help />,
+          },
+          {
+            path: "privacy",
+            element: <Privacy />,
+          },
+          {
+            path: "terms",
+            element: <Terms />,
+          },
+          {
+            path: "forgot-password",
+            element: <ForgotPassword />,
+          },
+          // Auth Routes
+          {
+            path: "signin",
+            element: <SignIn />,
+          },
+          {
+            path: "signup",
+            element: <SignUp />,
+          },
+          // Protected Routes
+          {
+            path: "dashboard",
+            element: (
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            ),
           },
         ],
       },
@@ -60,4 +81,4 @@ const router = createBrowserRouter([
   },
 ]);
 
-export default router;
+export default routes;
