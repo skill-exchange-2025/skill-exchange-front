@@ -218,15 +218,64 @@ export function ForgotPassword() {
                     <FormItem>
                       <FormLabel>OTP</FormLabel>
                       <FormControl>
-                        <Input
-                          placeholder="Enter 6-digit OTP"
-                          maxLength={6}
-                          {...field}
-                          onChange={(e) => {
-                            field.onChange(e);
-                            onOTPChange(e);
-                          }}
-                        />
+                        <div className="flex gap-2 justify-center">
+                          {[...Array(6)].map((_, index) => (
+                            <Input
+                              key={index}
+                              type="text"
+                              maxLength={1}
+                              className="w-12 h-12 text-center text-xl"
+                              value={field.value[index] || ""}
+                              onChange={(e) => {
+                                const newValue = e.target.value;
+                                const newOtp = field.value.split("");
+                                newOtp[index] = newValue;
+                                const updatedOtp = newOtp.join("");
+                                field.onChange(updatedOtp);
+
+                                if (newValue && index < 5) {
+                                  const nextInput =
+                                    e.target.parentElement?.nextElementSibling?.querySelector(
+                                      "input"
+                                    );
+                                  if (nextInput) nextInput.focus();
+                                }
+
+                                if (updatedOtp.length === 6) {
+                                  onOTPChange({
+                                    target: { value: updatedOtp },
+                                  } as React.ChangeEvent<HTMLInputElement>);
+                                }
+                              }}
+                              onKeyDown={(e) => {
+                                if (
+                                  e.key === "Backspace" &&
+                                  !field.value[index] &&
+                                  index > 0
+                                ) {
+                                  const prevInput =
+                                    e.currentTarget.parentElement?.previousElementSibling?.querySelector(
+                                      "input"
+                                    );
+                                  if (prevInput) prevInput.focus();
+                                }
+                              }}
+                              onPaste={(e) => {
+                                e.preventDefault();
+                                const pastedData = e.clipboardData
+                                  .getData("text")
+                                  .slice(0, 6);
+                                field.onChange(pastedData);
+
+                                if (pastedData.length === 6) {
+                                  onOTPChange({
+                                    target: { value: pastedData },
+                                  } as React.ChangeEvent<HTMLInputElement>);
+                                }
+                              }}
+                            />
+                          ))}
+                        </div>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
