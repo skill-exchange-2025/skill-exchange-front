@@ -77,6 +77,7 @@ export function ForgotPassword() {
       toast.success("OTP sent. Please check your inbox.");
       setStep("otp");
     } catch (error) {
+      console.error("Reset password error:", error);
       toast.error("Failed to send OTP. Please try again.");
     } finally {
       setLoading(false);

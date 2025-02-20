@@ -1,18 +1,19 @@
 import { createBrowserRouter } from "react-router-dom";
 import App from "../App";
 import { LandingPage } from "@/pages/landing";
-import { About } from "@/pages/about";
-import { Contact } from "@/pages/contact";
+import { About } from "@/pages/About";
+import { Contact } from "@/pages/Contact";
 import { Help } from "@/pages/help";
 import { Privacy } from "@/pages/privacy";
 import { Terms } from "@/pages/terms";
 import { SignIn } from "@/pages/auth/sign-in";
 import { SignUp } from "@/pages/auth/sign-up";
-import { Dashboard } from "@/pages/dashboard";
 import { ForgotPassword } from "@/pages/auth/forgot-password";
 import { Layout } from "@/components/layout/layout";
 import ProtectedRoute from "@/components/layout/ProtectedRoute";
 import { AuthProvider } from "../context/auth";
+import DashboardLayout from "@/components/layout/DashboardLayout";
+
 
 const routes = createBrowserRouter([
   {
@@ -66,12 +67,13 @@ const routes = createBrowserRouter([
             path: "signup",
             element: <SignUp />,
           },
+         
           // Protected Routes
           {
             path: "dashboard",
             element: (
               <ProtectedRoute>
-                <Dashboard />
+                <DashboardLayout />
               </ProtectedRoute>
             ),
           },

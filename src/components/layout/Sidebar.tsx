@@ -1,14 +1,14 @@
-import {useState, useMemo, ReactPortal} from 'react';
-import { Menu } from 'antd';
-import type { MenuProps } from 'antd';
-import { Link, useLocation } from 'react-router-dom';
-import { adminPaths } from '@/routes/admin.routes';
-import { TUserPath } from '@/types';
-import { useAppSelector } from '@/redux/hooks';
-import { useCurrentUser } from '@/redux/features/auth/authSlice';
-import { ChevronLeft, ChevronRight, GraduationCap } from 'lucide-react';
-import React from 'react';
-import Sider from 'antd/es/layout/Sider';
+import { useState, useMemo, ReactPortal } from "react";
+import { Menu } from "antd";
+import type { MenuProps } from "antd";
+import { Link, useLocation } from "react-router-dom";
+import { adminPaths } from "@/routes/admin.routes";
+import { TUserPath } from "@/types";
+import { useAppSelector } from "@/redux/hooks";
+import { useCurrentUser } from "@/redux/features/auth/authSlice";
+import { ChevronLeft, ChevronRight, GraduationCap } from "lucide-react";
+import React from "react";
+import Sider from "antd/es/layout/Sider";
 
 // Types
 interface User {
@@ -17,16 +17,7 @@ interface User {
   permissions?: string[];
 }
 
-type MenuItem = {
-  key: string;
-  icon?: React.ReactNode;
-  label: React.ReactNode;
-  children?: MenuItem[] & ReactPortal;
-  disabled?: boolean;
-  style?: React.CSSProperties;
-  className?: string;
-  title?: string;
-} & Partial<MenuProps>;
+type MenuItem = Required<MenuProps>["items"][number];
 
 interface SkillyLogoProps {
   collapsed?: boolean;
@@ -43,101 +34,125 @@ interface ToggleButtonProps {
 }
 
 // Utility functions
-const isReactElement = (element: NonNullable<unknown> | null | undefined): element is React.ReactElement =>
-    React.isValidElement(element);
+const isReactElement = (
+  element: NonNullable<unknown> | null | undefined
+): element is React.ReactElement => React.isValidElement(element);
 
-const hasUserPermission = (userPermissions: string[] | undefined, requiredPermissions: string[] | undefined): boolean => {
+const hasUserPermission = (
+  userPermissions: string[] | undefined,
+  requiredPermissions: string[] | undefined
+): boolean => {
   if (!requiredPermissions) return true;
   if (!userPermissions) return false;
-  return requiredPermissions.some(p => userPermissions.includes(p));
+  return requiredPermissions.some((p) => userPermissions.includes(p));
 };
 
 // Component for the logo
 const SkillyLogo: React.FC<SkillyLogoProps> = ({ collapsed }) => {
   if (collapsed) {
     return (
-        <div className="flex justify-center py-6">
-          <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
-            <GraduationCap className="w-6 h-6 text-white" />
-          </div>
+      <div className="flex justify-center py-6">
+        <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+          <GraduationCap className="w-6 h-6 text-white" />
         </div>
+      </div>
     );
   }
 
   return (
-      <div className="flex items-center gap-2 px-4 py-6">
-        <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-          <GraduationCap className="w-5 h-5 text-white" />
-        </div>
-        <span className="text-xl font-bold text-gray-800">Skilly</span>
+    <div className="flex items-center gap-2 px-4 py-6">
+      <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+        <GraduationCap className="w-5 h-5 text-white" />
       </div>
+      <span className="text-xl font-bold text-gray-800">Skilly</span>
+    </div>
   );
 };
 
 // Toggle button component
 const ToggleButton: React.FC<ToggleButtonProps> = ({ collapsed, onToggle }) => (
-    <button
-        onClick={onToggle}
-        className="absolute right-0 top-16 translate-x-1/2 w-8 h-8 bg-white border border-gray-200 rounded-full flex items-center justify-center hover:bg-gray-50 transition-colors"
-    >
-      {collapsed ? (
-          <ChevronRight className="w-5 h-5 text-gray-600" />
-      ) : (
-          <ChevronLeft className="w-5 h-5 text-gray-600" />
-      )}
-    </button>
+  <button
+    onClick={onToggle}
+    className="absolute right-0 top-16 translate-x-1/2 w-8 h-8 bg-white border border-gray-200 rounded-full flex items-center justify-center hover:bg-gray-50 transition-colors"
+  >
+    {collapsed ? (
+      <ChevronRight className="w-5 h-5 text-gray-600" />
+    ) : (
+      <ChevronLeft className="w-5 h-5 text-gray-600" />
+    )}
+  </button>
 );
 
 // User profile component
 const UserProfile: React.FC<UserProfileProps> = ({ user, collapsed }) => (
-    <div className="flex-shrink-0 p-4 border-t border-gray-200">
-      <div className="flex items-center gap-3">
-        <div className="w-8 h-8 rounded-full bg-gray-200" />
-        <div className={`flex-grow ${collapsed ? 'hidden' : ''}`}>
-          <div className="text-sm font-medium text-gray-700">
-            {user.roles?.join(', ')}
-          </div>
-          <div className="text-xs text-gray-500">{user.email}</div>
+  <div className="flex-shrink-0 p-4 border-t border-gray-200">
+    <div className="flex items-center gap-3">
+      <div className="w-8 h-8 rounded-full bg-gray-200" />
+      <div className={`flex-grow ${collapsed ? "hidden" : ""}`}>
+        <div className="text-sm font-medium text-gray-700">
+          {user.roles?.join(", ")}
         </div>
+        <div className="text-xs text-gray-500">{user.email}</div>
       </div>
     </div>
+  </div>
 );
 
 // Menu generator hook
-const useMenuItems = (paths: TUserPath[], currentUser: User | null): MenuItem[] => {
+const useMenuItems = (
+  paths: TUserPath[],
+  currentUser: User | null
+): MenuItem[] => {
   return useMemo(() => {
     const generateItems = (items: TUserPath[]): MenuItem[] => {
       return items.map((item) => {
-        const hasPermission = hasUserPermission(currentUser?.permissions, item.permissions);
+        const hasPermission = hasUserPermission(
+          currentUser?.permissions,
+          item.permissions
+        );
 
         const menuItem: MenuItem = {
           key: item.path || item.name,
-          icon: item.icon && isReactElement(item.icon)
+          icon:
+            item.icon && isReactElement(item.icon)
               ? React.cloneElement(item.icon, {
-                className: `${!hasPermission ? 'opacity-50' : ''} ${item.icon.props.className || ''}`,
-              })
+                  className: `${!hasPermission ? "opacity-50" : ""} ${
+                    item.icon.props.className || ""
+                  }`,
+                })
               : item.icon,
           label: item.path ? (
-              <Link
-                  to={item.path}
-                  className={!hasPermission ? 'pointer-events-none text-gray-400' : ''}
-              >
-                {item.name}
-              </Link>
+            <Link
+              to={item.path}
+              className={
+                !hasPermission ? "pointer-events-none text-gray-400" : ""
+              }
+            >
+              {item.name}
+            </Link>
           ) : (
-              <span className={!hasPermission ? 'text-gray-400' : ''}>{item.name}</span>
+            <span className={!hasPermission ? "text-gray-400" : ""}>
+              {item.name}
+            </span>
           ),
           disabled: !hasPermission,
           style: {
             opacity: !hasPermission ? 0.6 : 1,
-            cursor: !hasPermission ? 'not-allowed' : 'pointer',
+            cursor: !hasPermission ? "not-allowed" : "pointer",
           },
         };
 
         if (item.children) {
           const children = generateItems(item.children);
-          menuItem.children = children;
-          menuItem.disabled = children.every(child => child?.disabled === true);
+          // Type assertion to tell TypeScript this is a SubMenuType
+          (
+            menuItem as Required<MenuProps>["items"][number] & {
+              children: MenuItem[];
+            }
+          ).children = children;
+          menuItem.disabled = children.every(
+            (child) => child?.disabled === true
+          );
         }
 
         return menuItem;
@@ -152,47 +167,47 @@ const useMenuItems = (paths: TUserPath[], currentUser: User | null): MenuItem[] 
 const Sidebar: React.FC = () => {
   const [collapsed, setCollapsed] = useState<boolean>(false);
   const currentUser = useAppSelector(useCurrentUser);
-  console.log(currentUser)
+  console.log(currentUser);
   const location = useLocation();
 
   const menuItems = useMenuItems(adminPaths, currentUser);
-  const currentPathKey = useMemo(() =>
-          location.pathname.split('/').pop() || 'dashboard',
-      [location]
+  const currentPathKey = useMemo(
+    () => location.pathname.split("/").pop() || "dashboard",
+    [location]
   );
 
   return (
-      <Sider
-          collapsible
+    <Sider
+      collapsible
+      collapsed={collapsed}
+      onCollapse={setCollapsed}
+      width={260}
+      collapsedWidth={80}
+      className="min-h-screen border-r border-gray-200 bg-white"
+      trigger={null}
+    >
+      <div className="flex flex-col h-full">
+        <SkillyLogo collapsed={collapsed} />
+        <ToggleButton
           collapsed={collapsed}
-          onCollapse={setCollapsed}
-          width={260}
-          collapsedWidth={80}
-          className="min-h-screen border-r border-gray-200 bg-white"
-          trigger={null}
-      >
-        <div className="flex flex-col h-full">
-          <SkillyLogo collapsed={collapsed} />
-          <ToggleButton
-              collapsed={collapsed}
-              onToggle={() => setCollapsed(!collapsed)}
+          onToggle={() => setCollapsed(!collapsed)}
+        />
+
+        <div className="flex-grow mt-4">
+          <Menu
+            mode="inline"
+            selectedKeys={[currentPathKey]}
+            items={menuItems}
+            className="border-none"
+            theme="light"
           />
-
-          <div className="flex-grow mt-4">
-            <Menu
-                mode="inline"
-                selectedKeys={[currentPathKey]}
-                items={menuItems}
-                className="border-none"
-                theme="light"
-            />
-          </div>
-
-          {currentUser && (
-              <UserProfile user={currentUser} collapsed={collapsed} />
-          )}
         </div>
-      </Sider>
+
+        {currentUser && (
+          <UserProfile user={currentUser} collapsed={collapsed} />
+        )}
+      </div>
+    </Sider>
   );
 };
 

@@ -21,7 +21,7 @@ export function LandingPage() {
             A modern React application with authentication, beautiful UI, and powerful features to help you build your next project faster.
           </p>
           <div className="mt-10 flex gap-4">
-            <Link to="/signup">
+            <Link to="/signin">
               <Button size="lg">
                 Get Started <ArrowRight className="ml-2 h-4 w-4" />
               </Button>

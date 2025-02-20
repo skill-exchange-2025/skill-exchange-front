@@ -200,17 +200,16 @@ export function SignUp() {
       return;
     }
 
-    // Transform skills and desiredSkills into the expected format
     const transformedSkills = values.skills.map((skill) => ({
       name: skill.name,
       proficiencyLevel: skill.proficiencyLevel,
-      description: "", // Optional
+      description: "",
     }));
 
     const transformedDesiredSkills = values.desiredSkills.map((skill) => ({
       name: skill.name,
       desiredProficiencyLevel: skill.desiredProficiencyLevel,
-      description: "", // Optional
+      description: "",
     }));
 
     try {
@@ -227,7 +226,27 @@ export function SignUp() {
       setShowPostSignup(true);
     } catch (error: any) {
       console.error("Sign up error:", error);
-      toast.error(error.response?.data?.message || "Failed to create account");
+
+      // Set field-specific errors if the message indicates which field caused the conflict
+      if (error.message.includes("email")) {
+        form.setError("email", {
+          type: "manual",
+          message: "This email is already registered",
+        });
+        // Navigate to the email step
+        setCurrentStep(2);
+      } else if (error.message.includes("phone")) {
+        form.setError("phone", {
+          type: "manual",
+          message: "This phone number is already registered",
+        });
+        // Navigate to the phone step
+        setCurrentStep(1);
+      }
+
+      toast.error(
+        error.message || "Failed to create account. Please try again later"
+      );
     } finally {
       setLoading(false);
     }
@@ -457,20 +476,17 @@ export function SignUp() {
                     >
                       Next
                     </Button>
-                      
                   )}
-                  
                 </StepperFooter>
-         
               </form>
             </Form>
           </Stepper>
           <Link
-      to="/signin"
-      className="text-sm text-muted-foreground hover:underline float-right"
-    >
-      Already have an account? Sign in
-    </Link>
+            to="/signin"
+            className="text-sm text-muted-foreground hover:underline float-right"
+          >
+            Already have an account? Sign in
+          </Link>
         </div>
       </div>
     </div>

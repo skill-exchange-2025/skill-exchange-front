@@ -4,13 +4,13 @@ import { RootState } from "../../store";
 export type TSkill = {
   name: string;
   description: string;
-  proficiencyLevel: 'beginner' | 'intermediate' | 'advanced';
+  proficiencyLevel: "beginner" | "intermediate" | "advanced";
 };
 
 export type TDesiredSkill = {
   name: string;
   description: string;
-  desiredProficiencyLevel: 'beginner' | 'intermediate' | 'advanced';
+  desiredProficiencyLevel: "beginner" | "intermediate" | "advanced";
 };
 
 export type TUser = {
@@ -61,13 +61,17 @@ const authSlice = createSlice({
 export const useCurrentUser = (state: RootState) => state.auth.user;
 export const useCurrentToken = (state: RootState) => state.auth.token;
 export const useUserRoles = (state: RootState) => state.auth.user?.roles || [];
-export const useUserPermissions = (state: RootState) => state.auth.user?.permissions || [];
+export const useUserPermissions = (state: RootState) =>
+  state.auth.user?.permissions || [];
 
-export const {
-  setUser,
-  logout,
-  updateUserSkills,
-  updateDesiredSkills
-} = authSlice.actions;
+export const { setUser, logout, updateUserSkills, updateDesiredSkills } =
+  authSlice.actions;
+
+export const logoutAndClearStorage = () => (dispatch: any) => {
+  dispatch(logout());
+
+  localStorage.removeItem("persist:auth");
+  localStorage.removeItem("persist:root");
+};
 
 export default authSlice.reducer;

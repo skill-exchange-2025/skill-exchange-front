@@ -88,14 +88,6 @@ export function SignIn() {
     );
   };
 
-  // const handleStepClick = (stepIndex: number) => {
-  //   if (isStepValid(stepIndex)) {
-  //     setCurrentStep(stepIndex);
-  //   } else {
-  //     toast.error("Please complete previous steps first");
-  //   }
-  // };
-
   const handleNext = () => {
     if (isCurrentStepValid()) {
       setCurrentStep((prev) => prev + 1);
