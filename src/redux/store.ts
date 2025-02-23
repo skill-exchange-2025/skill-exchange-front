@@ -1,9 +1,9 @@
+// store.ts
 import { configureStore } from "@reduxjs/toolkit";
 import {
   FLUSH,
   PAUSE,
-  PERSIST,
-  persistReducer,
+  PERSIST, persistReducer,
   PURGE,
   REGISTER,
   REHYDRATE,
@@ -12,23 +12,29 @@ import persistStore from "redux-persist/es/persistStore";
 import storage from "redux-persist/lib/storage";
 import { baseApi } from "./api/baseApi";
 import authReducer from "./features/auth/authSlice";
+import profileReducer from "./features/profile/profileSlice";
+import usersReducer from "./features/users/usersSlice.ts"
 
 const persistConfig = {
   key: "auth",
   storage,
 };
+
 const persistedAuthReducer = persistReducer(persistConfig, authReducer);
+
 export const store = configureStore({
   reducer: {
     [baseApi.reducerPath]: baseApi.reducer,
+    profile: profileReducer,
+    users: usersReducer,
     auth: persistedAuthReducer,
   },
   middleware: (getDefaultMiddlewares) =>
-    getDefaultMiddlewares({
-      serializableCheck: {
-        ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
-      },
-    }).concat(baseApi.middleware),
+      getDefaultMiddlewares({
+        serializableCheck: {
+          ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
+        },
+      }).concat(baseApi.middleware),
 });
 
 export type RootState = ReturnType<typeof store.getState>;

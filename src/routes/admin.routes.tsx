@@ -2,13 +2,14 @@
 import AdminDashboard from "../pages/admin/AdminDashboard";
 import { TUserPath } from "@/types";
 import { Home, Users, GraduationCap, School } from 'lucide-react';
+import ProfilePage from "@/pages/user/profile/ProfilePage.tsx";
 
 // admin.routes.tsx
 export const adminPaths: TUserPath[] = [
   {
     name: "Dashboard",
     path: "dashboard",
-    element: <AdminDashboard />,
+    element: <ProfilePage />,
     icon: <Home size={16} />,
     permissions: ["view:metrics"],
   },
