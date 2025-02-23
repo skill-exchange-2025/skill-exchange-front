@@ -3,6 +3,7 @@ import AdminDashboard from "../pages/admin/AdminDashboard";
 import { TUserPath } from "@/types";
 import { Home, Users, GraduationCap, School } from 'lucide-react';
 import ProfilePage from "@/pages/user/profile/ProfilePage.tsx";
+import { UsersView } from "@/pages/user/table/UsersView";
 
 // admin.routes.tsx
 export const adminPaths: TUserPath[] = [
@@ -21,7 +22,7 @@ export const adminPaths: TUserPath[] = [
       {
         name: "Create Student",
         path: "create-student",
-        element: <AdminDashboard />,
+        element: <UsersView />,
         icon: <GraduationCap size={16} />,
         permissions: ["view:metrics"],
       },
