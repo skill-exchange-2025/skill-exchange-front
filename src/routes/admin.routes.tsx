@@ -20,7 +20,7 @@ export const adminPaths: TUserPath[] = [
     permissions: ["view:metrics"],
     children: [
       {
-        name: "Create Student",
+        name: "Create User",
         path: "create-student",
         element: <UsersView />,
         icon: <GraduationCap size={16} />,

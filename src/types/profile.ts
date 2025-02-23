@@ -6,6 +6,7 @@ export interface Profile {
     profession: string;
     interests: string[];
     birthDate?: string;
+    profileExists?: boolean;
 }
 
 export interface ProfileState {

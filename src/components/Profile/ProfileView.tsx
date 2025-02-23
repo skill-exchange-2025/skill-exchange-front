@@ -49,8 +49,6 @@ export const ProfileView: React.FC = () => {
         );
     }
 
-
-
     return (
         <Card className="w-full max-w-2xl mx-auto">
             <CardHeader>
@@ -60,39 +58,43 @@ export const ProfileView: React.FC = () => {
                 {/* Bio Section */}
                 <div className="space-y-2">
                     <h3 className="text-lg font-semibold">Bio</h3>
-                    <p className="text-gray-600">{profile.bio}</p>
+                    <p className="text-gray-600">{profile.bio || 'No bio provided'}</p>
                 </div>
 
                 {/* Description Section */}
                 <div className="space-y-2">
                     <h3 className="text-lg font-semibold">Description</h3>
-                    <p className="text-gray-600">{profile.description}</p>
+                    <p className="text-gray-600">{profile.description || 'No description provided'}</p>
                 </div>
 
                 {/* Location Section */}
                 <div className="space-y-2">
                     <h3 className="text-lg font-semibold">Location</h3>
-                    <p className="text-gray-600">{profile.location}</p>
+                    <p className="text-gray-600">{profile.location || 'No location provided'}</p>
                 </div>
 
                 {/* Profession Section */}
                 <div className="space-y-2">
                     <h3 className="text-lg font-semibold">Profession</h3>
-                    <p className="text-gray-600">{profile.profession}</p>
+                    <p className="text-gray-600">{profile.profession || 'No profession provided'}</p>
                 </div>
 
                 {/* Interests Section */}
                 <div className="space-y-2">
                     <h3 className="text-lg font-semibold">Interests</h3>
                     <div className="flex flex-wrap gap-2">
-                        {profile.interests.map((interest, index) => (
-                            <span
-                                key={index}
-                                className="px-3 py-1 bg-gray-100 rounded-full text-sm text-gray-700"
-                            >
-                                {interest}
-                            </span>
-                        ))}
+                        {profile.interests && profile.interests.length > 0 ? (
+                            profile.interests.map((interest, index) => (
+                                <span
+                                    key={index}
+                                    className="px-3 py-1 bg-gray-100 rounded-full text-sm text-gray-700"
+                                >
+                                    {interest}
+                                </span>
+                            ))
+                        ) : (
+                            <p className="text-gray-600">No interests added</p>
+                        )}
                     </div>
                 </div>
 
@@ -100,17 +102,21 @@ export const ProfileView: React.FC = () => {
                 <div className="space-y-2">
                     <h3 className="text-lg font-semibold">Social Links</h3>
                     <div className="space-y-2">
-                        {profile.socialLinks.map((link, index) => (
-                            <a
-                                key={index}
-                                href={link}
-                                className="block text-blue-600 hover:underline"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                            >
-                                {link}
-                            </a>
-                        ))}
+                        {profile.socialLinks && profile.socialLinks.length > 0 ? (
+                            profile.socialLinks.map((link, index) => (
+                                <a
+                                    key={index}
+                                    href={link}
+                                    className="block text-blue-600 hover:underline"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+                                    {link}
+                                </a>
+                            ))
+                        ) : (
+                            <p className="text-gray-600">No social links added</p>
+                        )}
                     </div>
                 </div>
             </CardContent>

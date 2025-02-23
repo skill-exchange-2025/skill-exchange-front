@@ -16,7 +16,7 @@ export const UserModal: React.FC<{ open: boolean; onClose: () => void; user?: Us
     const handleSubmit = async (data: any) => {
         try {
             if (user) {
-                await updateUser({ id: user.id, data });
+                await updateUser({ id: user._id, data });
             } else {
                 await createUser(data);
             }

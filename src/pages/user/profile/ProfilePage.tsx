@@ -6,11 +6,13 @@ import { ProfileForm } from '@/components/Profile/ProfileForm';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import {useCurrentProfile} from "../../../redux/features/profile/profileSlice.ts";
 
 const ProfilePage = () => {
     const [isEditing, setIsEditing] = useState(false);
     const status = useAppSelector(useProfileStatus);
     const error = useAppSelector(useProfileError);
+    const profile = useAppSelector(useCurrentProfile);
 
     if (status === 'loading') {
         return (
@@ -18,13 +20,22 @@ const ProfilePage = () => {
                 <div className="animate-pulse space-y-4">
                     <div className="h-4 bg-gray-200 rounded w-3/4"></div>
                     <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-                    <div className="h-4 bg-gray-200 rounded w-2/3"></div>
                 </div>
             </Card>
         );
     }
+    if (!profile) {
+        return (
+            <div className="container mx-auto py-8 px-4">
+                <div className="mb-6">
+                    <h1 className="text-2xl font-bold">Create Your Profile</h1>
+                </div>
+                <ProfileForm />
+            </div>
+        );
+    }
 
-    if (status === 'failed') {
+    if (status === 'failed' && error !== 'No profile found') {
         return (
             <Card className="w-full max-w-2xl mx-auto p-6">
                 <Alert variant="destructive">
@@ -35,6 +46,7 @@ const ProfilePage = () => {
             </Card>
         );
     }
+
 
     return (
         <div className="container mx-auto py-8 px-4">
@@ -48,13 +60,7 @@ const ProfilePage = () => {
                 </Button>
             </div>
 
-            <div className="transition-all duration-300">
-                {isEditing ? (
-                    <ProfileForm />
-                ) : (
-                    <ProfileView />
-                )}
-            </div>
+            {isEditing ? <ProfileForm /> : <ProfileView />}
         </div>
     );
 };

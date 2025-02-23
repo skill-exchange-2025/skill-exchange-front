@@ -37,6 +37,9 @@ const profileSlice = createSlice({
             .addMatcher(profileApi.endpoints.fetchProfile.matchFulfilled, (state, action) => {
                 state.status = "succeeded";
                 state.profile = action.payload;
+                if (!action.payload.profileExists) {
+                    state.error = null;
+                }
             })
             .addMatcher(profileApi.endpoints.fetchProfile.matchRejected, (state, action) => {
                 state.status = "failed";

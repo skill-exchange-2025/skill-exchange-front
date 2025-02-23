@@ -1,7 +1,7 @@
-// admin.routes.tsx
 import AdminDashboard from "../pages/admin/AdminDashboard";
 import { TUserPath } from "@/types";
 import { Home, Users } from 'lucide-react';
+import ProfilePage from "../pages/user/profile/ProfilePage.tsx";
 
 export const userPaths: TUserPath[] = [
   {
@@ -14,7 +14,7 @@ export const userPaths: TUserPath[] = [
   {
     name: "Profile",
     path: "profile",
-    element: <AdminDashboard />,
+    element: <ProfilePage />,
     icon: <Users size={16} />,
     permissions: ["read:user"],
   },
