@@ -3,13 +3,14 @@ import {useAppDispatch, useAppSelector} from '@/redux/hooks';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import {RootState} from "@/redux/store.ts";
-import {useFetchProfileQuery} from "@/redux/features/profile/profileApi.ts";
+import {useFetchProfileQuery, useGetProfileCompletionStatusQuery} from "@/redux/features/profile/profileApi.ts";
 import {setProfile} from "@/redux/features/profile/profileSlice.ts";
 
 export const ProfileView: React.FC = () => {
     const dispatch = useAppDispatch();
     const { profile, status, error } = useAppSelector((state: RootState) => state.profile);
     const { data: fetchedProfile } = useFetchProfileQuery(undefined, { skip: !!profile });
+    const { data: completionStatus, isLoading: isStatusLoading } = useGetProfileCompletionStatusQuery();
 
     useEffect(() => {
         if (fetchedProfile) {
@@ -53,6 +54,40 @@ export const ProfileView: React.FC = () => {
         <Card className="w-full max-w-2xl mx-auto">
             <CardHeader>
                 <CardTitle>Profile</CardTitle>
+                {/* Completion Status Section */}
+                {!isStatusLoading && completionStatus && (
+                    <div className="mt-4 space-y-3">
+                        <div className="flex items-center justify-between">
+                            <h3 className="text-sm font-medium">Profile Completion</h3>
+                            <span className="text-sm font-medium">{completionStatus.percentage}%</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2.5">
+                            <div
+                                className={`h-2.5 rounded-full transition-all duration-300 ${
+                                    completionStatus.percentage === 100
+                                        ? 'bg-green-600'
+                                        : completionStatus.percentage > 50
+                                            ? 'bg-blue-600'
+                                            : 'bg-orange-500'
+                                }`}
+                                style={{ width: `${completionStatus.percentage}%` }}
+                            />
+                        </div>
+                        {completionStatus.missingFields && completionStatus.missingFields.length > 0 && (
+                            <div className="bg-gray-50 rounded-lg p-3 mt-2">
+                                <p className="text-sm font-medium text-gray-700 mb-2">Missing information:</p>
+                                <ul className="space-y-1">
+                                    {completionStatus.missingFields.map((field, index) => (
+                                        <li key={index} className="text-sm text-gray-600 flex items-center">
+                                            <span className="mr-2">•</span>
+                                            {field}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
+                    </div>
+                )}
             </CardHeader>
             <CardContent className="space-y-6">
                 {/* Bio Section */}

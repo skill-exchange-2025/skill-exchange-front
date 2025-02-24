@@ -6,7 +6,7 @@ import { ProfileForm } from '@/components/Profile/ProfileForm';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import {useCurrentProfile} from "../../../redux/features/profile/profileSlice.ts";
+import {useCurrentProfile} from "@/redux/features/profile/profileSlice.ts";
 
 const ProfilePage = () => {
     const [isEditing, setIsEditing] = useState(false);

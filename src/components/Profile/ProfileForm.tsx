@@ -14,7 +14,7 @@ import {
     useUpdateProfileMutation,
 } from '@/redux/features/profile/profileApi';
 import { setProfile, resetStatus } from '@/redux/features/profile/profileSlice';
-import {useCurrentProfile} from "../../redux/features/profile/profileSlice.ts";
+import {useCurrentProfile} from "@/redux/features/profile/profileSlice.ts";
 
 export const ProfileForm: React.FC = () => {
     const dispatch = useAppDispatch();
