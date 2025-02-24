@@ -33,6 +33,7 @@ export const profileApi = baseApi.injectEndpoints({
                 method: "GET",
             }),
         }),
+        
     }),
 });
 
