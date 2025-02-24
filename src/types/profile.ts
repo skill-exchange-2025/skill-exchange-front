@@ -1,3 +1,5 @@
+import {CompletionStatus} from "@/types/status.ts";
+
 export interface Profile {
     bio: string;
     description: string;
@@ -7,6 +9,7 @@ export interface Profile {
     interests: string[];
     birthDate?: string;
     profileExists?: boolean;
+    completionStatus?: CompletionStatus; // Add this line
 }
 
 export interface ProfileState {
