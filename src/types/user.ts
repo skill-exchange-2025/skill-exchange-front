@@ -32,15 +32,16 @@ export interface PaginationParams {
 
 export interface CreateUserRequest {
     email: string;
-    password: string;
+    password?: string;
     name: string;
-    phone: string;
+    phone: number;
     roles: string[];
 }
 
 export interface UpdateUserRequest {
     name?: string;
-    phone?: string;
+    email?: string;
+    phone?: number;
     roles?: string[];
 }
 
