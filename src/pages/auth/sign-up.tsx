@@ -13,7 +13,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { useAuth } from "@/context/auth";
 import { toast } from "sonner";
 import { Eye, EyeOff } from "lucide-react";
 import {
@@ -130,7 +129,6 @@ const formSchema = z.object({
 
 export function SignUp() {
   const navigate = useNavigate();
-  const { signUp } = useAuth();
   const [loading, setLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [showPostSignup, setShowPostSignup] = useState(false);
