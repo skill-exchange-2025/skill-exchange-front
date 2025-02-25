@@ -13,7 +13,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { useAuth } from "@/context/auth";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -49,11 +48,11 @@ const steps = [
 
 export function ForgotPassword() {
   const navigate = useNavigate();
-  const { resetPassword, verifyOTP, updatePassword } = useAuth();
+  //const { resetPassword, verifyOTP, updatePassword } = useAuth();
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState<"email" | "otp" | "password">("email");
   const [email, setEmail] = useState("");
-
+  console.log(email)
   const emailForm = useForm<z.infer<typeof emailSchema>>({
     resolver: zodResolver(emailSchema),
     defaultValues: { email: "" },
@@ -72,7 +71,8 @@ export function ForgotPassword() {
   async function onEmailSubmit(values: z.infer<typeof emailSchema>) {
     try {
       setLoading(true);
-      await resetPassword(values.email);
+      //await resetPassword(values.email);
+      console.log(values.email)
       setEmail(values.email);
       toast.success("OTP sent. Please check your inbox.");
       setStep("otp");
@@ -89,8 +89,8 @@ export function ForgotPassword() {
     if (otp.length === 6) {
       try {
         setLoading(true);
-        const isValid = await verifyOTP(email, otp);
-        if (isValid) {
+        //const isValid = await verifyOTP(email, otp);
+        if (true) {
           toast.success("OTP verified successfully");
           setStep("password");
         } else {
@@ -106,8 +106,9 @@ export function ForgotPassword() {
 
   async function onPasswordSubmit(values: z.infer<typeof passwordSchema>) {
     try {
+      console.log(values)
       setLoading(true);
-      await updatePassword(email, values.password);
+      //await updatePassword(email, values.password);
       toast.success("Password updated successfully");
       navigate("/signin");
     } catch (error) {

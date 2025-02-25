@@ -15,6 +15,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { Eye, EyeOff } from "lucide-react";
+import {IT_SKILLS} from "./skills.ts"
 import {
   Stepper,
   StepperContent,
@@ -52,45 +53,7 @@ const steps = [
   },
 ];
 
-const IT_SKILLS = [
-  // Frontend
-  "React",
-  "Angular",
-  "Vue.js",
-  "TypeScript",
-  "JavaScript",
-  "HTML",
-  "CSS",
-  // Backend
-  "Node.js",
-  "Python",
-  "Java",
-  "C#",
-  "PHP",
-  "Ruby",
-  // Database
-  "MongoDB",
-  "MySQL",
-  "PostgreSQL",
-  "Redis",
-  // DevOps
-  "Docker",
-  "Kubernetes",
-  "AWS",
-  "Azure",
-  "Git",
-  // Mobile
-  "React Native",
-  "Flutter",
-  "iOS",
-  "Android",
-  // Other
-  "GraphQL",
-  "REST API",
-  "UI/UX",
-  "Agile",
-  "Scrum",
-];
+
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -132,6 +95,7 @@ export function SignUp() {
   const [loading, setLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [showPostSignup, setShowPostSignup] = useState(false);
+
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -203,15 +167,18 @@ export function SignUp() {
       proficiencyLevel: skill.proficiencyLevel,
       description: "",
     }));
+    console.log(transformedSkills)
 
     const transformedDesiredSkills = values.desiredSkills.map((skill) => ({
       name: skill.name,
       desiredProficiencyLevel: skill.desiredProficiencyLevel,
       description: "",
     }));
+    console.log(transformedDesiredSkills)
 
     try {
       setLoading(true);
+      /*
       await signUp(
         values.name,
         values.phone,
@@ -220,6 +187,8 @@ export function SignUp() {
         transformedSkills,
         transformedDesiredSkills
       );
+
+       */
       toast.success("Account created successfully");
       setShowPostSignup(true);
     } catch (error: any) {

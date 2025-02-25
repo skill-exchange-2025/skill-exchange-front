@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { useAuth } from '@/context/auth';
 import { Moon, Sun } from 'lucide-react';
 import { useTheme } from '@/components/theme-provider';
 import {
@@ -11,7 +10,6 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 export function Navbar() {
-  const { user, signOut } = useAuth();
   const { theme, setTheme } = useTheme();
 
   return (
@@ -36,7 +34,7 @@ export function Navbar() {
               </DropdownMenuContent>
             </DropdownMenu>
 
-            {user ? (
+            {/*user ? (
               <Button variant="ghost" onClick={signOut}>Sign Out</Button>
             ) : (
               <div className="flex items-center space-x-2">
@@ -47,7 +45,7 @@ export function Navbar() {
                   <Button>Sign Up</Button>
                 </Link>
               </div>
-            )}
+            )*/}
           </div>
         </div>
       </div>

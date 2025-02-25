@@ -55,6 +55,7 @@ const authSlice = createSlice({
         state.user.desiredSkills = action.payload;
       }
     },
+
   },
 });
 
