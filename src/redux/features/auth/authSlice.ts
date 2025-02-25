@@ -70,10 +70,6 @@ export const { setUser, logout, updateUserSkills, updateDesiredSkills } =
 
 export const logoutAndClearStorage = () => (dispatch: any) => {
   dispatch(logout());
-
-  localStorage.removeItem("persist:auth");
-  localStorage.removeItem("persist:root");
-  
 };
 
 export default authSlice.reducer;

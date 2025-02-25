@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { Eye, EyeOff } from "lucide-react";
 import {IT_SKILLS} from "./skills.ts"
+import { useRegisterMutation } from "@/redux/features/auth/authApi"
 import {
   Stepper,
   StepperContent,
@@ -95,7 +96,7 @@ export function SignUp() {
   const [loading, setLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [showPostSignup, setShowPostSignup] = useState(false);
-
+  const [register] = useRegisterMutation();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -138,14 +139,6 @@ export function SignUp() {
     );
   };
 
-  // const handleStepClick = (stepIndex: number) => {
-  //   if (isStepValid(stepIndex)) {
-  //     setCurrentStep(stepIndex);
-  //   } else {
-  //     toast.error("Please complete previous steps first");
-  //   }
-  // };
-
   const handleNext = () => {
     if (isCurrentStepValid()) {
       setCurrentStep((prev) => prev + 1);
@@ -178,17 +171,9 @@ export function SignUp() {
 
     try {
       setLoading(true);
-      /*
-      await signUp(
-        values.name,
-        values.phone,
-        values.email,
-        values.password,
-        transformedSkills,
-        transformedDesiredSkills
-      );
+      const response = await register(form.getValues()).unwrap();
 
-       */
+      console.log(response)
       toast.success("Account created successfully");
       setShowPostSignup(true);
     } catch (error: any) {
@@ -332,6 +317,7 @@ export function SignUp() {
                       control={form.control}
                       name="password"
                       render={({ field }) => {
+                        // eslint-disable-next-line react-hooks/rules-of-hooks
                         const [showPassword, setShowPassword] = useState(false);
                         return (
                           <FormItem>
