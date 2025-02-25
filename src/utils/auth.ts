@@ -15,7 +15,7 @@ export const useAuthRedirect = () => {
                 navigate('/user/dashboard');
             }
         } else {
-            navigate('/login');
+            navigate('/signin');
         }
     }, [currentUser, navigate]);
 };
