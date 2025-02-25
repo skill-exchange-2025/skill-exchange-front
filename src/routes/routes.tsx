@@ -1,6 +1,6 @@
 import { createBrowserRouter } from "react-router-dom";
 import App from "../App";
-import { LandingPage } from "@/pages/landing";
+import { LandingPage } from "@/pages/landing/index";
 import { About } from "@/pages/About";
 import { Contact } from "@/pages/Contact";
 import { Help } from "@/pages/help";

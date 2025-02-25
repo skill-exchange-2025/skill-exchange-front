@@ -72,6 +72,7 @@ export const logoutAndClearStorage = () => (dispatch: any) => {
 
   localStorage.removeItem("persist:auth");
   localStorage.removeItem("persist:root");
+  
 };
 
 export default authSlice.reducer;

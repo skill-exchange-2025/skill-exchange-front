@@ -82,8 +82,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     sessionStorage.setItem("token", response.data.access_token);
     sessionStorage.setItem("refresh_token", response.data.refresh_token);
     sessionStorage.setItem("user", JSON.stringify(response.data.user));
+    localStorage.setItem("user", JSON.stringify(response.data.user));
 
     setUser(response.data.user);
+    
   };
 
   const signUp = async (
