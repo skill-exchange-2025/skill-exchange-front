@@ -1,9 +1,10 @@
-import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Button } from "@/components/ui/button";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Button } from '@/components/ui/button';
 import {
   Form,
   FormControl,
@@ -11,12 +12,12 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { toast } from "sonner";
-import { Eye, EyeOff } from "lucide-react";
-import {IT_SKILLS} from "./skills.ts"
-import { useRegisterMutation } from "@/redux/features/auth/authApi"
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { toast } from 'sonner';
+import { Eye, EyeOff } from 'lucide-react';
+import { IT_SKILLS } from './skills.ts';
+import { useRegisterMutation } from '@/redux/features/auth/authApi';
 import {
   Stepper,
   StepperContent,
@@ -26,50 +27,49 @@ import {
   StepperPrevious,
   StepperTitle,
   Step,
-} from "@/components/ui/stepper";
-import { BadgeSelector } from "@/components/ui/badge-selector";
-import { PostSignupDialog } from "@/components/ui/PostSignupDialog";
+} from '@/components/ui/stepper';
+import { BadgeSelector } from '@/components/ui/badge-selector';
+import { PostSignupDialog } from '@/components/ui/PostSignupDialog';
+import { CheckEmailDialog } from '@/components/ui/check-email-dialog';
 
 const steps = [
   {
-    title: "Personal Information",
-    description: "Enter your name",
-    fields: ["name"],
+    title: 'Personal Information',
+    description: 'Enter your name',
+    fields: ['name'],
   },
   {
-    title: "Contact Details",
-    description: "Enter your phone",
-    fields: ["phone"],
+    title: 'Contact Details',
+    description: 'Enter your phone',
+    fields: ['phone'],
   },
   {
-    title: "Account Details",
-    description: "Enter your email and password",
-    fields: ["email", "password"],
+    title: 'Account Details',
+    description: 'Enter your email and password',
+    fields: ['email', 'password'],
   },
 
   {
-    title: "Skills & Interests",
-    description: "Enter your skills",
-    fields: ["skills", "desiredSkills"],
+    title: 'Skills & Interests',
+    description: 'Enter your skills',
+    fields: ['skills', 'desiredSkills'],
   },
 ];
 
-
-
 const formSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters"),
+  name: z.string().min(2, 'Name must be at least 2 characters'),
   phone: z
     .string()
-    .min(8, "Number must be exactly 8 numbers")
-    .max(8, "Number must be exactly 8 numbers")
-    .regex(/^\d{8}$/, "Please enter exactly 8 numbers"),
-  email: z.string().email("Invalid email address"),
+    .min(8, 'Number must be exactly 8 numbers')
+    .max(8, 'Number must be exactly 8 numbers')
+    .regex(/^\d{8}$/, 'Please enter exactly 8 numbers'),
+  email: z.string().email('Invalid email address'),
   password: z
     .string()
-    .min(6, "Password must be at least 6 characters")
+    .min(6, 'Password must be at least 6 characters')
     .regex(
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9\W]).*$/,
-      "Password must contain uppercase, lowercase, and number/special character"
+      'Password must contain uppercase, lowercase, and number/special character'
     ),
   skills: z
     .array(
@@ -78,8 +78,8 @@ const formSchema = z.object({
         proficiencyLevel: z.string(),
       })
     )
-    .min(1, "Select at least one skill")
-    .max(5, "You can select up to 5 skills"),
+    .min(1, 'Select at least one skill')
+    .max(5, 'You can select up to 5 skills'),
   desiredSkills: z
     .array(
       z.object({
@@ -87,8 +87,8 @@ const formSchema = z.object({
         desiredProficiencyLevel: z.string(),
       })
     )
-    .min(1, "Select at least one skill")
-    .max(5, "You can select up to 5 skills"),
+    .min(1, 'Select at least one skill')
+    .max(5, 'You can select up to 5 skills'),
 });
 
 export function SignUp() {
@@ -96,19 +96,21 @@ export function SignUp() {
   const [loading, setLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [showPostSignup, setShowPostSignup] = useState(false);
+  const [showCheckEmail, setShowCheckEmail] = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState('');
   const [register] = useRegisterMutation();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "",
-      phone: "",
-      email: "",
-      password: "",
+      name: '',
+      phone: '',
+      email: '',
+      password: '',
       skills: [],
       desiredSkills: [],
     },
-    mode: "onChange",
+    mode: 'onChange',
   });
 
   // Check if all previous steps are valid
@@ -146,7 +148,7 @@ export function SignUp() {
       steps[currentStep].fields.forEach((field) => {
         return form.trigger(field as keyof z.infer<typeof formSchema>);
       });
-      toast.error("Please complete all fields correctly before proceeding");
+      toast.error('Please complete all fields correctly before proceeding');
     }
   };
 
@@ -158,46 +160,45 @@ export function SignUp() {
     const transformedSkills = values.skills.map((skill) => ({
       name: skill.name,
       proficiencyLevel: skill.proficiencyLevel,
-      description: "",
+      description: '',
     }));
-    console.log(transformedSkills)
+    console.log(transformedSkills);
 
     const transformedDesiredSkills = values.desiredSkills.map((skill) => ({
       name: skill.name,
       desiredProficiencyLevel: skill.desiredProficiencyLevel,
-      description: "",
+      description: '',
     }));
-    console.log(transformedDesiredSkills)
+    console.log(transformedDesiredSkills);
 
     try {
       setLoading(true);
       const response = await register(form.getValues()).unwrap();
-
-      console.log(response)
-      toast.success("Account created successfully");
-      setShowPostSignup(true);
+      console.log(response);
+      setRegisteredEmail(values.email);
+      setShowCheckEmail(true);
     } catch (error: any) {
-      console.error("Sign up error:", error);
+      console.error('Sign up error:', error);
 
       // Set field-specific errors if the message indicates which field caused the conflict
-      if (error.message.includes("email")) {
-        form.setError("email", {
-          type: "manual",
-          message: "This email is already registered",
+      if (error.message.includes('email')) {
+        form.setError('email', {
+          type: 'manual',
+          message: 'This email is already registered',
         });
         // Navigate to the email step
         setCurrentStep(2);
-      } else if (error.message.includes("phone")) {
-        form.setError("phone", {
-          type: "manual",
-          message: "This phone number is already registered",
+      } else if (error.message.includes('phone')) {
+        form.setError('phone', {
+          type: 'manual',
+          message: 'This phone number is already registered',
         });
         // Navigate to the phone step
         setCurrentStep(1);
       }
 
       toast.error(
-        error.message || "Failed to create account. Please try again later"
+        error.message || 'Failed to create account. Please try again later'
       );
     } finally {
       setLoading(false);
@@ -210,8 +211,16 @@ export function SignUp() {
         isOpen={showPostSignup}
         onClose={() => {
           setShowPostSignup(false);
-          navigate("/signin");
+          navigate('/login');
         }}
+      />
+      <CheckEmailDialog
+        isOpen={showCheckEmail}
+        onClose={() => {
+          setShowCheckEmail(false);
+          navigate('/login');
+        }}
+        email={registeredEmail}
       />
       <div className="container max-w-4xl py-12">
         <div className="space-y-6">
@@ -228,7 +237,7 @@ export function SignUp() {
               if (isStepValid(index)) {
                 setCurrentStep(index);
               } else {
-                toast.error("Please complete previous steps first");
+                toast.error('Please complete previous steps first');
               }
             }}
           >
@@ -325,7 +334,7 @@ export function SignUp() {
                             <FormControl>
                               <div className="relative">
                                 <Input
-                                  type={showPassword ? "text" : "password"}
+                                  type={showPassword ? 'text' : 'password'}
                                   placeholder="Create a password"
                                   {...field}
                                 />
@@ -415,11 +424,11 @@ export function SignUp() {
                         if (isCurrentStepValid()) {
                           form.handleSubmit(onSubmit)();
                         } else {
-                          toast.error("Please complete all fields correctly");
+                          toast.error('Please complete all fields correctly');
                         }
                       }}
                     >
-                      {loading ? "Creating account..." : "Sign Up"}
+                      {loading ? 'Creating account...' : 'Sign Up'}
                     </Button>
                   ) : (
                     <Button
@@ -435,7 +444,7 @@ export function SignUp() {
             </Form>
           </Stepper>
           <Link
-            to="/signin"
+            to="/login"
             className="text-sm text-muted-foreground hover:underline float-right"
           >
             Already have an account? Sign in

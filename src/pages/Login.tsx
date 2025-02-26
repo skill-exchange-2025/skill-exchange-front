@@ -8,7 +8,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/use-toast';
 import { Toaster } from '@/components/ui/toaster';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { setUser } from '@/redux/features/auth/authSlice';
 import { useLoginMutation } from '@/redux/features/auth/authApi';
@@ -34,33 +34,42 @@ const LoginForm = () => {
     }
   });
 
-  const onSubmit = async (data: LoginFormValues) => {
-    try {
-      const result = await loginMutation(data).unwrap();
-      dispatch(setUser({
-        user: result.user,
-        token: result.access_token
-      }));
+ const onSubmit = async (data: LoginFormValues) => {
+  try {
+    const result = await loginMutation(data).unwrap();
+    dispatch(setUser({
+      user: result.user,
+      token: result.access_token
+    }));
 
+    toast({
+      title: 'Success',
+      description: 'You have successfully logged in.',
+      variant: 'default',
+    });
+
+    if (result.user.roles.includes('admin')) {
+      navigate('/admin/dashboard');
+    } else {
+      navigate('/user/dashboard');
+    }
+  } catch (error: any) {
+    // Check for email verification error
+    if (error?.data?.message === 'Please verify your email before logging in') {
       toast({
-        title: 'Success',
-        description: 'You have successfully logged in.',
-        variant: 'default',
+        title: 'Email Not Verified',
+        description: 'Please verify your email before logging in.',
+        variant: 'destructive',
       });
-
-      if (result.user.roles.includes('admin')) {
-        navigate('/admin/dashboard');
-      } else {
-        navigate('/user/dashboard');
-      }
-    } catch (error) {
+    } else {
       toast({
         title: 'Error',
         description: 'Invalid credentials. Please try again.',
         variant: 'destructive',
       });
     }
-  };
+  }
+};
 
   return (
     <>
@@ -85,6 +94,7 @@ const LoginForm = () => {
                         {...field}
                       />
                     </FormControl>
+
                     <FormMessage />
                   </FormItem>
                 )}
@@ -102,6 +112,14 @@ const LoginForm = () => {
                         {...field}
                       />
                     </FormControl>
+                    <div className="flex justify-end">
+                            <Link
+                              to="/forgot-password"
+                              className="text-sm text-muted-foreground hover:text-primary"
+                            >
+                              Forgot password?
+                            </Link>
+                          </div>
                     <FormMessage />
                   </FormItem>
                 )}
