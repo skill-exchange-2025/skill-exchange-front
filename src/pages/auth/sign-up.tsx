@@ -225,7 +225,7 @@ export function SignUp() {
         isOpen={showPostSignup}
         onClose={() => {
           setShowPostSignup(false);
-          navigate("/signin");
+          navigate("/login");
         }}
       />
       <div className="container max-w-4xl py-12">
@@ -449,7 +449,7 @@ export function SignUp() {
             </Form>
           </Stepper>
           <Link
-            to="/signin"
+            to="/login"
             className="text-sm text-muted-foreground hover:underline float-right"
           >
             Already have an account? Sign in

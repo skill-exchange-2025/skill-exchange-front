@@ -1,10 +1,11 @@
-import React, {useEffect} from 'react';
-import {useAppDispatch, useAppSelector} from '@/redux/hooks';
+import React, { useEffect } from 'react';
+import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import {RootState} from "@/redux/store.ts";
-import {useFetchProfileQuery, useGetProfileCompletionStatusQuery} from "@/redux/features/profile/profileApi.ts";
-import {setProfile} from "@/redux/features/profile/profileSlice.ts";
+import { RootState } from "@/redux/store.ts";
+import { useFetchProfileQuery, useGetProfileCompletionStatusQuery } from "@/redux/features/profile/profileApi.ts";
+import { setProfile } from "@/redux/features/profile/profileSlice.ts";
+import { useGetProfileQuery } from "@/redux/features/auth/authApi.ts";
 
 export const ProfileView: React.FC = () => {
     const dispatch = useAppDispatch();
@@ -12,17 +13,30 @@ export const ProfileView: React.FC = () => {
     const { data: fetchedProfile } = useFetchProfileQuery(undefined, { skip: !!profile });
     const { data: completionStatus, isLoading: isStatusLoading } = useGetProfileCompletionStatusQuery();
 
+    // Get current user from auth state
+    const currentUser = useAppSelector((state: RootState) => state.auth.user);
+
+    // Fetch user profile with skills from auth API
+    const { data: authProfile, isLoading: isAuthProfileLoading } = useGetProfileQuery();
+
+    useEffect(() => {
+        console.log("Current user:", currentUser);
+        console.log("Auth profile:", authProfile);
+    }, [currentUser, authProfile]);
+
     useEffect(() => {
         if (fetchedProfile) {
             dispatch(setProfile(fetchedProfile));
         }
     }, [fetchedProfile, dispatch]);
 
+
     if (status === 'loading') {
         return (
             <Card className="w-full max-w-2xl mx-auto">
-                <CardContent className="p-6">
-                    <div className="animate-pulse space-y-4">
+                <CardContent className="space-y-6">
+
+                <div className="animate-pulse space-y-4">
                         <div className="h-4 bg-gray-200 rounded w-3/4"></div>
                         <div className="h-4 bg-gray-200 rounded w-1/2"></div>
                         <div className="h-4 bg-gray-200 rounded w-2/3"></div>
@@ -154,7 +168,53 @@ export const ProfileView: React.FC = () => {
                         )}
                     </div>
                 </div>
+
+                <div className="space-y-2 mt-4">
+                    <h3 className="text-lg font-semibold">Skills</h3>
+                    <div className="flex flex-wrap gap-2">
+                        {authProfile?.skills && authProfile.skills.length > 0 ? (
+                            authProfile.skills.map((skill, index) => (
+                                <div
+                                    key={index}
+                                    className="px-3 py-1 bg-blue-100 rounded-full text-sm text-blue-700 flex items-center gap-1"
+                                >
+                                    <span>{skill.name}</span>
+                                    <span className="text-xs bg-blue-200 px-2 py-0.5 rounded-full">
+                                    {skill.proficiencyLevel}
+                                </span>
+                                </div>
+                            ))
+                        ) : (
+                            <p className="text-gray-600">No skills added</p>
+                        )}
+                    </div>
+                </div>
+
+                {/* Desired Skills Section */}
+                <div className="space-y-2 mt-4">
+                    <h3 className="text-lg font-semibold">Skills I Want to Learn</h3>
+                    <div className="flex flex-wrap gap-2">
+                        {authProfile?.desiredSkills && authProfile.desiredSkills.length > 0 ? (
+                            authProfile.desiredSkills.map((skill, index) => (
+                                <div
+                                    key={index}
+                                    className="px-3 py-1 bg-green-100 rounded-full text-sm text-green-700 flex items-center gap-1"
+                                >
+                                    <span>{skill.name}</span>
+                                    <span className="text-xs bg-green-200 px-2 py-0.5 rounded-full">
+                                    {skill.desiredProficiencyLevel}
+                                </span>
+                                </div>
+                            ))
+                        ) : (
+                            <p className="text-gray-600">No desired skills added</p>
+                        )}
+                    </div>
+                </div>
+
             </CardContent>
         </Card>
+
+
     );
 };

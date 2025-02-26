@@ -7,8 +7,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useSelector } from "react-redux";
 import { selectFilters, selectPagination } from "@/redux/features/users/usersSlice.ts";
 import { useState } from "react";
+import { UserModal } from "./UserModal";
 
-// UsersList.tsx
 export const UsersList: React.FC<{ users: User[] }> = ({ users }) => {
     const [deleteUser] = useDeleteUserMutation();
     const filters = useSelector(selectFilters);
@@ -21,13 +21,17 @@ export const UsersList: React.FC<{ users: User[] }> = ({ users }) => {
 
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
-
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const handleDelete = async () => {
         if (selectedUser) {
             await deleteUser(selectedUser._id);
             await getUsers();
             setIsDialogOpen(false);
         }
+    };
+    const handleEdit = (user: User) => {
+        setSelectedUser(user);
+        setIsEditModalOpen(true);
     };
 
     return (
@@ -47,7 +51,7 @@ export const UsersList: React.FC<{ users: User[] }> = ({ users }) => {
                             <TableCell>{user.name}</TableCell>
                             <TableCell>{user.email}</TableCell>
                             <TableCell className="flex gap-2">
-                                <Button variant="outline">Edit</Button>
+                                <Button variant="outline" onClick={() => handleEdit(user)}>Edit</Button>
                                 <Dialog open={isDialogOpen && selectedUser?._id === user._id} onOpenChange={setIsDialogOpen}>
                                     <DialogTrigger asChild>
                                         <Button variant="destructive" onClick={() => { setSelectedUser(user); setIsDialogOpen(true); }}>
@@ -70,8 +74,19 @@ export const UsersList: React.FC<{ users: User[] }> = ({ users }) => {
                             </TableCell>
                         </TableRow>
                     ))}
+
                 </TableBody>
             </Table>
+            {selectedUser && (
+                <UserModal
+                    open={isEditModalOpen}
+                    onClose={() => {
+                        setIsEditModalOpen(false);
+                        setSelectedUser(null);
+                    }}
+                    user={selectedUser}
+                />
+            )}
         </Card>
     );
 };
