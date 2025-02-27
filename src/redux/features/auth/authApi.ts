@@ -32,7 +32,7 @@ const authApi = baseApi.injectEndpoints({
     }),
     updatePassword: builder.mutation({
       query: (verificationData) => ({
-        url: '/auth/update-password',
+        url: '/auth/complete-reset-password',
         method: 'POST',
         body: verificationData,
       }),
@@ -52,8 +52,6 @@ const authApi = baseApi.injectEndpoints({
         params: { token },
       }),
     }),
-
-    
   }),
 });
 
