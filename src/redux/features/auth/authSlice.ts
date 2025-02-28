@@ -14,12 +14,15 @@ export type TDesiredSkill = {
 };
 
 export type TUser = {
+  avatarUrl?: string | undefined;
+  credits?: number;
   _id: string;
   email: string;
   roles: string[];
   permissions: string[];
   skills?: TSkill[];
   desiredSkills?: TDesiredSkill[];
+  name?: string
 };
 
 export type TAuthState = {
