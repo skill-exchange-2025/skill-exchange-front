@@ -218,7 +218,7 @@ export function SignUp() {
         isOpen={showCheckEmail}
         onClose={() => {
           setShowCheckEmail(false);
-          navigate('/login');
+          setShowPostSignup(true);
         }}
         email={registeredEmail}
       />
@@ -326,7 +326,6 @@ export function SignUp() {
                       control={form.control}
                       name="password"
                       render={({ field }) => {
-                        // eslint-disable-next-line react-hooks/rules-of-hooks
                         const [showPassword, setShowPassword] = useState(false);
                         return (
                           <FormItem>
