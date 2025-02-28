@@ -16,19 +16,23 @@ import AdminRoutes from "./AdminRoutes";
 import UserRoutes from "./UserRoutes";
 import DashboardLayout from "@/components/layout/DashboardLayout"; // Added this import
 import LoginForm from "@/pages/Login"; // Added this import
+import { VerifyEmail } from "@/pages/auth/verify-email";
 
 const router = createBrowserRouter([
     {
         path: "/",
         element: <App />,
         children: [
-            {
-                path: "login",
-                element: <LoginForm />,
-            },
+            { path: "verify-email", element: <VerifyEmail /> },
+            
+           
             {
                 element: <Layout />,
                 children: [
+                    {
+                        path: "login",
+                        element: <LoginForm />,
+                    },
                     { index: true, element: <LandingPage /> },
                     { path: "about", element: <About /> },
                     { path: "contact", element: <Contact /> },
@@ -37,6 +41,7 @@ const router = createBrowserRouter([
                     { path: "terms", element: <Terms /> },
                     { path: "forgot-password", element: <ForgotPassword /> },
                     { path: "signup", element: <SignUp /> },
+                    
                 ],
             },
             {

@@ -1,6 +1,6 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Moon, Sun } from 'lucide-react';
+import { Moon, Sun, CreditCard } from 'lucide-react';
 import { useTheme } from '@/components/theme-provider';
 import {
   DropdownMenu,
@@ -8,9 +8,20 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useAppDispatch, useAppSelector } from '@/redux/hooks';
+import { logout, useCurrentUser } from '@/redux/features/auth/authSlice';
 
 export function Navbar() {
   const { theme, setTheme } = useTheme();
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+  const currentUser = useAppSelector(useCurrentUser);
+
+  const handleSignOut = () => {
+    dispatch(logout());
+    navigate('/login');
+  };
 
   return (
     <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -24,28 +35,80 @@ export function Navbar() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon">
-                  {theme === 'dark' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
+                  {theme === 'dark' ? (
+                    <Moon className="h-5 w-5" />
+                  ) : (
+                    <Sun className="h-5 w-5" />
+                  )}
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end"> 
-                <DropdownMenuItem onClick={() => setTheme('light')}>Light</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setTheme('dark')}>Dark</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setTheme('system')}>System</DropdownMenuItem>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => setTheme('light')}>
+                  Light
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setTheme('dark')}>
+                  Dark
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setTheme('system')}>
+                  System
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
 
-            {/*user ? (
-              <Button variant="ghost" onClick={signOut}>Sign Out</Button>
+            {currentUser ? (
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-2 px-3 py-1 rounded-full bg-secondary">
+                  <CreditCard className="h-4 w-4" />
+                  <span className="font-medium">
+                    {currentUser.credits || 0}
+                  </span>
+                </div>
+
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      className="relative h-8 w-8 rounded-full"
+                    >
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage
+                          src={currentUser.avatarUrl}
+                          alt={currentUser.email}
+                        />
+                        <AvatarFallback>
+                          {currentUser.email?.charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-56" align="end" forceMount>
+                    <div className="flex flex-col space-y-1 p-2">
+                      <p className="text-sm font-medium">
+                        {currentUser.roles?.join(', ')}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {currentUser.email}
+                      </p>
+                    </div>
+                    <DropdownMenuItem asChild>
+                      <Link to="/profile">Edit Profile</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleSignOut}>
+                      Sign Out
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
             ) : (
               <div className="flex items-center space-x-2">
-                <Link to="/signin">
+                <Link to="/login">
                   <Button variant="ghost">Sign In</Button>
                 </Link>
                 <Link to="/signup">
                   <Button>Sign Up</Button>
                 </Link>
               </div>
-            )*/}
+            )}
           </div>
         </div>
       </div>

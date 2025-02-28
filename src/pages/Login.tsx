@@ -2,26 +2,38 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Loader2 } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { useToast } from '@/components/use-toast';
-import { Toaster } from '@/components/ui/toaster';
-import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
+import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { setUser } from '@/redux/features/auth/authSlice';
 import { useLoginMutation } from '@/redux/features/auth/authApi';
 
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
-  password: z.string().min(8, 'Password must be at least 8 characters')
+  password: z.string().min(8, 'Password must be at least 8 characters'),
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
 
 const LoginForm = () => {
-  const { toast } = useToast();
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [loginMutation, { isLoading }] = useLoginMutation();
@@ -30,22 +42,22 @@ const LoginForm = () => {
     resolver: zodResolver(loginSchema),
     defaultValues: {
       email: '',
-      password: ''
-    }
+      password: '',
+    },
   });
 
   const onSubmit = async (data: LoginFormValues) => {
     try {
       const result = await loginMutation(data).unwrap();
-      dispatch(setUser({
-        user: result.user,
-        token: result.access_token
-      }));
+      dispatch(
+        setUser({
+          user: result.user,
+          token: result.access_token,
+        })
+      );
 
-      toast({
-        title: 'Success',
-        description: 'You have successfully logged in.',
-        variant: 'default',
+      toast.success('Successfully logged in', {
+        description: 'Welcome back to your account!',
       });
 
       if (result.user.roles.includes('admin')) {
@@ -53,87 +65,142 @@ const LoginForm = () => {
       } else {
         navigate('/user/dashboard');
       }
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Invalid credentials. Please try again.',
-        variant: 'destructive',
-      });
+    } catch (error: any) {
+      const errorMessage =
+        error?.data?.message ||
+        error?.message ||
+        'An error occurred during login';
+
+      // Handle different types of errors
+      if (errorMessage.toLowerCase().includes('verify')) {
+        toast.error('Email Not Verified', {
+          description:
+            'Please check your email and verify your account before logging in.',
+        });
+      } else if (errorMessage.toLowerCase().includes('credentials')) {
+        toast.error('Invalid Credentials', {
+          description: 'The email or password you entered is incorrect.',
+        });
+      } else if (errorMessage.toLowerCase().includes('not found')) {
+        toast.error('Account Not Found', {
+          description: 'No account exists with this email address.',
+        });
+      } else {
+        toast.error('Login Failed', {
+          description: errorMessage,
+        });
+      }
+
+      // Set field-specific errors if needed
+      if (errorMessage.toLowerCase().includes('email')) {
+        form.setError('email', {
+          type: 'manual',
+          message: 'Invalid email address',
+        });
+      } else if (errorMessage.toLowerCase().includes('password')) {
+        form.setError('password', {
+          type: 'manual',
+          message: 'Invalid password',
+        });
+      }
     }
   };
 
   return (
-    <>
-      <Card className="w-full max-w-md mx-auto">
-        <CardHeader>
-          <CardTitle className="text-2xl font-bold">Welcome back</CardTitle>
-          <CardDescription>Enter your credentials to access your account</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Enter your email"
-                        type="email"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Password</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Enter your password"
-                        type="password"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Logging in...
-                  </>
-                ) : (
-                  'Login'
-                )}
-              </Button>
-            </form>
-          </Form>
-        </CardContent>
-        <CardFooter className="flex justify-center">
-          <p className="text-sm text-gray-500">
-            Don't have an account?
-            <Button variant="link" className="pl-1" onClick={() => navigate('/signup')}>
-              Sign up
-            </Button>
-          </p>
-        </CardFooter>
-      </Card>
-      <Toaster />
-    </>
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="container max-w-4xl py-12">
+        <div className="space-y-6">
+          <div className="space-y-2 text-center">
+            <h1 className="text-3xl font-bold">Welcome back</h1>
+            <p className="text-muted-foreground">
+              Enter your credentials to access your account
+            </p>
+          </div>
+
+          <Card className="w-full max-w-md mx-auto">
+            <CardContent className="pt-6">
+              <Form {...form}>
+                <form
+                  onSubmit={form.handleSubmit(onSubmit)}
+                  className="space-y-6"
+                >
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Enter your email"
+                            type="email"
+                            className="w-full"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Password</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Enter your password"
+                            type="password"
+                            className="w-full"
+                            {...field}
+                          />
+                        </FormControl>
+                        <div className="flex justify-end">
+                          <Link
+                            to="/forgot-password"
+                            className="text-sm text-muted-foreground hover:text-primary"
+                          >
+                            Forgot password?
+                          </Link>
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <Button type="submit" className="w-full" disabled={isLoading}>
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Logging in...
+                      </>
+                    ) : (
+                      'Login'
+                    )}
+                  </Button>
+                </form>
+              </Form>
+            </CardContent>
+            <CardFooter className="flex flex-col space-y-4 pt-6">
+              <div className="relative w-full">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+              </div>
+              <p className="text-sm text-muted-foreground text-center">
+                Don't have an account?{' '}
+                <Link
+                  to="/signup"
+                  className="text-primary hover:underline font-medium"
+                >
+                  Sign up
+                </Link>
+              </p>
+            </CardFooter>
+          </Card>
+        </div>
+      </div>
+    </div>
   );
 };
 
