@@ -17,6 +17,7 @@ import UserRoutes from "./UserRoutes";
 import DashboardLayout from "@/components/layout/DashboardLayout"; // Added this import
 import LoginForm from "@/pages/Login"; // Added this import
 import { VerifyEmail } from "@/pages/auth/verify-email";
+import ChatApp from "@/pages/Chat";
 
 const router = createBrowserRouter([
     {
@@ -41,7 +42,8 @@ const router = createBrowserRouter([
                     { path: "terms", element: <Terms /> },
                     { path: "forgot-password", element: <ForgotPassword /> },
                     { path: "signup", element: <SignUp /> },
-                    
+                    { path: "chat", element: <ChatApp /> },
+
                 ],
             },
             {
