@@ -1,12 +1,14 @@
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { ArrowRight, CheckCircle2, Shield, Zap } from 'lucide-react';
+import { ArrowRight, CheckCircle2, Shield, ShoppingBag, Zap } from 'lucide-react';
 
 export function LandingPage() {
   return (
     <div className="flex flex-col">
       {/* Hero Section */}
+     
+
       <section className="container py-24 md:py-32">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -51,6 +53,17 @@ export function LandingPage() {
             <p className="mt-2 text-muted-foreground">
               Built-in authentication and authorization with industry-standard security practices.
             </p>
+          </motion.div>
+          <motion.div>
+          <div className="flex flex-col items-center text-center">
+        <div className="mb-4 rounded-lg bg-primary/10 p-2">
+          <ShoppingBag className="h-6 w-6 text-primary" />
+        </div>
+        <h3 className="text-xl font-semibold">Marketplace</h3>
+        <p className="mt-2 text-muted-foreground">
+          Buy and sell skills, resources, and services in our integrated marketplace. Connect with others and exchange value directly.
+        </p>
+      </div>
           </motion.div>
           <motion.div
             initial={{ opacity: 0, y: 20 }}

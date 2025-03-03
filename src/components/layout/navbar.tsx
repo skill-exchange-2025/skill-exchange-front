@@ -11,12 +11,15 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { logout, useCurrentUser } from '@/redux/features/auth/authSlice';
+import { useState } from 'react';
+import { CreditPurchaseDialog } from '../credits/CreditPurchaseDialog';
 
 export function Navbar() {
   const { theme, setTheme } = useTheme();
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const currentUser = useAppSelector(useCurrentUser);
+  const [creditDialogOpen, setCreditDialogOpen] = useState(false);
 
   const handleSignOut = () => {
     dispatch(logout());
@@ -57,7 +60,16 @@ export function Navbar() {
 
             {currentUser ? (
               <div className="flex items-center space-x-4">
-                <div className="flex items-center space-x-2 px-3 py-1 rounded-full bg-secondary">
+                <div className="flex items-center space-x-2">
+                  <Link to="/marketplace">
+                    <Button variant="ghost">Marketplace</Button>
+                  </Link>
+                </div>
+
+                <div
+                  className="flex items-center space-x-2 px-3 py-1 rounded-full bg-secondary cursor-pointer hover:bg-secondary/80 transition-colors"
+                  onClick={() => setCreditDialogOpen(true)}
+                >
                   <CreditCard className="h-4 w-4" />
                   <span className="font-medium">
                     {currentUser.credits || 0}
@@ -91,7 +103,7 @@ export function Navbar() {
                       </p>
                     </div>
                     <DropdownMenuItem asChild>
-                      <Link to="/profile">Edit Profile</Link>
+                      <Link to="/user/profile">Edit Profile</Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={handleSignOut}>
                       Sign Out
@@ -112,6 +124,12 @@ export function Navbar() {
           </div>
         </div>
       </div>
+
+      {/* Credit Purchase Dialog */}
+      <CreditPurchaseDialog
+        open={creditDialogOpen}
+        onOpenChange={setCreditDialogOpen}
+      />
     </nav>
   );
 }

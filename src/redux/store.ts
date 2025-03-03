@@ -1,22 +1,24 @@
-// store.ts
-import { configureStore } from "@reduxjs/toolkit";
+import { configureStore } from '@reduxjs/toolkit';
 import {
   FLUSH,
   PAUSE,
-  PERSIST, persistReducer,
+  PERSIST,
+  persistReducer,
   PURGE,
   REGISTER,
   REHYDRATE,
-} from "redux-persist";
-import persistStore from "redux-persist/es/persistStore";
-import storage from "redux-persist/lib/storage";
-import { baseApi } from "./api/baseApi";
-import authReducer from "./features/auth/authSlice";
-import profileReducer from "./features/profile/profileSlice";
-import usersReducer from "./features/users/usersSlice.ts"
+} from 'redux-persist';
+import persistStore from 'redux-persist/es/persistStore';
+import storage from 'redux-persist/lib/storage';
+import { baseApi } from './api/baseApi';
+import authReducer from './features/auth/authSlice';
+import profileReducer from './features/profile/profileSlice';
+import usersReducer from './features/users/usersSlice.ts';
+import marketplaceReducer from './features/marketplace/marketplaceSlice';
+import creditsReducer from './features/credits/creditsSlice';
 
 const persistConfig = {
-  key: "auth",
+  key: 'auth',
   storage,
 };
 
@@ -28,13 +30,15 @@ export const store = configureStore({
     profile: profileReducer,
     users: usersReducer,
     auth: persistedAuthReducer,
+    marketplace: marketplaceReducer,
+    credits: creditsReducer,
   },
   middleware: (getDefaultMiddlewares) =>
-      getDefaultMiddlewares({
-        serializableCheck: {
-          ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
-        },
-      }).concat(baseApi.middleware),
+    getDefaultMiddlewares({
+      serializableCheck: {
+        ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
+      },
+    }).concat(baseApi.middleware),
 });
 
 export type RootState = ReturnType<typeof store.getState>;
