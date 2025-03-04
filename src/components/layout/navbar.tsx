@@ -1,6 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Moon, Sun, CreditCard } from 'lucide-react';
+import { Moon, Sun } from 'lucide-react';
+import cryptoIcon from '@/assets/icons/crypto.png';
 import { useTheme } from '@/components/theme-provider';
 import {
   DropdownMenu,
@@ -70,7 +71,7 @@ export function Navbar() {
                   className="flex items-center space-x-2 px-3 py-1 rounded-full bg-secondary cursor-pointer hover:bg-secondary/80 transition-colors"
                   onClick={() => setCreditDialogOpen(true)}
                 >
-                  <CreditCard className="h-4 w-4" />
+                  <img src={cryptoIcon} alt="Credits" className="h-4 w-4" />
                   <span className="font-medium">
                     {currentUser.credits || 0}
                   </span>

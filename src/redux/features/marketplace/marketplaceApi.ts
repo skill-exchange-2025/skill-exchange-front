@@ -3,7 +3,7 @@ import { PaginatedResponse, PaginationParams } from '@/types/user';
 
 // Define marketplace types
 export interface MarketplaceItem {
-  _id: string;
+  _id?: string;
   title: string;
   description: string;
   price: number;
@@ -11,12 +11,18 @@ export interface MarketplaceItem {
   skillName: string;
   proficiencyLevel: string;
   tags: string[];
-  sellerId: string;
-  sellerName: string;
-  createdAt: string;
-  updatedAt: string;
+
+  seller?: {
+    _id: string;
+    name: string;
+    email: string;
+  };
+  createdAt?: string;
+  updatedAt?: string;
   status: 'active' | 'sold' | 'inactive';
   imagesUrl?: string[];
+  views?: number;
+  __v?: number;
 }
 
 export interface CreateMarketplaceItemRequest {
@@ -96,8 +102,11 @@ export const marketplaceApi = baseApi.injectEndpoints({
 
     purchaseMarketplaceItem: builder.mutation<void, string>({
       query: (id) => ({
-        url: `/marketplace/listings/${id}/purchase`,
+        url: `/marketplace/transactions`,
         method: 'POST',
+        body: {
+          listingId: id,
+        },
       }),
     }),
   }),

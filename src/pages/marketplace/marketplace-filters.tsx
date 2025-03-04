@@ -140,7 +140,7 @@ export function MarketplaceFilterBar({
         <DropdownMenuTrigger asChild>
           <Button variant="outline">
             <Filter className="mr-2 h-4 w-4" />
-            {localFilters.skillName || 'All Skills'}
+            {localFilters.category || 'All Categories'}
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent>
@@ -155,6 +155,17 @@ export function MarketplaceFilterBar({
               {category}
             </DropdownMenuItem>
           ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="outline">
+            <Filter className="mr-2 h-4 w-4" />
+            {localFilters.skillName || 'All Skills'}
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent>
           <DropdownMenuItem onClick={() => handleSkillNameChange(undefined)}>
             All Skills
           </DropdownMenuItem>
@@ -188,28 +199,6 @@ export function MarketplaceFilterBar({
               onClick={() => handleProficiencyLevelChange(level)}
             >
               {level}
-            </DropdownMenuItem>
-          ))}
-        </DropdownMenuContent>
-      </DropdownMenu>
-
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="outline">
-            <Filter className="mr-2 h-4 w-4" />
-            {localFilters.category || 'All Categories'}
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent>
-          <DropdownMenuItem onClick={() => handleCategoryChange(undefined)}>
-            All Categories
-          </DropdownMenuItem>
-          {categories.map((category) => (
-            <DropdownMenuItem
-              key={category}
-              onClick={() => handleCategoryChange(category)}
-            >
-              {category}
             </DropdownMenuItem>
           ))}
         </DropdownMenuContent>

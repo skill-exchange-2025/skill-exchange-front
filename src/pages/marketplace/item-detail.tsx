@@ -32,6 +32,7 @@ import {
 } from 'lucide-react';
 import { formatDistanceToNow, format } from 'date-fns';
 import { ConfirmationDialog } from '@/pages/marketplace/confirmation-dialog';
+import cryptoIcon from '@/assets/icons/crypto.png';
 
 export function MarketplaceItemDetail() {
   const { id } = useParams<{ id: string }>();
@@ -94,7 +95,7 @@ export function MarketplaceItemDetail() {
   };
 
   // Determine if current user is the seller
-  const isOwner = currentUser && item?.sellerId === currentUser._id;
+  const isOwner = currentUser && item?.seller?._id === currentUser._id;
 
   if (isLoading) {
     return (
@@ -140,7 +141,9 @@ export function MarketplaceItemDetail() {
               </div>
             )}
             <div
-              className={`md:w-${item.imagesUrl ? '1/2' : 'full'} flex flex-col`}
+              className={`md:w-${
+                item.imagesUrl ? '1/2' : 'full'
+              } flex flex-col`}
             >
               <CardHeader>
                 <div className="flex justify-between items-start">
@@ -150,8 +153,9 @@ export function MarketplaceItemDetail() {
                       Category: {item.category}
                     </div>
                   </div>
-                  <div className="text-2xl font-bold">
-                    ${item.price.toFixed(2)}
+                  <div className="text-2xl font-bold flex items-center gap-2">
+                    <img src={cryptoIcon} alt="Credits" className="h-6 w-6" />
+                    {Math.round(item.price)}
                   </div>
                 </div>
               </CardHeader>
@@ -162,10 +166,10 @@ export function MarketplaceItemDetail() {
                 </div>
                 <div className="mb-4">
                   <h3 className="font-semibold mb-2">Seller Information</h3>
-                  <p>{item.sellerName}</p>
+                  <p>{item.seller?.name}</p>
                 </div>
                 <div className="text-sm text-muted-foreground">
-                  Listed on {new Date(item.createdAt).toLocaleDateString()}
+                  Listed on {new Date(item.createdAt?.toString() || '').toLocaleDateString()}
                 </div>
               </CardContent>
               <CardFooter className="flex justify-between">

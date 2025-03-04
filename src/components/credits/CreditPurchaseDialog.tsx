@@ -13,7 +13,9 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
-import { CreditCard, Check } from 'lucide-react';
+import { Check } from 'lucide-react';
+import cryptoIcon from '@/assets/icons/crypto.png';
+import coinIcon from '@/assets/icons/coin.png';
 import { useToast } from '@/components/use-toast';
 import { StripeProvider } from './StripeProvider';
 import { StripePaymentForm } from './StripePaymentForm';
@@ -21,6 +23,12 @@ import {
   usePurchaseCreditsMutation,
   useGetUserCreditsQuery,
 } from '@/redux/features/credits/creditsApi';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 // Credit package options
 const CREDIT_PACKAGES = [
@@ -149,17 +157,47 @@ export function CreditPurchaseDialog({
                   onClick={() => handlePackageSelect(pkg.id)}
                 >
                   {pkg.popular && (
-                    <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-primary text-primary-foreground text-xs px-3 py-1 rounded-full">
-                      Most Popular
-                    </div>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-primary text-primary-foreground text-xs px-3 py-1 rounded-full">
+                            <div className="flex items-center justify-center gap-1">
+                              <img
+                                src={coinIcon}
+                                alt="coin"
+                                className="w-4 h-4"
+                              />
+                              <span>Most Popular</span>
+                            </div>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent
+                          side="top"
+                          align="center"
+                          className="max-w-[200px] z-50"
+                          sideOffset={5}
+                        >
+                          <p>
+                            Best value for money! Get 500 credits at the most
+                            competitive rate, perfect for regular users.
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   )}
                   <CardContent className="pt-6">
                     <div className="text-center mb-4">
-                      <div className="text-2xl font-bold">{pkg.amount}</div>
-                      <div className="text-muted-foreground">Credits</div>
+                      <div className="text-2xl font-bold flex items-center justify-center gap-2">
+                        <img
+                          src={cryptoIcon}
+                          alt="Credits"
+                          className="h-6 w-6"
+                        />
+                        {pkg.amount}
+                      </div>
                     </div>
                     <div className="text-center text-2xl font-bold">
-                      ${pkg.price}
+                      {pkg.price} DT
                     </div>
                   </CardContent>
                   <CardFooter className="flex justify-center pb-6">
@@ -173,7 +211,7 @@ export function CreditPurchaseDialog({
 
             <div className="flex items-center justify-between border-t pt-4">
               <div className="flex items-center space-x-2">
-                <CreditCard className="h-5 w-5 text-muted-foreground" />
+                <img src={cryptoIcon} alt="Credits" className="h-5 w-5" />
                 <span className="text-sm text-muted-foreground">
                   Current Balance: {currentUser?.credits || 0} credits
                 </span>

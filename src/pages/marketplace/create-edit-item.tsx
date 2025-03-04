@@ -27,6 +27,7 @@ import { ArrowLeft, Save, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useSelector } from 'react-redux';
 import { useToast } from '@/hooks/use-toast';
+import cryptoIcon from '@/assets/icons/crypto.png';
 
 export function CreateEditMarketplaceItem() {
   const { id } = useParams<{ id: string }>();
@@ -318,8 +319,11 @@ export function CreateEditMarketplaceItem() {
             </div>
 
             <div>
-              <label htmlFor="price" className="block text-sm font-medium mb-1">
-                Price ($)
+              <label
+                htmlFor="price"
+                className="block text-sm font-medium mb-1 flex items-center gap-2"
+              >
+                Price <img src={cryptoIcon} alt="Credits" className="h-4 w-4" />
               </label>
               <Input
                 id="price"
