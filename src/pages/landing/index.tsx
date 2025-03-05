@@ -41,7 +41,11 @@ export function LandingPage() {
               initial={{ width: 0 }}
               animate={{ width: '100%' }}
               transition={{ duration: 0.8, delay: 0.5 }}
-              className="h-1 bg-primary/50 mt-2 mx-auto rounded-full"
+              className="h-1 bg-[#00EC96] mt-2 mx-auto rounded-full shadow-[0_0_10px_#00EC96,0_0_20px_#00EC96] animate-pulse"
+              style={{
+                boxShadow:
+                  '0 0 10px #00EC96, 0 0 20px #00EC96, 0 0 30px #00EC96',
+              }}
             />
           </div>
           <h1 className="text-4xl font-bold tracking-tight sm:text-6xl">

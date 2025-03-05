@@ -21,6 +21,7 @@ import {
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useReferralMutation } from '@/redux/features/auth/authApi';
+import ethereumIcon from '@/assets/icons/crypto.png';
 type DiscoveryOption = 'Social Media' | "Friend's Recommendation" | 'Other';
 
 export function PostSignupDialog({
@@ -122,8 +123,13 @@ export function PostSignupDialog({
                 onChange={(e) => setFriendEmail(e.target.value)}
               />
               <p className="text-sm text-muted-foreground">
-                If your friend is already a user, they'll receive 5 credits as a
-                thank you!
+                If your friend is already a user, they'll receive 5{' '}
+                <img
+                  src={ethereumIcon}
+                  alt="Ethereum"
+                  className="inline h-4 w-4"
+                />{' '}
+                 as a thank you!
               </p>
             </div>
           )}

@@ -47,7 +47,12 @@ export function FeatureNavbar() {
     >
       <div className="mx-auto w-full max-w-[1200px] px-4 sm:px-6 lg:px-8">
         <div className="flex h-20 items-center justify-center">
-          <div className="flex space-x-10">
+          <div
+            className={cn(
+              'flex transition-all duration-300',
+              isScrolled ? 'space-x-6' : 'space-x-10'
+            )}
+          >
             {navItems.map((item) => {
               const isActive = location.pathname === item.path;
               const Icon = item.icon;
@@ -76,7 +81,9 @@ export function FeatureNavbar() {
                       'text-xs mt-1.5 font-medium transition-all duration-200',
                       isActive
                         ? 'text-primary'
-                        : 'text-muted-foreground/80 group-hover:text-primary/90'
+                        : 'text-muted-foreground/80 group-hover:text-primary/90',
+                      isScrolled &&
+                        'opacity-0 scale-90 absolute transform origin-center group-hover:opacity-100 group-hover:scale-100 group-hover:relative'
                     )}
                   >
                     {item.name}
@@ -84,11 +91,14 @@ export function FeatureNavbar() {
 
                   {isActive && (
                     <motion.div
-                      className="absolute -bottom-1 h-0.5 w-full bg-gradient-to-r from-primary/40 via-primary to-primary/40 rounded-full"
+                      className={cn(
+                        'absolute h-0.5 bg-gradient-to-r from-primary/40 via-primary to-primary/40 rounded-full',
+                        isScrolled ? '-bottom-1 w-full' : '-bottom-1 w-full'
+                      )}
                       layoutId="activeFeatureNav"
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
-                      transition={{ duration: 0.2 }}
+                      transition={{ duration: 0.4 }}
                     />
                   )}
                 </Link>

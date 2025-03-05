@@ -34,9 +34,15 @@ export function Navbar() {
     <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="mx-auto w-full max-w-[1200px] px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
-          <Link to="/" className="flex items-center space-x-2">
-            <img src={logoImage} alt="Skilly Logo" className="h-8 w-auto" />
-            <span className="font-bold text-xl">Skilly</span>
+          <Link to="/" className="flex items-center space-x-2 group">
+            <img
+              src={logoImage}
+              alt="Skilly Logo"
+              className="h-8 w-auto group-hover:animate-[spin-once_0.7s_ease-in-out]"
+            />
+            <span className="font-bold text-xl transition-all duration-300 group-hover:text-[#00EC96] group-hover:text-shadow-neon-green group-hover:animate-neon-glow">
+              Skilly
+            </span>
           </Link>
 
           <div className="flex items-center space-x-4">
