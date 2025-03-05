@@ -1,30 +1,69 @@
-"use client"
+'use client';
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Label } from "@/components/ui/label"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { useToast } from '@/hooks/use-toast';
+import { useReferralMutation } from '@/redux/features/auth/authApi';
+type DiscoveryOption = 'Social Media' | "Friend's Recommendation" | 'Other';
 
-type DiscoveryOption = "Social Media" | "Friend's Recommendation" | "Other"
+export function PostSignupDialog({
+  isOpen,
+  onClose,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+}) {
+  const [discoveryOption, setDiscoveryOption] =
+    useState<DiscoveryOption | null>(null);
+  const [friendEmail, setFriendEmail] = useState('');
+  const [socialMedia, setSocialMedia] = useState<string | null>(null);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const { toast } = useToast();
 
-export function PostSignupDialog({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
-  const [discoveryOption, setDiscoveryOption] = useState<DiscoveryOption | null>(null)
-  const [friendEmail, setFriendEmail] = useState("")
-  const [socialMedia, setSocialMedia] = useState<string | null>(null)
-  const [isSubmitted, setIsSubmitted] = useState(false)
+  const [submitReferral, { isLoading: isSubmitting }] = useReferralMutation();
 
-  const handleSubmit = () => {
-    // Here you would typically send this data to your backend
-    console.log({ discoveryOption, friendEmail, socialMedia })
-    setIsSubmitted(true)
-  }
+  const handleSubmit = async () => {
+    try {
+      // If the user selected "Friend's Recommendation", send the referral to the backend
+      if (discoveryOption === "Friend's Recommendation" && friendEmail) {
+        await submitReferral({ referrerEmail: friendEmail }).unwrap();
+      }
+
+      // Here you would typically send the other data to your backend for analytics
+      console.log({ discoveryOption, friendEmail, socialMedia });
+
+      setIsSubmitted(true);
+    } catch (error) {
+      console.error('Error submitting referral:', error);
+      toast({
+        title: 'Error',
+        description:
+          'There was a problem processing your submission. Please try again.',
+        variant: 'destructive',
+      });
+    }
+  };
 
   const isEmailValid = (email: string) => {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
-  }
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  };
 
   if (isSubmitted) {
     return (
@@ -39,7 +78,7 @@ export function PostSignupDialog({ isOpen, onClose }: { isOpen: boolean; onClose
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    )
+    );
   }
 
   return (
@@ -51,8 +90,10 @@ export function PostSignupDialog({ isOpen, onClose }: { isOpen: boolean; onClose
         <div className="space-y-4">
           <p>How did you discover our app?</p>
           <RadioGroup
-            value={discoveryOption || ""}
-            onValueChange={(value) => setDiscoveryOption(value as DiscoveryOption)}
+            value={discoveryOption || ''}
+            onValueChange={(value) =>
+              setDiscoveryOption(value as DiscoveryOption)
+            }
           >
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="Social Media" id="social-media" />
@@ -70,7 +111,9 @@ export function PostSignupDialog({ isOpen, onClose }: { isOpen: boolean; onClose
 
           {discoveryOption === "Friend's Recommendation" && (
             <div className="space-y-2">
-              <Label htmlFor="friend-email">Please enter your friend's email address:</Label>
+              <Label htmlFor="friend-email">
+                Please enter your friend's email address:
+              </Label>
               <Input
                 id="friend-email"
                 type="email"
@@ -78,13 +121,17 @@ export function PostSignupDialog({ isOpen, onClose }: { isOpen: boolean; onClose
                 value={friendEmail}
                 onChange={(e) => setFriendEmail(e.target.value)}
               />
+              <p className="text-sm text-muted-foreground">
+                If your friend is already a user, they'll receive 5 credits as a
+                thank you!
+              </p>
             </div>
           )}
 
-          {discoveryOption === "Social Media" && (
+          {discoveryOption === 'Social Media' && (
             <div className="space-y-2">
               <Label htmlFor="social-media-platform">Which platform?</Label>
-              <Select value={socialMedia || ""} onValueChange={setSocialMedia}>
+              <Select value={socialMedia || ''} onValueChange={setSocialMedia}>
                 <SelectTrigger id="social-media-platform">
                   <SelectValue placeholder="Select a platform" />
                 </SelectTrigger>
@@ -104,16 +151,17 @@ export function PostSignupDialog({ isOpen, onClose }: { isOpen: boolean; onClose
           <Button
             onClick={handleSubmit}
             disabled={
+              isSubmitting ||
               !discoveryOption ||
-              (discoveryOption === "Friend's Recommendation" && !isEmailValid(friendEmail)) ||
-              (discoveryOption === "Social Media" && !socialMedia)
+              (discoveryOption === "Friend's Recommendation" &&
+                !isEmailValid(friendEmail)) ||
+              (discoveryOption === 'Social Media' && !socialMedia)
             }
           >
-            Submit
+            {isSubmitting ? 'Submitting...' : 'Submit'}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
-

@@ -98,7 +98,9 @@ export function SignUp() {
   const [showPostSignup, setShowPostSignup] = useState(false);
   const [showCheckEmail, setShowCheckEmail] = useState(false);
   const [registeredEmail, setRegisteredEmail] = useState('');
+  const [authToken, setAuthToken] = useState('');
   const [register] = useRegisterMutation();
+  const [referralEmail, setReferralEmail] = useState<string | null>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -176,6 +178,7 @@ export function SignUp() {
       const response = await register(form.getValues()).unwrap();
       console.log(response);
       setRegisteredEmail(values.email);
+      setAuthToken(response.token || '');
       setShowCheckEmail(true);
     } catch (error: any) {
       console.error('Sign up error:', error);

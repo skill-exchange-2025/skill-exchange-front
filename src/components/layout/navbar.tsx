@@ -2,6 +2,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Moon, Sun } from 'lucide-react';
 import cryptoIcon from '@/assets/icons/crypto.png';
+import logoImage from '@/assets/icons/logo.png';
 import { useTheme } from '@/components/theme-provider';
 import {
   DropdownMenu,
@@ -34,7 +35,8 @@ export function Navbar() {
       <div className="mx-auto w-full max-w-[1200px] px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           <Link to="/" className="flex items-center space-x-2">
-            <span className="font-bold">Your App</span>
+            <img src={logoImage} alt="Skilly Logo" className="h-8 w-auto" />
+            <span className="font-bold text-xl">Skilly</span>
           </Link>
 
           <div className="flex items-center space-x-4">
@@ -63,7 +65,6 @@ export function Navbar() {
 
             {currentUser ? (
               <div className="flex items-center space-x-4">
-
                 <div
                   className="flex items-center space-x-2 px-3 py-1 rounded-full bg-secondary cursor-pointer hover:bg-secondary/80 transition-colors"
                   onClick={() => setCreditDialogOpen(true)}
