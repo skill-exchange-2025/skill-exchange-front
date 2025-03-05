@@ -73,6 +73,7 @@ export function MarketplaceItemDetail() {
   };
 
   const handleDelete = async () => {
+    setDeleteDialogOpen(false);
     try {
       await deleteItem(id || '').unwrap();
       toast.success('Item deleted successfully');
@@ -84,6 +85,7 @@ export function MarketplaceItemDetail() {
   };
 
   const handlePurchase = async () => {
+    setPurchaseDialogOpen(false);
     try {
       await purchaseItem(id || '').unwrap();
       toast.success('Item purchased successfully!');
@@ -169,7 +171,10 @@ export function MarketplaceItemDetail() {
                   <p>{item.seller?.name}</p>
                 </div>
                 <div className="text-sm text-muted-foreground">
-                  Listed on {new Date(item.createdAt?.toString() || '').toLocaleDateString()}
+                  Listed on{' '}
+                  {new Date(
+                    item.createdAt?.toString() || ''
+                  ).toLocaleDateString()}
                 </div>
               </CardContent>
               <CardFooter className="flex justify-between">
@@ -180,14 +185,17 @@ export function MarketplaceItemDetail() {
                     </Button>
                     <Button
                       variant="destructive"
-                      onClick={handleDelete}
+                      onClick={() => setDeleteDialogOpen(true)}
                       disabled={isDeleting}
                     >
                       <Trash className="mr-2 h-4 w-4" /> Delete
                     </Button>
                   </div>
                 ) : (
-                  <Button onClick={handlePurchase} disabled={isPurchasing}>
+                  <Button
+                    onClick={() => setPurchaseDialogOpen(true)}
+                    disabled={isPurchasing}
+                  >
                     <ShoppingCart className="mr-2 h-4 w-4" /> Purchase
                   </Button>
                 )}
@@ -196,6 +204,26 @@ export function MarketplaceItemDetail() {
           </div>
         </Card>
       </motion.div>
+
+      <ConfirmationDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        title="Delete Item"
+        description="Are you sure you want to delete this item? This action cannot be undone."
+        confirmText="Delete"
+        onConfirm={handleDelete}
+      />
+
+      <ConfirmationDialog
+        open={purchaseDialogOpen}
+        onOpenChange={setPurchaseDialogOpen}
+        title="Purchase Item"
+        description={`Are you sure you want to purchase "${
+          item.title
+        }" for ${Math.round(item.price)} credits?`}
+        confirmText="Purchase"
+        onConfirm={handlePurchase}
+      />
     </div>
   );
 }

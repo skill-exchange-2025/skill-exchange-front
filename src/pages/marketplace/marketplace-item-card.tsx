@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { MarketplaceItem } from '@/types/marketplace';
 import { formatDistanceToNow, isValid } from 'date-fns';
 import cryptoIcon from '@/assets/icons/crypto.png';
+import { Eye } from 'lucide-react';
 
 interface MarketplaceItemCardProps {
   item: MarketplaceItem;
@@ -78,6 +79,14 @@ export function MarketplaceItemCard({
           <div className="absolute top-2 right-2 z-10">
             <Badge className={`${getLevelBadgeColor(item.proficiencyLevel)}`}>
               {item.proficiencyLevel}
+            </Badge>
+          </div>
+
+          {/* Views Badge */}
+          <div className="absolute bottom-2 right-2 z-10">
+            <Badge variant="secondary" className="flex items-center gap-1">
+              <Eye className="h-3 w-3" />
+              {item.views || 0}
             </Badge>
           </div>
 

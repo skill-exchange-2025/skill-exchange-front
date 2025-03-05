@@ -96,7 +96,7 @@ export function CreditPurchaseDialog({
 
       // Update user credits in auth state
       if (currentUser && creditsData) {
-        dispatch(updateUserCredits(creditsData.credits));
+        dispatch(updateUserCredits(creditsData.balance));
       }
 
       // Show success toast
@@ -213,7 +213,7 @@ export function CreditPurchaseDialog({
               <div className="flex items-center space-x-2">
                 <img src={cryptoIcon} alt="Credits" className="h-5 w-5" />
                 <span className="text-sm text-muted-foreground">
-                  Current Balance: {currentUser?.credits || 0} credits
+                  Current Balance: {creditsData?.balance || 0} credits
                 </span>
               </div>
               <Button onClick={handlePurchase} disabled={!selectedPackage}>

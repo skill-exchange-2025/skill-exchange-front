@@ -1,23 +1,36 @@
 import { baseApi } from '@/redux/api/baseApi';
 import { PurchaseRecord } from './creditsSlice';
 
-// Define credit API types
+interface Transaction {
+  _id: string;
+  amount: number;
+  type: string;
+  description: string;
+  timestamp: string;
+  reference: string;
+}
+
+export interface UserCreditsResponse {
+  _id: string;
+  user: string;
+  balance: number;
+  transactions: Transaction[];
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+}
+
 export interface PurchaseCreditsRequest {
   amount: number;
   packageId: string;
   paymentMethodId?: string;
 }
 
-export interface UserCreditsResponse {
-  credits: number;
-  purchaseHistory: PurchaseRecord[];
-}
-
 export const creditsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getUserCredits: builder.query<UserCreditsResponse, void>({
       query: () => ({
-        url: '/credits',
+        url: '/payments/wallet',
         method: 'GET',
       }),
       providesTags: ['Credits'],

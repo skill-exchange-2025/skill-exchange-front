@@ -14,6 +14,7 @@ import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { logout, useCurrentUser } from '@/redux/features/auth/authSlice';
 import { useState } from 'react';
 import { CreditPurchaseDialog } from '../credits/CreditPurchaseDialog';
+import { useGetUserCreditsQuery } from '@/redux/features/credits/creditsApi';
 
 export function Navbar() {
   const { theme, setTheme } = useTheme();
@@ -21,6 +22,7 @@ export function Navbar() {
   const navigate = useNavigate();
   const currentUser = useAppSelector(useCurrentUser);
   const [creditDialogOpen, setCreditDialogOpen] = useState(false);
+  const { data: creditsData } = useGetUserCreditsQuery();
 
   const handleSignOut = () => {
     dispatch(logout());
@@ -61,11 +63,6 @@ export function Navbar() {
 
             {currentUser ? (
               <div className="flex items-center space-x-4">
-                <div className="flex items-center space-x-2">
-                  <Link to="/marketplace">
-                    <Button variant="ghost">Marketplace</Button>
-                  </Link>
-                </div>
 
                 <div
                   className="flex items-center space-x-2 px-3 py-1 rounded-full bg-secondary cursor-pointer hover:bg-secondary/80 transition-colors"
@@ -73,7 +70,7 @@ export function Navbar() {
                 >
                   <img src={cryptoIcon} alt="Credits" className="h-4 w-4" />
                   <span className="font-medium">
-                    {currentUser.credits || 0}
+                    {creditsData?.balance || 0}
                   </span>
                 </div>
 
@@ -104,7 +101,7 @@ export function Navbar() {
                       </p>
                     </div>
                     <DropdownMenuItem asChild>
-                      <Link to="/user/profile">Edit Profile</Link>
+                      <Link to="/user/profile">Manage Profile</Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={handleSignOut}>
                       Sign Out

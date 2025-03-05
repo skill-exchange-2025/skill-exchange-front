@@ -1,5 +1,5 @@
 import { baseApi } from '@/redux/api/baseApi';
-import { PaginatedResponse, PaginationParams } from '@/types/user';
+import { PaginatedResponse } from '@/types/user';
 
 // Define marketplace types
 export interface MarketplaceItem {
@@ -11,7 +11,6 @@ export interface MarketplaceItem {
   skillName: string;
   proficiencyLevel: string;
   tags: string[];
-
   seller?: {
     _id: string;
     name: string;
@@ -60,6 +59,16 @@ export const marketplaceApi = baseApi.injectEndpoints({
         method: 'GET',
         params,
       }),
+      providesTags: (result) =>
+        result
+          ? [
+              ...result.data.map(({ _id }) => ({
+                type: 'MarketplaceItem' as const,
+                id: _id,
+              })),
+              { type: 'MarketplaceItem', id: 'LIST' },
+            ]
+          : [{ type: 'MarketplaceItem', id: 'LIST' }],
     }),
 
     getMarketplaceItemById: builder.query<MarketplaceItem, string>({
@@ -67,6 +76,38 @@ export const marketplaceApi = baseApi.injectEndpoints({
         url: `/marketplace/listings/${id}`,
         method: 'GET',
       }),
+      providesTags: (result) =>
+        result ? [{ type: 'MarketplaceItem', id: result._id }] : [],
+      async onQueryStarted(id, { dispatch, queryFulfilled, getState }) {
+        try {
+          const { data: updatedItem } = await queryFulfilled;
+          // Update all existing marketplace queries
+          const rootState = getState();
+          const queries = marketplaceApi.util.selectInvalidatedBy(rootState, [
+            { type: 'MarketplaceItem', id: 'LIST' },
+          ]);
+
+          queries.forEach(({ endpointName, originalArgs }) => {
+            if (endpointName === 'getMarketplaceItems') {
+              dispatch(
+                marketplaceApi.util.updateQueryData(
+                  'getMarketplaceItems',
+                  originalArgs as MarketplaceQueryParams,
+                  (draft) => {
+                    if (!draft?.data) return;
+                    const index = draft.data.findIndex(
+                      (item) => item._id === id
+                    );
+                    if (index !== -1) {
+                      draft.data[index] = updatedItem;
+                    }
+                  }
+                )
+              );
+            }
+          });
+        } catch {}
+      },
     }),
 
     createMarketplaceItem: builder.mutation<
@@ -80,6 +121,7 @@ export const marketplaceApi = baseApi.injectEndpoints({
           body: data,
         };
       },
+      invalidatesTags: [{ type: 'MarketplaceItem', id: 'LIST' }],
     }),
 
     updateMarketplaceItem: builder.mutation<
@@ -91,6 +133,10 @@ export const marketplaceApi = baseApi.injectEndpoints({
         method: 'PUT',
         body: data,
       }),
+      invalidatesTags: (result, error, { id }) => [
+        { type: 'MarketplaceItem', id },
+        { type: 'MarketplaceItem', id: 'LIST' },
+      ],
     }),
 
     deleteMarketplaceItem: builder.mutation<void, string>({
@@ -98,6 +144,10 @@ export const marketplaceApi = baseApi.injectEndpoints({
         url: `/marketplace/listings/${id}`,
         method: 'DELETE',
       }),
+      invalidatesTags: (result, error, id) => [
+        { type: 'MarketplaceItem', id },
+        { type: 'MarketplaceItem', id: 'LIST' },
+      ],
     }),
 
     purchaseMarketplaceItem: builder.mutation<void, string>({
@@ -108,6 +158,23 @@ export const marketplaceApi = baseApi.injectEndpoints({
           listingId: id,
         },
       }),
+      invalidatesTags: (result, error, id) => [
+        { type: 'MarketplaceItem', id },
+        { type: 'MarketplaceItem', id: 'LIST' },
+        'Credits',
+      ],
+    }),
+
+    completePurchase: builder.mutation<void, string>({
+      query: (id) => ({
+        url: `/marketplace/transactions/${id}/complete`,
+        method: 'PUT',
+      }),
+      invalidatesTags: (result, error, id) => [
+        { type: 'MarketplaceItem', id },
+        { type: 'MarketplaceItem', id: 'LIST' },
+        'Credits',
+      ],
     }),
   }),
 });
@@ -119,4 +186,5 @@ export const {
   useUpdateMarketplaceItemMutation,
   useDeleteMarketplaceItemMutation,
   usePurchaseMarketplaceItemMutation,
+  useCompletePurchaseMutation,
 } = marketplaceApi;

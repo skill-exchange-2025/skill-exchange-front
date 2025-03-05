@@ -47,7 +47,13 @@ const creditsSlice = createSlice({
         creditsApi.endpoints.getUserCredits.matchFulfilled,
         (state, action) => {
           state.loading = false;
-          state.purchaseHistory = action.payload.purchaseHistory;
+          state.purchaseHistory = action.payload.transactions.map((tx) => ({
+            id: tx.reference,
+            amount: tx.amount,
+            cost: tx.amount,
+            date: tx.timestamp,
+            status: 'completed',
+          }));
         }
       )
       .addMatcher(
