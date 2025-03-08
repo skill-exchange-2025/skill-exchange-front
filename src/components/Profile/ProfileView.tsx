@@ -154,19 +154,25 @@ export const ProfileView: React.FC = () => {
                 <CardContent className="p-0">
                     <div className="flex flex-col md:flex-row gap-6 relative p-6">
                         {/* Avatar Section */}
-                        <div className="flex flex-col items-center md:items-start gap-2">
-                            <Avatar className="h-24 w-24 border-4 border-background -mt-12 md:-mt-14 shadow-md">
-                                <AvatarImage src={profile.avatarUrl} alt={currentUser?.name || "User"} />
+                        // Update just the Avatar section within the existing code
+                        <Avatar className="h-24 w-24 border-4 border-background -mt-12 md:-mt-14 shadow-md">
+                            {profile.avatarUrl ? (
+                                <AvatarImage
+                                    src={`http://localhost:5000${profile.avatarUrl}`}
+                                    alt={currentUser?.name || "User"}
+                                    className="object-cover"
+                                    onError={(e) => {
+                                        // Handle image load error by showing fallback
+                                        const target = e.target as HTMLImageElement;
+                                        target.style.display = 'none';
+                                    }}
+                                />
+                            ) : (
                                 <AvatarFallback className="text-lg bg-primary/10 text-primary">
                                     {getInitials(currentUser?.name)}
                                 </AvatarFallback>
-                            </Avatar>
-                            <div className="text-center md:text-left">
-                                <h2 className="text-xl font-bold">{!(!currentUser?.email)}</h2>
-                                <p className="text-muted-foreground text-sm">{profile.profession || "No profession set"}</p>
-                            </div>
-                        </div>
-
+                            )}
+                        </Avatar>
                         {/* Profile Completion Progress */}
                         <div className="flex-1">
                             <div className="p-4 bg-background border rounded-lg shadow-sm">

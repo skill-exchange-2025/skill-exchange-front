@@ -5,6 +5,9 @@ import { RootState } from '@/redux/store';
 import { Profile } from '@/types/profile';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useRef } from 'react';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { useUploadAvatarMutation } from '@/redux/features/profile/profileApi';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -25,6 +28,9 @@ export const ProfileForm: React.FC = () => {
     const { data: fetchedProfile } = useFetchProfileQuery(undefined, { skip: !!profile });
     const [createProfile, { isLoading: creating }] = useCreateProfileMutation();
     const [updateProfile, { isLoading: updating }] = useUpdateProfileMutation();
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [uploadAvatar, { isLoading: isUploading }] = useUploadAvatarMutation();
+    const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
 
     const {
         register,
@@ -36,6 +42,7 @@ export const ProfileForm: React.FC = () => {
     } = useForm<Profile>({
         defaultValues: {
             ...profile,
+            avatarUrl: profile?.avatarUrl || '',
             interests: profile?.interests || [],
             socialLinks: profile?.socialLinks || [],
         },
@@ -68,27 +75,68 @@ export const ProfileForm: React.FC = () => {
         const updatedLinks = socialLinks.filter((_, i) => i !== index);
         setValue('socialLinks', updatedLinks);
     };
+    const handleAvatarClick = () => {
+        fileInputRef.current?.click();
+    };
 
+    const handleAvatarChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        // Create preview URL
+        const previewUrl = URL.createObjectURL(file);
+        setAvatarPreview(previewUrl);
+
+        try {
+            const result = await uploadAvatar(file).unwrap();
+            if (result?.avatarUrl) {
+                setValue('avatarUrl', result.avatarUrl);
+                if (profile) {
+                    dispatch(setProfile({
+                        ...profile,
+                        avatarUrl: result.avatarUrl
+                    }));
+                }
+            }
+        } catch (error) {
+            console.error('Error uploading avatar:', error);
+            // Reset preview on error
+            setAvatarPreview(null);
+        } finally {
+            if (fileInputRef.current) {
+                fileInputRef.current.value = '';
+            }
+        }
+    };
     useEffect(() => {
         if (fetchedProfile) {
             dispatch(setProfile(fetchedProfile));
             reset(fetchedProfile);
         }
-    }, [fetchedProfile, dispatch, reset]);
+        if (avatarPreview) {
+            URL.revokeObjectURL(avatarPreview);
+        }
+    }, [fetchedProfile,avatarPreview, dispatch, reset]);
 
     const onSubmit = async (data: Profile) => {
         dispatch(resetStatus());
         try {
+            const profileData = {
+                ...data,
+                avatarUrl: watch('avatarUrl'), // Include the avatarUrl from form state
+            };
+
             if (!profile?.profileExists) {
-                await createProfile(data).unwrap();
+                const result = await createProfile(profileData).unwrap();
+                dispatch(setProfile(result)); // Update Redux state with new profile
             } else {
-                await updateProfile(data).unwrap();
+                const result = await updateProfile(profileData).unwrap();
+                dispatch(setProfile(result)); // Update Redux state with updated profile
             }
         } catch (err) {
             console.error('Profile submission error:', err);
         }
     };
-
     return (
         <Card className="w-full max-w-2xl mx-auto">
             <CardHeader>
@@ -105,7 +153,62 @@ export const ProfileForm: React.FC = () => {
                         />
                         {errors.bio && <span className="text-red-500 text-sm">{errors.bio.message}</span>}
                     </div>
-
+                    // Replace the existing avatar section with this updated version:
+                    <div className="flex flex-col items-center space-y-2">
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            className="hidden"
+                            accept="image/*"
+                            onChange={handleAvatarChange}
+                        />
+                        <Avatar
+                            className="h-24 w-24 cursor-pointer hover:opacity-80 transition-opacity border-2 border-gray-200"
+                            onClick={handleAvatarClick}
+                        >
+                            <AvatarImage
+                                src={avatarPreview ||
+                                    (watch('avatarUrl') ?
+                                        `http://localhost:5000${watch('avatarUrl')}` :
+                                        profile?.avatarUrl ?
+                                            `http://localhost:5000${profile.avatarUrl}` :
+                                            undefined)
+                                }
+                                alt="Profile avatar"
+                                onError={(e) => {
+                                    const target = e.target as HTMLImageElement;
+                                    target.style.display = 'none';
+                                }}
+                            />
+                            <AvatarFallback className="bg-gray-100">
+                                {profile?.user?.name?.[0]?.toUpperCase() || '?'}
+                            </AvatarFallback>
+                        </Avatar>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={handleAvatarClick}
+                            disabled={isUploading}
+                            className="relative"
+                        >
+                            {isUploading ? (
+                                <>
+                                    <span className="opacity-0">Change Avatar</span>
+                                    <span className="absolute inset-0 flex items-center justify-center">
+                    Uploading...
+                </span>
+                                </>
+                            ) : (
+                                'Change Avatar'
+                            )}
+                        </Button>
+                        {avatarPreview && (
+                            <p className="text-sm text-muted-foreground text-center">
+                                Preview shown. Save profile to confirm changes.
+                            </p>
+                        )}
+                    </div>
                     <div className="space-y-2">
                         <label htmlFor="description">Description</label>
                         <Textarea
