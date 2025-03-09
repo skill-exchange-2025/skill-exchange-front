@@ -164,18 +164,6 @@ export const marketplaceApi = baseApi.injectEndpoints({
         'Credits',
       ],
     }),
-
-    completePurchase: builder.mutation<void, string>({
-      query: (id) => ({
-        url: `/marketplace/transactions/${id}/complete`,
-        method: 'PUT',
-      }),
-      invalidatesTags: (result, error, id) => [
-        { type: 'MarketplaceItem', id },
-        { type: 'MarketplaceItem', id: 'LIST' },
-        'Credits',
-      ],
-    }),
   }),
 });
 
@@ -186,5 +174,4 @@ export const {
   useUpdateMarketplaceItemMutation,
   useDeleteMarketplaceItemMutation,
   usePurchaseMarketplaceItemMutation,
-  useCompletePurchaseMutation,
 } = marketplaceApi;

@@ -71,12 +71,46 @@ export function LandingPage() {
       </section>
 
       {/* How It Works Section */}
-      <section className="container py-24 sm:py-32 bg-muted/50">
+      <section className="container py-24 sm:py-32 bg-muted/50 relative overflow-hidden">
+        {/* Background Shape */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <svg
+            className="absolute -top-24 -right-24 w-96 h-96 text-[#00EC96]/20 opacity-80 animate-pulse"
+            viewBox="0 0 200 200"
+            xmlns="http://www.w3.org/2000/svg"
+            style={{
+              filter:
+                'drop-shadow(0 0 10px #00EC96) drop-shadow(0 0 20px #00EC96)',
+            }}
+          >
+            <path
+              fill="currentColor"
+              d="M42.8,-73.1C56.9,-66.2,70.7,-57.7,79.3,-45.1C87.9,-32.6,91.2,-16.3,89.8,-0.8C88.4,14.7,82.3,29.3,73.6,42.2C64.9,55.1,53.5,66.2,40.3,74.1C27,82,13.5,86.7,-0.4,87.4C-14.3,88.1,-28.6,84.9,-41.9,78.3C-55.2,71.7,-67.5,61.7,-76.3,48.9C-85.1,36,-90.4,18,-90.2,0.1C-90,-17.8,-84.3,-35.6,-74.8,-50.2C-65.3,-64.7,-51.9,-76,-37.6,-82.5C-23.3,-89,-11.7,-90.7,1.2,-92.8C14,-94.9,28.7,-80,42.8,-73.1Z"
+              transform="translate(100 100)"
+            />
+          </svg>
+          <svg
+            className="absolute -bottom-24 -left-24 w-96 h-96 text-[#00EC96]/20 opacity-80 animate-pulse"
+            viewBox="0 0 200 200"
+            xmlns="http://www.w3.org/2000/svg"
+            style={{
+              filter:
+                'drop-shadow(0 0 10px #00EC96) drop-shadow(0 0 20px #00EC96)',
+            }}
+          >
+            <path
+              fill="currentColor"
+              d="M39.9,-68.1C52.9,-62.1,65.8,-54.1,74.2,-42.2C82.6,-30.3,86.5,-15.1,85.8,-0.4C85.1,14.4,79.9,28.8,71.5,41.2C63.2,53.6,51.7,64.1,38.7,70.7C25.7,77.3,11.3,80,-2.4,83.7C-16.2,87.4,-32.4,92.1,-45.9,87.8C-59.4,83.5,-70.2,70.2,-77.9,55.5C-85.6,40.8,-90.2,24.7,-91.3,8.3C-92.4,-8.1,-90,-24.8,-82.2,-38.2C-74.4,-51.6,-61.2,-61.7,-47,-67.8C-32.8,-73.9,-17.6,-76,-1.9,-72.9C13.8,-69.8,27.6,-74.1,39.9,-68.1Z"
+              transform="translate(100 100)"
+            />
+          </svg>
+        </div>
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="text-center mb-16"
+          className="text-center mb-16 relative z-10"
         >
           <h2 className="text-3xl font-bold tracking-tight mb-4">
             How Skilly Works
@@ -192,12 +226,46 @@ export function LandingPage() {
       </section>
 
       {/* Features Section */}
-      <section className="container py-24 sm:py-32">
+      <section className="container py-24 sm:py-32 relative overflow-hidden">
+        {/* Background Shape */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <svg
+            className="absolute top-0 right-0 w-96 h-96 text-[#00EC96]/20 opacity-80 animate-pulse"
+            viewBox="0 0 200 200"
+            xmlns="http://www.w3.org/2000/svg"
+            style={{
+              filter:
+                'drop-shadow(0 0 10px #00EC96) drop-shadow(0 0 20px #00EC96)',
+            }}
+          >
+            <path
+              fill="currentColor"
+              d="M47.7,-80.4C62.9,-72.2,77,-61.5,83.9,-47.1C90.8,-32.7,90.5,-14.4,88.1,3C85.7,20.4,81.2,37,72.6,51.1C64,65.2,51.3,76.8,36.8,83.1C22.3,89.4,6,90.3,-10.9,89.1C-27.8,87.9,-45.3,84.6,-58.5,75.3C-71.7,66,-80.7,50.7,-85.2,34.8C-89.7,18.9,-89.8,2.3,-86.7,-13.3C-83.6,-28.9,-77.3,-43.5,-67.1,-54.6C-56.9,-65.7,-42.8,-73.3,-28.4,-81.5C-14,-89.7,0.7,-98.5,15.8,-96.9C30.9,-95.3,46.5,-83.3,47.7,-80.4Z"
+              transform="translate(100 100)"
+            />
+          </svg>
+          <svg
+            className="absolute bottom-0 left-0 w-96 h-96 text-[#00EC96]/20 opacity-80 animate-pulse"
+            viewBox="0 0 200 200"
+            xmlns="http://www.w3.org/2000/svg"
+            style={{
+              filter:
+                'drop-shadow(0 0 10px #00EC96) drop-shadow(0 0 20px #00EC96)',
+            }}
+          >
+            <path
+              fill="currentColor"
+              d="M42.7,-76.2C53.9,-69.3,61.1,-54.9,68.1,-41.3C75.1,-27.7,82,-14.8,83.1,-1.1C84.3,12.7,79.6,25.4,72.5,36.9C65.3,48.3,55.6,58.5,43.9,65.3C32.2,72.1,18.5,75.5,3.7,70.5C-11.1,65.5,-27.4,52.1,-39.2,39.8C-51,27.5,-58.3,16.2,-63.3,2.9C-68.3,-10.5,-71,-23.9,-67.7,-36.3C-64.4,-48.7,-55.1,-60.1,-43.1,-66.8C-31.1,-73.6,-16.5,-75.7,-0.5,-74.9C15.5,-74.1,31.5,-83.1,42.7,-76.2Z"
+              transform="translate(100 100)"
+            />
+          </svg>
+        </div>
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="text-center mb-16"
+          className="text-center mb-16 relative z-10"
         >
           <h2 className="text-3xl font-bold tracking-tight mb-4">
             Skilly Features
@@ -326,7 +394,7 @@ export function LandingPage() {
               }}
             >
               <motion.div
-                animate={{ scale: [1, 1.1, 1] }}
+                animate={{ scale: [1, 1.2, 1] }}
                 transition={{
                   repeat: Infinity,
                   duration: 2,

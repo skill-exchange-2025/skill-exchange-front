@@ -16,7 +16,7 @@ import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Check } from 'lucide-react';
 import cryptoIcon from '@/assets/icons/crypto.png';
 import coinIcon from '@/assets/icons/coin.png';
-import { useToast } from '@/components/use-toast';
+import { toast } from 'sonner';
 import { StripeProvider } from './StripeProvider';
 import { StripePaymentForm } from './StripePaymentForm';
 import {
@@ -40,15 +40,16 @@ const CREDIT_PACKAGES = [
 interface CreditPurchaseDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  customMessage?: string;
 }
 
 export function CreditPurchaseDialog({
   open,
   onOpenChange,
+  customMessage,
 }: CreditPurchaseDialogProps) {
   const currentUser = useAppSelector(useCurrentUser);
   const dispatch = useAppDispatch();
-  const { toast } = useToast();
   const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [showStripeForm, setShowStripeForm] = useState(false);
@@ -100,8 +101,7 @@ export function CreditPurchaseDialog({
       }
 
       // Show success toast
-      toast({
-        title: 'Purchase Successful',
+      toast.success('Purchase Successful', {
         description: `You have successfully purchased ${selectedPkg.amount} credits.`,
       });
 
@@ -110,20 +110,16 @@ export function CreditPurchaseDialog({
       onOpenChange(false);
     } catch (error) {
       // Show error toast
-      toast({
-        title: 'Purchase Failed',
+      toast.error('Purchase Failed', {
         description:
           'There was an error processing your payment. Please try again.',
-        variant: 'destructive',
       });
     }
   };
 
   const handlePaymentError = (errorMessage: string) => {
-    toast({
-      title: 'Payment Error',
+    toast.error('Payment Error', {
       description: errorMessage,
-      variant: 'destructive',
     });
   };
 
@@ -139,7 +135,8 @@ export function CreditPurchaseDialog({
         <DialogHeader>
           <DialogTitle>Purchase Credits</DialogTitle>
           <DialogDescription>
-            Credits can be used to access premium features and services.
+            {customMessage ||
+              'Credits can be used to access premium features and services.'}
           </DialogDescription>
         </DialogHeader>
 

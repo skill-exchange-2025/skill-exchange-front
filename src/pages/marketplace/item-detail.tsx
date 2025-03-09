@@ -32,7 +32,91 @@ import {
 } from 'lucide-react';
 import { formatDistanceToNow, format } from 'date-fns';
 import { ConfirmationDialog } from '@/pages/marketplace/confirmation-dialog';
+import { CreditPurchaseDialog } from '@/components/credits/CreditPurchaseDialog';
+import { useGetUserCreditsQuery } from '@/redux/features/credits/creditsApi';
 import cryptoIcon from '@/assets/icons/crypto.png';
+import { Skeleton } from '@/components/ui/skeleton';
+
+// Item detail skeleton component
+const ItemDetailSkeleton = () => {
+  return (
+    <div className="container py-8">
+      <div className="mb-6">
+        <Skeleton className="h-10 w-32" />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        {/* Image section */}
+        <div className="md:col-span-2">
+          <Card className="overflow-hidden">
+            <Skeleton className="h-[400px] w-full" />
+          </Card>
+        </div>
+
+        {/* Details section */}
+        <div className="space-y-6">
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-8 w-3/4 mb-2" />
+              <div className="flex flex-wrap gap-2">
+                <Skeleton className="h-6 w-20 rounded-full" />
+                <Skeleton className="h-6 w-24 rounded-full" />
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex justify-between items-center">
+                <Skeleton className="h-8 w-24" />
+                <Skeleton className="h-8 w-32" />
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Skeleton className="h-5 w-5 rounded-full" />
+                  <Skeleton className="h-5 w-40" />
+                </div>
+                <div className="flex items-center gap-2">
+                  <Skeleton className="h-5 w-5 rounded-full" />
+                  <Skeleton className="h-5 w-48" />
+                </div>
+              </div>
+
+              <Skeleton className="h-10 w-full rounded-md" />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-6 w-32" />
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center space-x-3">
+                <Skeleton className="h-12 w-12 rounded-full" />
+                <div>
+                  <Skeleton className="h-5 w-32 mb-1" />
+                  <Skeleton className="h-4 w-24" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      {/* Description section */}
+      <Card className="mt-8">
+        <CardHeader>
+          <Skeleton className="h-6 w-32" />
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-3/4" />
+          <Skeleton className="h-4 w-5/6" />
+          <Skeleton className="h-4 w-full" />
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
 
 export function MarketplaceItemDetail() {
   const { id } = useParams<{ id: string }>();
@@ -43,16 +127,21 @@ export function MarketplaceItemDetail() {
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [purchaseDialogOpen, setPurchaseDialogOpen] = useState(false);
+  const [creditPurchaseDialogOpen, setCreditPurchaseDialogOpen] =
+    useState(false);
 
   const {
     data: item,
     isLoading,
     error,
-  } = useGetMarketplaceItemByIdQuery(id || '');
+  } = useGetMarketplaceItemByIdQuery(id || '', {
+    skip: !id,
+  });
   const [purchaseItem, { isLoading: isPurchasing }] =
     usePurchaseMarketplaceItemMutation();
   const [deleteItem, { isLoading: isDeleting }] =
     useDeleteMarketplaceItemMutation();
+  const { data: creditsData } = useGetUserCreditsQuery();
 
   useEffect(() => {
     if (item) {
@@ -84,6 +173,17 @@ export function MarketplaceItemDetail() {
     }
   };
 
+  const handlePurchaseClick = () => {
+    // Check if user has enough credits
+    if (creditsData && item && creditsData.balance < item.price) {
+      // Show credit purchase dialog if not enough credits
+      setCreditPurchaseDialogOpen(true);
+    } else {
+      // Show purchase confirmation dialog if enough credits
+      setPurchaseDialogOpen(true);
+    }
+  };
+
   const handlePurchase = async () => {
     setPurchaseDialogOpen(false);
     try {
@@ -100,22 +200,44 @@ export function MarketplaceItemDetail() {
   const isOwner = currentUser && item?.seller?._id === currentUser._id;
 
   if (isLoading) {
+    return <ItemDetailSkeleton />;
+  }
+
+  if (error) {
     return (
-      <div className="container py-8 flex justify-center">
-        <p>Loading item details...</p>
+      <div className="container py-8">
+        <Card>
+          <CardContent className="p-6">
+            <div className="text-center">
+              <h2 className="text-xl font-semibold text-red-500 mb-2">
+                Error Loading Item
+              </h2>
+              <p className="text-muted-foreground mb-4">
+                There was a problem loading this marketplace item.
+              </p>
+              <Button onClick={handleBack}>Go Back</Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
-  if (error || !item) {
+  if (!item) {
     return (
       <div className="container py-8">
-        <Button variant="outline" onClick={handleBack}>
-          <ArrowLeft className="mr-2 h-4 w-4" /> Back to Marketplace
-        </Button>
-        <div className="mt-8 text-center">
-          <p className="text-red-500">Error loading item details</p>
-        </div>
+        <Card>
+          <CardContent className="p-6">
+            <div className="text-center">
+              <h2 className="text-xl font-semibold mb-2">Item Not Found</h2>
+              <p className="text-muted-foreground mb-4">
+                The marketplace item you're looking for doesn't exist or has
+                been removed.
+              </p>
+              <Button onClick={handleBack}>Go Back to Marketplace</Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -192,10 +314,7 @@ export function MarketplaceItemDetail() {
                     </Button>
                   </div>
                 ) : (
-                  <Button
-                    onClick={() => setPurchaseDialogOpen(true)}
-                    disabled={isPurchasing}
-                  >
+                  <Button onClick={handlePurchaseClick} disabled={isPurchasing}>
                     <ShoppingCart className="mr-2 h-4 w-4" /> Purchase
                   </Button>
                 )}
@@ -223,6 +342,31 @@ export function MarketplaceItemDetail() {
         }" for ${Math.round(item.price)} credits?`}
         confirmText="Purchase"
         onConfirm={handlePurchase}
+      />
+
+      <CreditPurchaseDialog
+        open={creditPurchaseDialogOpen}
+        onOpenChange={(open) => {
+          setCreditPurchaseDialogOpen(open);
+          // If dialog is closed and user now has enough credits, show purchase dialog
+          if (
+            !open &&
+            creditsData &&
+            item &&
+            creditsData.balance >= item.price
+          ) {
+            setPurchaseDialogOpen(true);
+          }
+        }}
+        customMessage={
+          item
+            ? `You don't have enough credits to purchase "${
+                item.title
+              }" (${Math.round(
+                item.price
+              )} credits required). Please purchase more credits to continue.`
+            : undefined
+        }
       />
     </div>
   );

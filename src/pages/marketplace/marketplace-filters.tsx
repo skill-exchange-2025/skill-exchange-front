@@ -52,20 +52,23 @@ export function MarketplaceFilterBar({
   };
 
   const handleCategoryChange = (category: string | undefined) => {
-    setLocalFilters((prev) => ({ ...prev, category }));
-    onFilterChange({ ...filters, category });
+    const updatedFilters = { ...filters, category };
+    setLocalFilters(updatedFilters);
+    onFilterChange(updatedFilters);
   };
 
   const handleSkillNameChange = (skillName: string | undefined) => {
-    setLocalFilters((prev) => ({ ...prev, skillName }));
-    onFilterChange({ ...filters, skillName });
+    const updatedFilters = { ...filters, skillName };
+    setLocalFilters(updatedFilters);
+    onFilterChange(updatedFilters);
   };
 
   const handleProficiencyLevelChange = (
     proficiencyLevel: string | undefined
   ) => {
-    setLocalFilters((prev) => ({ ...prev, proficiencyLevel }));
-    onFilterChange({ ...filters, proficiencyLevel });
+    const updatedFilters = { ...filters, proficiencyLevel };
+    setLocalFilters(updatedFilters);
+    onFilterChange(updatedFilters);
   };
 
   const handlePriceChange = (values: number[]) => {
@@ -77,13 +80,15 @@ export function MarketplaceFilterBar({
   };
 
   const handleSortChange = (sortBy: string) => {
-    setLocalFilters((prev) => ({ ...prev, sortBy }));
-    onFilterChange({ ...filters, sortBy });
+    const updatedFilters = { ...filters, sortBy };
+    setLocalFilters(updatedFilters);
+    onFilterChange(updatedFilters);
   };
 
   const handleSortOrderChange = (sortOrder: 'asc' | 'desc') => {
-    setLocalFilters((prev) => ({ ...prev, sortOrder }));
-    onFilterChange({ ...filters, sortOrder });
+    const updatedFilters = { ...filters, sortOrder };
+    setLocalFilters(updatedFilters);
+    onFilterChange(updatedFilters);
   };
 
   const applyPriceFilter = () => {

@@ -11,6 +11,71 @@ import { setProfile } from '@/redux/features/profile/profileSlice.ts';
 import { MapPin, Briefcase, Link, User, FileText, Heart } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Skeleton } from '@/components/ui/skeleton';
+
+// Profile view skeleton component
+const ProfileViewSkeleton = () => {
+  return (
+    <Card className="w-full">
+      <CardContent className="p-6">
+        <div className="space-y-6">
+          {/* Basic info section */}
+          <div className="space-y-4">
+            <Skeleton className="h-7 w-40" />
+            <div className="space-y-3">
+              <div className="flex items-center space-x-3">
+                <Skeleton className="h-5 w-5 rounded-full" />
+                <Skeleton className="h-5 w-48" />
+              </div>
+              <div className="flex items-center space-x-3">
+                <Skeleton className="h-5 w-5 rounded-full" />
+                <Skeleton className="h-5 w-64" />
+              </div>
+              <div className="flex items-center space-x-3">
+                <Skeleton className="h-5 w-5 rounded-full" />
+                <Skeleton className="h-5 w-40" />
+              </div>
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* Bio section */}
+          <div className="space-y-3">
+            <Skeleton className="h-7 w-24" />
+            <Skeleton className="h-20 w-full" />
+          </div>
+
+          <Separator />
+
+          {/* Skills section */}
+          <div className="space-y-3">
+            <Skeleton className="h-7 w-32" />
+            <div className="flex flex-wrap gap-2">
+              <Skeleton className="h-8 w-20 rounded-full" />
+              <Skeleton className="h-8 w-24 rounded-full" />
+              <Skeleton className="h-8 w-16 rounded-full" />
+              <Skeleton className="h-8 w-28 rounded-full" />
+              <Skeleton className="h-8 w-20 rounded-full" />
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* Interests section */}
+          <div className="space-y-3">
+            <Skeleton className="h-7 w-32" />
+            <div className="flex flex-wrap gap-2">
+              <Skeleton className="h-8 w-24 rounded-full" />
+              <Skeleton className="h-8 w-20 rounded-full" />
+              <Skeleton className="h-8 w-28 rounded-full" />
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
 
 export const ProfileView: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -30,18 +95,7 @@ export const ProfileView: React.FC = () => {
   }, [fetchedProfile, dispatch]);
 
   if (status === 'loading') {
-    return (
-      <Card className="w-full">
-        <CardContent className="p-6">
-          <div className="animate-pulse space-y-6">
-            <div className="h-6 bg-gray-200 rounded w-1/3"></div>
-            <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-            <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-            <div className="h-4 bg-gray-200 rounded w-2/3"></div>
-          </div>
-        </CardContent>
-      </Card>
-    );
+    return <ProfileViewSkeleton />;
   }
 
   if (status === 'failed') {

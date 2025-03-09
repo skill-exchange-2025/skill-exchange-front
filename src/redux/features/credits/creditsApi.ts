@@ -35,6 +35,17 @@ export const creditsApi = baseApi.injectEndpoints({
       }),
       providesTags: ['Credits'],
     }),
+    completePurchase: builder.mutation<void, string>({
+      query: (id) => ({
+        url: `/payments/transactions/${id}/complete`,
+        method: 'PUT',
+      }),
+      invalidatesTags: (result, error, id) => [
+        { type: 'MarketplaceItem', id },
+        { type: 'MarketplaceItem', id: 'LIST' },
+        'Credits',
+      ],
+    }),
 
     purchaseCredits: builder.mutation<PurchaseRecord, PurchaseCreditsRequest>({
       query: (data) => ({
@@ -59,4 +70,5 @@ export const {
   useGetUserCreditsQuery,
   usePurchaseCreditsMutation,
   useGetTransactionHistoryQuery,
+  useCompletePurchaseMutation,
 } = creditsApi;

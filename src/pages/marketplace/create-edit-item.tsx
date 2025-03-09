@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import {
@@ -23,17 +23,16 @@ import {
   useUpdateMarketplaceItemMutation,
   CreateMarketplaceItemRequest,
 } from '@/redux/features/marketplace/marketplaceApi';
-import { ArrowLeft, Save, X } from 'lucide-react';
+import { ArrowLeft, Save, X, Upload, Image } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useSelector } from 'react-redux';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import cryptoIcon from '@/assets/icons/crypto.png';
 
 export function CreateEditMarketplaceItem() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const isEditMode = !!id;
-  const { toast } = useToast();
 
   // Get auth state
   const authState = useSelector((state: any) => state.auth);
@@ -51,6 +50,9 @@ export function CreateEditMarketplaceItem() {
   });
 
   const [tagInput, setTagInput] = useState('');
+  const [uploadedImages, setUploadedImages] = useState<File[]>([]);
+  const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data: existingItem } = useGetMarketplaceItemByIdQuery(id || '', {
     skip: !isEditMode,
@@ -131,42 +133,80 @@ export function CreateEditMarketplaceItem() {
     }
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const newFiles = Array.from(files);
+    setUploadedImages((prev) => [...prev, ...newFiles]);
+
+    // Create preview URLs for the images
+    const newPreviewUrls = newFiles.map((file) => URL.createObjectURL(file));
+    setImagePreviewUrls((prev) => [...prev, ...newPreviewUrls]);
+  };
+
+  const handleRemoveImage = (index: number) => {
+    setUploadedImages((prev) => prev.filter((_, i) => i !== index));
+
+    // Revoke the object URL to avoid memory leaks
+    URL.revokeObjectURL(imagePreviewUrls[index]);
+    setImagePreviewUrls((prev) => prev.filter((_, i) => i !== index));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!isAuthenticated) {
-      toast({
-        title: 'Authentication Error',
+      toast.error('Authentication Error', {
         description:
           'You must be logged in to create or edit marketplace items.',
-        variant: 'destructive',
       });
-      navigate('/login');
       return;
     }
 
     try {
-      if (isEditMode) {
-        await updateItem({ id: id || '', data: formData }).unwrap();
-        toast({
-          title: 'Success',
-          description: 'Item updated successfully',
+      // Handle image uploads first if there are any
+      const currentImages = formData.imagesUrl || [];
+      let imageUrls = [...currentImages];
+
+      if (uploadedImages.length > 0) {
+        // In a real implementation, you would upload the files to a server/cloud storage
+        // and get back URLs. For now, we'll simulate this with local URLs
+        toast.info('Uploading images...', {
+          description:
+            'This is a simulation. In a real app, images would be uploaded to a server.',
+        });
+
+        // In a real implementation, this would be replaced with actual API calls to upload the images
+        // For now, we'll just use the preview URLs
+        imageUrls = [...imageUrls, ...imagePreviewUrls];
+      }
+
+      const updatedFormData = {
+        ...formData,
+        imagesUrl: imageUrls,
+      };
+
+      if (isEditMode && id) {
+        await updateItem({
+          id,
+          data: updatedFormData,
+        }).unwrap();
+        toast.success('Item Updated', {
+          description: 'Your marketplace item has been updated successfully.',
         });
       } else {
-        await createItem(formData).unwrap();
-        toast({
-          title: 'Success',
-          description: 'Item created successfully',
+        await createItem(updatedFormData).unwrap();
+        toast.success('Item Created', {
+          description: 'Your marketplace item has been created successfully.',
         });
       }
       navigate('/marketplace');
-    } catch (err: any) {
-      console.error('Failed to save item:', err);
-      toast({
-        title: 'Error',
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      toast.error('Error', {
         description:
-          err.data?.message || 'Failed to save item. Please try again.',
-        variant: 'destructive',
+          'There was a problem saving your marketplace item. Please try again.',
       });
     }
   };
@@ -375,18 +415,91 @@ export function CreateEditMarketplaceItem() {
 
             <div>
               <label
-                htmlFor="imagesUrl"
+                htmlFor="images"
                 className="block text-sm font-medium mb-1"
               >
-                Image URL (optional)
+                Images
               </label>
-              <Input
-                id="imagesUrl"
-                name="imagesUrl"
-                value={formData.imagesUrl}
-                onChange={handleChange}
-                placeholder="https://example.com/image.jpg"
-              />
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Input
+                    id="images"
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    className="hidden"
+                    ref={fileInputRef}
+                    onChange={handleFileChange}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="w-full flex items-center justify-center gap-2"
+                  >
+                    <Upload className="h-4 w-4" />
+                    Upload Images
+                  </Button>
+                </div>
+
+                {/* Image previews */}
+                {imagePreviewUrls.length > 0 && (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 mt-2">
+                    {imagePreviewUrls.map((url, index) => (
+                      <div key={index} className="relative group">
+                        <img
+                          src={url}
+                          alt={`Preview ${index}`}
+                          className="h-24 w-full object-cover rounded-md"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveImage(index)}
+                          className="absolute top-1 right-1 bg-black bg-opacity-50 rounded-full p-1 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Existing image URLs */}
+                {formData.imagesUrl && formData.imagesUrl.length > 0 && (
+                  <div className="mt-2">
+                    <p className="text-sm font-medium mb-1">Existing Images</p>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                      {formData.imagesUrl.map((url, index) => (
+                        <div key={index} className="relative group">
+                          <img
+                            src={url}
+                            alt={`Image ${index}`}
+                            className="h-24 w-full object-cover rounded-md"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setFormData((prev) => ({
+                                ...prev,
+                                imagesUrl: prev.imagesUrl
+                                  ? prev.imagesUrl.filter((_, i) => i !== index)
+                                  : [],
+                              }));
+                            }}
+                            className="absolute top-1 right-1 bg-black bg-opacity-50 rounded-full p-1 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <p className="text-xs text-muted-foreground">
+                  Upload images of your item. You can upload multiple images.
+                </p>
+              </div>
             </div>
           </CardContent>
           <CardFooter>

@@ -7,7 +7,7 @@ export interface MarketplaceItem {
   skillName: string;
   proficiencyLevel: string;
   tags: string[];
-  
+
   seller?: {
     _id: string;
     name: string;

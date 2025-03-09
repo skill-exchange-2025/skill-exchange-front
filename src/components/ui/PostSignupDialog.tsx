@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { useReferralMutation } from '@/redux/features/auth/authApi';
 import ethereumIcon from '@/assets/icons/crypto.png';
 type DiscoveryOption = 'Social Media' | "Friend's Recommendation" | 'Other';
@@ -36,7 +36,6 @@ export function PostSignupDialog({
   const [friendEmail, setFriendEmail] = useState('');
   const [socialMedia, setSocialMedia] = useState<string | null>(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const { toast } = useToast();
 
   const [submitReferral, { isLoading: isSubmitting }] = useReferralMutation();
 
@@ -53,11 +52,9 @@ export function PostSignupDialog({
       setIsSubmitted(true);
     } catch (error) {
       console.error('Error submitting referral:', error);
-      toast({
-        title: 'Error',
+      toast.error('Error', {
         description:
           'There was a problem processing your submission. Please try again.',
-        variant: 'destructive',
       });
     }
   };
@@ -129,7 +126,7 @@ export function PostSignupDialog({
                   alt="Ethereum"
                   className="inline h-4 w-4"
                 />{' '}
-                 as a thank you!
+                as a thank you!
               </p>
             </div>
           )}

@@ -447,7 +447,7 @@ export function SignUp() {
           </Stepper>
           <Link
             to="/login"
-            className="text-sm text-muted-foreground hover:underline float-right"
+            className="text-sm text-muted-foreground hover:text-[#00EC96] transition-colors duration-200 float-right"
           >
             Already have an account? Sign in
           </Link>

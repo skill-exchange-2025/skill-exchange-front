@@ -23,6 +23,70 @@ import { Plus } from 'lucide-react';
 import { MarketplaceItemCard } from '@/pages/marketplace/marketplace-item-card';
 import { MarketplaceFilterBar } from '@/pages/marketplace/marketplace-filters';
 import { MarketplaceFilters } from '@/types/marketplace';
+import { Skeleton } from '@/components/ui/skeleton';
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+} from '@/components/ui/card';
+
+// Skeleton component for marketplace items
+const MarketplaceItemSkeleton = ({
+  viewMode,
+}: {
+  viewMode: 'grid' | 'list';
+}) => {
+  if (viewMode === 'list') {
+    return (
+      <Card className="w-full overflow-hidden">
+        <div className="flex flex-col md:flex-row">
+          <div className="md:w-1/4">
+            <Skeleton className="h-[200px] w-full md:h-full rounded-l-md" />
+          </div>
+          <div className="p-4 flex-1">
+            <div className="space-y-3">
+              <Skeleton className="h-6 w-3/4" />
+              <Skeleton className="h-4 w-1/2" />
+              <div className="flex flex-wrap gap-2 mt-2">
+                <Skeleton className="h-5 w-16" />
+                <Skeleton className="h-5 w-20" />
+              </div>
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-5/6" />
+              <div className="flex justify-between items-center mt-4">
+                <Skeleton className="h-6 w-24" />
+                <Skeleton className="h-9 w-24 rounded-md" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="overflow-hidden h-full flex flex-col">
+      <Skeleton className="h-[200px] w-full" />
+      <CardHeader className="p-4">
+        <Skeleton className="h-6 w-3/4 mb-2" />
+        <Skeleton className="h-4 w-1/2" />
+      </CardHeader>
+      <CardContent className="p-4 pt-0 flex-grow">
+        <div className="flex flex-wrap gap-2 mb-3">
+          <Skeleton className="h-5 w-16" />
+          <Skeleton className="h-5 w-20" />
+        </div>
+        <Skeleton className="h-4 w-full mb-2" />
+        <Skeleton className="h-4 w-5/6" />
+      </CardContent>
+      <CardFooter className="p-4 pt-0 flex justify-between items-center">
+        <Skeleton className="h-6 w-24" />
+        <Skeleton className="h-9 w-24 rounded-md" />
+      </CardFooter>
+    </Card>
+  );
+};
 
 export function MarketplacePage() {
   const dispatch = useDispatch();
@@ -165,8 +229,19 @@ export function MarketplacePage() {
       />
 
       {isLoading ? (
-        <div className="flex justify-center py-12">
-          <p>Loading marketplace items...</p>
+        <div
+          className={
+            userPreferences.viewMode === 'grid'
+              ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'
+              : 'space-y-4'
+          }
+        >
+          {Array.from({ length: 6 }).map((_, index) => (
+            <MarketplaceItemSkeleton
+              key={index}
+              viewMode={userPreferences.viewMode}
+            />
+          ))}
         </div>
       ) : error ? (
         <div className="flex justify-center py-12">
