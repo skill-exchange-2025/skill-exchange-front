@@ -21,7 +21,6 @@ const authApi = baseApi.injectEndpoints({
         url: '/auth/profile',
         method: 'GET',
       }),
-      providesTags: ['User'],
     }),
     resetPassword: builder.mutation({
       query: (email) => ({

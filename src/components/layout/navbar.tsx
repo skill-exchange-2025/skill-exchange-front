@@ -31,7 +31,7 @@ export function Navbar() {
   };
 
   return (
-    <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background dark:bg-background">
       <div className="mx-auto w-full max-w-[1200px] px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           <Link to="/" className="flex items-center space-x-2 group">
@@ -89,10 +89,10 @@ export function Navbar() {
                     >
                       <Avatar className="h-8 w-8">
                         <AvatarImage
-                          src={currentUser.avatarUrl}
+                          src={currentUser?.avatarUrl}
                           alt={currentUser.email}
                         />
-                        <AvatarFallback>
+                        <AvatarFallback className="dark:bg-blue-600">
                           {currentUser.email?.charAt(0)}
                         </AvatarFallback>
                       </Avatar>

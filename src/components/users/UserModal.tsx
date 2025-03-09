@@ -13,7 +13,7 @@ interface UserFormData {
     name: string;
     email: string;
     phone: number | "";
-    roles: string[];
+    roles: string | string[];
     password?: string;
 }
 
@@ -40,12 +40,13 @@ export const UserModal: React.FC<{
             name: user?.name || '',
             email: user?.email || '',
             phone: user?.phone || '',
-            roles: user?.roles || ['user'],
+            roles: user?.roles?.[0] || 'user',
         }
     });
 
     const onSubmit = async (data: UserFormData) => {
         try {
+            const rolesArray = Array.isArray(data.roles) ? data.roles : [data.roles];
             if (user) {
                 await updateUser({
                     id: user._id,
@@ -53,13 +54,14 @@ export const UserModal: React.FC<{
                         name: data.name,
                         email: data.email,
                         phone: Number(data.phone),
-                        roles: data.roles,
+                        roles: rolesArray,
                     }
                 }).unwrap();
             } else {
                 await createUser({
                     ...data,
-                    phone: Number(data.phone)
+                    phone: Number(data.phone),
+                    roles: rolesArray,
                 }).unwrap();
             }
             await getUsers();
