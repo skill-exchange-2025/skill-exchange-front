@@ -51,6 +51,13 @@ const authApi = baseApi.injectEndpoints({
         params: { token },
       }),
     }),
+    referral: builder.mutation({
+      query: (referralData) => ({
+        url: '/auth/referral',
+        method: 'POST',
+        body: referralData,
+      }),
+    }),
   }),
 });
 
@@ -62,4 +69,5 @@ export const {
   useUpdatePasswordMutation,
   useVerifyOTPMutation,
   useVerifyEmailQuery,
+  useReferralMutation,
 } = authApi;

@@ -1,7 +1,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Eye, EyeOff } from 'lucide-react';
 import {
   Card,
   CardContent,
@@ -25,6 +25,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { setUser } from '@/redux/features/auth/authSlice';
 import { useLoginMutation } from '@/redux/features/auth/authApi';
+import { useState } from 'react';
 
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -37,6 +38,7 @@ const LoginForm = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [loginMutation, { isLoading }] = useLoginMutation();
+  const [showPassword, setShowPassword] = useState(false);
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -149,17 +151,30 @@ const LoginForm = () => {
                       <FormItem>
                         <FormLabel>Password</FormLabel>
                         <FormControl>
-                          <Input
-                            placeholder="Enter your password"
-                            type="password"
-                            className="w-full"
-                            {...field}
-                          />
+                          <div className="relative">
+                            <Input
+                              placeholder="Enter your password"
+                              type={showPassword ? 'text' : 'password'}
+                              className="w-full"
+                              {...field}
+                            />
+                            <button
+                              type="button"
+                              className="absolute right-2 top-1/2 -translate-y-1/2 p-1"
+                              onClick={() => setShowPassword(!showPassword)}
+                            >
+                              {showPassword ? (
+                                <EyeOff className="h-4 w-4 text-muted-foreground" />
+                              ) : (
+                                <Eye className="h-4 w-4 text-muted-foreground" />
+                              )}
+                            </button>
+                          </div>
                         </FormControl>
                         <div className="flex justify-end">
                           <Link
                             to="/forgot-password"
-                            className="text-sm text-muted-foreground hover:text-primary"
+                            className="text-sm text-muted-foreground hover:text-[#00EC96] transition-colors duration-200"
                           >
                             Forgot password?
                           </Link>
@@ -191,7 +206,7 @@ const LoginForm = () => {
                 Don't have an account?{' '}
                 <Link
                   to="/signup"
-                  className="text-primary hover:underline font-medium"
+                  className="text-primary hover:text-[#00EC96] transition-colors duration-200 font-medium"
                 >
                   Sign up
                 </Link>

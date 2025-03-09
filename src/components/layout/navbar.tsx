@@ -1,6 +1,8 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Moon, Sun, CreditCard } from 'lucide-react';
+import { Moon, Sun } from 'lucide-react';
+import cryptoIcon from '@/assets/icons/crypto.png';
+import logoImage from '@/assets/icons/logo.png';
 import { useTheme } from '@/components/theme-provider';
 import {
   DropdownMenu,
@@ -11,12 +13,17 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { logout, useCurrentUser } from '@/redux/features/auth/authSlice';
+import { useState } from 'react';
+import { CreditPurchaseDialog } from '../credits/CreditPurchaseDialog';
+import { useGetUserCreditsQuery } from '@/redux/features/credits/creditsApi';
 
 export function Navbar() {
   const { theme, setTheme } = useTheme();
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const currentUser = useAppSelector(useCurrentUser);
+  const [creditDialogOpen, setCreditDialogOpen] = useState(false);
+  const { data: creditsData } = useGetUserCreditsQuery();
 
   const handleSignOut = () => {
     dispatch(logout());
@@ -27,8 +34,15 @@ export function Navbar() {
     <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background dark:bg-background">
       <div className="mx-auto w-full max-w-[1200px] px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
-          <Link to="/" className="flex items-center space-x-2">
-
+          <Link to="/" className="flex items-center space-x-2 group">
+            <img
+              src={logoImage}
+              alt="Skilly Logo"
+              className="h-8 w-auto group-hover:animate-[spin-once_0.7s_ease-in-out]"
+            />
+            <span className="font-bold text-xl transition-all duration-300 group-hover:text-[#00EC96] group-hover:text-shadow-neon-green group-hover:animate-neon-glow">
+              Skilly
+            </span>
           </Link>
 
           <div className="flex items-center space-x-4">
@@ -57,10 +71,13 @@ export function Navbar() {
 
             {currentUser ? (
               <div className="flex items-center space-x-4">
-                <div className="flex items-center space-x-2 px-3 py-1 rounded-full bg-secondary dark:bg-blue-600">
-                  <CreditCard className="h-4 w-4" />
+                <div
+                  className="flex items-center space-x-2 px-3 py-1 rounded-full bg-secondary cursor-pointer hover:bg-secondary/80 transition-colors"
+                  onClick={() => setCreditDialogOpen(true)}
+                >
+                  <img src={cryptoIcon} alt="Credits" className="h-4 w-4" />
                   <span className="font-medium">
-                    {currentUser?.credits || 0}
+                    {creditsData?.balance || 0}
                   </span>
                 </div>
 
@@ -91,7 +108,7 @@ export function Navbar() {
                       </p>
                     </div>
                     <DropdownMenuItem asChild>
-                      <Link to="/profile">Edit Profile</Link>
+                      <Link to="/user/profile">Manage Profile</Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={handleSignOut}>
                       Sign Out
@@ -112,6 +129,12 @@ export function Navbar() {
           </div>
         </div>
       </div>
+
+      {/* Credit Purchase Dialog */}
+      <CreditPurchaseDialog
+        open={creditDialogOpen}
+        onOpenChange={setCreditDialogOpen}
+      />
     </nav>
   );
 }
