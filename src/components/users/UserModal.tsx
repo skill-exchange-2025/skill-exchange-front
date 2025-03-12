@@ -7,7 +7,11 @@ import { Label } from "@radix-ui/react-label";
 import { useForm } from "react-hook-form";
 import { useState } from "react";
 import { useSelector } from "react-redux";
-import { selectFilters, selectPagination } from "@/redux/features/users/usersSlice.ts";
+import { selectFilters, selectPagination } from "@/redux/features/users/usersSlice";
+import { Pencil } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { SelectedSkill } from "@/components/ui/badge-selector";
+import {SkillsEditDialog} from "../Profile/SkillsEditDialog.tsx";
 
 interface UserFormData {
     name: string;
@@ -15,6 +19,7 @@ interface UserFormData {
     phone: number | "";
     roles: string | string[];
     password?: string;
+    skills?: SelectedSkill[];
 }
 
 export const UserModal: React.FC<{
@@ -25,6 +30,13 @@ export const UserModal: React.FC<{
     const [createUser] = useCreateUserMutation();
     const [updateUser] = useUpdateUserMutation();
     const [error, setError] = useState<string | null>(null);
+    const [isSkillsDialogOpen, setIsSkillsDialogOpen] = useState(false);
+    const [selectedSkills, setSelectedSkills] = useState<SelectedSkill[]>(
+        user?.skills.map(skill => ({
+            name: skill.name,
+            proficiencyLevel: skill.proficiencyLevel
+        })) || []
+    );
 
     const filters = useSelector(selectFilters);
     const pagination = useSelector(selectPagination);
@@ -41,8 +53,32 @@ export const UserModal: React.FC<{
             email: user?.email || '',
             phone: user?.phone || '',
             roles: user?.roles?.[0] || 'user',
+            skills: selectedSkills,
         }
     });
+
+    const handleSaveSkills = async (skills: SelectedSkill[]) => {
+        try {
+            if (user) {
+                await updateUser({
+                    id: user._id,
+                    data: {
+                        ...user,
+                        skills: skills.map(skill => ({
+                            name: skill.name,
+                            proficiencyLevel: skill.proficiencyLevel,
+                            description: ''
+                        }))
+                    }
+                }).unwrap();
+                setSelectedSkills(skills);
+                await getUsers();
+            }
+        } catch (error) {
+            setError('Failed to update skills');
+            console.error('Error updating skills:', error);
+        }
+    };
 
     const onSubmit = async (data: UserFormData) => {
         try {
@@ -55,6 +91,11 @@ export const UserModal: React.FC<{
                         email: data.email,
                         phone: Number(data.phone),
                         roles: rolesArray,
+                        skills: selectedSkills.map(skill => ({
+                            name: skill.name,
+                            proficiencyLevel: skill.proficiencyLevel,
+                            description: ''
+                        }))
                     }
                 }).unwrap();
             } else {
@@ -62,6 +103,7 @@ export const UserModal: React.FC<{
                     ...data,
                     phone: Number(data.phone),
                     roles: rolesArray,
+                    skills: [],
                 }).unwrap();
             }
             await getUsers();
@@ -144,6 +186,30 @@ export const UserModal: React.FC<{
                         </select>
                     </div>
 
+                    {user && (
+                        <div className="space-y-2">
+                            <div className="flex justify-between items-center">
+                                <Label>Skills</Label>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setIsSkillsDialogOpen(true)}
+                                >
+                                    <Pencil className="h-4 w-4 mr-2" />
+                                    Edit Skills
+                                </Button>
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                                {selectedSkills.map((skill, index) => (
+                                    <Badge key={index} variant="secondary">
+                                        {skill.name} - {skill.proficiencyLevel}
+                                    </Badge>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
                     {error && <div className="text-sm text-red-500">{error}</div>}
 
                     <div className="flex justify-end gap-2">
@@ -151,6 +217,13 @@ export const UserModal: React.FC<{
                         <Button type="submit">Save</Button>
                     </div>
                 </form>
+
+                <SkillsEditDialog
+                    open={isSkillsDialogOpen}
+                    onClose={() => setIsSkillsDialogOpen(false)}
+                    user={user}
+                    onSave={handleSaveSkills}
+                />
             </DialogContent>
         </Dialog>
     );
