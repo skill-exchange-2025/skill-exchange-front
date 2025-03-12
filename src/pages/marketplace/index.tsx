@@ -1,8 +1,12 @@
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { useGetMarketplaceItemsQuery } from '@/redux/features/marketplace/marketplaceApi';
+import {
+  useGetMarketplaceItemsQuery,
+  useGetCoursesQuery,
+  useGetOnlineCoursesQuery,
+  ListingType,
+} from '@/redux/features/marketplace/marketplaceApi';
 import {
   selectFilters,
   selectPagination,
@@ -17,9 +21,11 @@ import {
   setTotalItems,
   setPriceRange,
   setViewMode,
+  setTypeFilter,
+  clearAllFilters,
 } from '@/redux/features/marketplace/marketplaceSlice';
 import { useDispatch, useSelector } from 'react-redux';
-import { Plus } from 'lucide-react';
+import { Plus, ArrowLeft } from 'lucide-react';
 import { MarketplaceItemCard } from '@/pages/marketplace/marketplace-item-card';
 import { MarketplaceFilterBar } from '@/pages/marketplace/marketplace-filters';
 import { MarketplaceFilters } from '@/types/marketplace';
@@ -88,25 +94,115 @@ const MarketplaceItemSkeleton = ({
   );
 };
 
-export function MarketplacePage() {
-  const dispatch = useDispatch();
+interface MarketplacePageProps {
+  type?: string;
+}
+
+export function MarketplacePage({ type }: MarketplacePageProps) {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const [searchParams] = useSearchParams();
   const filters = useSelector(selectFilters);
   const pagination = useSelector(selectPagination);
   const userPreferences = useSelector(selectUserPreferences);
 
-  const { data, isLoading, error } = useGetMarketplaceItemsQuery({
-    page: pagination.currentPage,
-    limit: pagination.itemsPerPage,
-    search: filters.search,
-    category: filters.category || undefined,
-    skillName: filters.skillName || undefined,
-    proficiencyLevel: filters.proficiencyLevel || undefined,
-    minPrice: filters.priceRange.min || undefined,
-    maxPrice: filters.priceRange.max || undefined,
-    sortBy: filters.sortBy,
-    sortOrder: filters.sortOrder,
-  });
+  // Set the type filter based on the prop or URL parameter
+  useEffect(() => {
+    // Check for type from props first
+    if (type) {
+      console.log('Setting type filter from props:', type);
+      dispatch(setTypeFilter(type as ListingType));
+    } else {
+      // Then check URL parameters
+      const typeParam = searchParams.get('type');
+      if (typeParam) {
+        console.log('Setting type filter from URL param:', typeParam);
+        dispatch(setTypeFilter(typeParam as ListingType));
+      }
+    }
+
+    // Reset to first page when type changes
+    dispatch(setCurrentPage(1));
+  }, [type, searchParams, dispatch]);
+
+  // Debug log to see what filters are being applied
+  useEffect(() => {
+    console.log('Current filters being applied:', filters);
+  }, [filters]);
+
+  // Use the appropriate query hook based on the type
+  const coursesQuery = useGetCoursesQuery(
+    {
+      page: pagination.currentPage,
+      limit: pagination.itemsPerPage,
+      search: filters.search,
+      category: filters.category || undefined,
+      skillName: filters.skillName || undefined,
+      proficiencyLevel: filters.proficiencyLevel || undefined,
+      minPrice: filters.priceRange.min || undefined,
+      maxPrice: filters.priceRange.max || undefined,
+      sortBy: filters.sortBy,
+      sortOrder: filters.sortOrder,
+    },
+    { skip: filters.type !== ListingType.COURSE }
+  );
+
+  const onlineCoursesQuery = useGetOnlineCoursesQuery(
+    {
+      page: pagination.currentPage,
+      limit: pagination.itemsPerPage,
+      search: filters.search,
+      category: filters.category || undefined,
+      skillName: filters.skillName || undefined,
+      proficiencyLevel: filters.proficiencyLevel || undefined,
+      minPrice: filters.priceRange.min || undefined,
+      maxPrice: filters.priceRange.max || undefined,
+      sortBy: filters.sortBy,
+      sortOrder: filters.sortOrder,
+    },
+    { skip: filters.type !== ListingType.ONLINE_COURSE }
+  );
+
+  const allListingsQuery = useGetMarketplaceItemsQuery(
+    {
+      page: pagination.currentPage,
+      limit: pagination.itemsPerPage,
+      search: filters.search,
+      category: filters.category || undefined,
+      skillName: filters.skillName || undefined,
+      proficiencyLevel: filters.proficiencyLevel || undefined,
+      type: filters.type || undefined,
+      minPrice: filters.priceRange.min || undefined,
+      maxPrice: filters.priceRange.max || undefined,
+      sortBy: filters.sortBy,
+      sortOrder: filters.sortOrder,
+    },
+    {
+      skip:
+        filters.type === ListingType.COURSE ||
+        filters.type === ListingType.ONLINE_COURSE,
+    }
+  );
+
+  // Determine which query to use based on the type
+  let data, error, isLoading;
+
+  if (filters.type === ListingType.COURSE) {
+    data = coursesQuery.data;
+    error = coursesQuery.error;
+    isLoading = coursesQuery.isLoading;
+    console.log('Using courses query');
+  } else if (filters.type === ListingType.ONLINE_COURSE) {
+    data = onlineCoursesQuery.data;
+    error = onlineCoursesQuery.error;
+    isLoading = onlineCoursesQuery.isLoading;
+    console.log('Using online courses query');
+  } else {
+    data = allListingsQuery.data;
+    error = allListingsQuery.error;
+    isLoading = allListingsQuery.isLoading;
+    console.log('Using all listings query');
+  }
 
   // Debug log to see the API response structure
   useEffect(() => {
@@ -123,20 +219,47 @@ export function MarketplacePage() {
   }, [data, dispatch]);
 
   const handleFilterChange = (newFilters: MarketplaceFilters) => {
+    // Check if this is a clear all filters operation
+    if (
+      newFilters.search === '' &&
+      newFilters.category === undefined &&
+      newFilters.skillName === undefined &&
+      newFilters.proficiencyLevel === undefined &&
+      newFilters.type === undefined &&
+      newFilters.minPrice === 0 &&
+      newFilters.maxPrice === 1000 &&
+      newFilters.sortBy === 'createdAt' &&
+      newFilters.sortOrder === 'desc'
+    ) {
+      // This is a clear all filters operation
+      console.log('Clearing all filters');
+      dispatch(clearAllFilters());
+
+      // Update URL to remove all filter parameters
+      const currentPath = window.location.pathname;
+      navigate(currentPath);
+      return;
+    }
+
+    // Handle individual filter changes
     if (newFilters.search !== undefined) {
       dispatch(setSearchTerm(newFilters.search));
     }
 
     if (newFilters.category !== undefined) {
-      dispatch(setCategoryFilter(newFilters.category || null));
+      dispatch(setCategoryFilter(newFilters.category));
     }
 
     if (newFilters.skillName !== undefined) {
-      dispatch(setSkillNameFilter(newFilters.skillName || null));
+      dispatch(setSkillNameFilter(newFilters.skillName));
     }
 
     if (newFilters.proficiencyLevel !== undefined) {
-      dispatch(setProficiencyLevelFilter(newFilters.proficiencyLevel || null));
+      dispatch(setProficiencyLevelFilter(newFilters.proficiencyLevel));
+    }
+
+    if (newFilters.type !== undefined) {
+      dispatch(setTypeFilter(newFilters.type));
     }
 
     if (
@@ -145,8 +268,8 @@ export function MarketplacePage() {
     ) {
       dispatch(
         setPriceRange({
-          min: newFilters.minPrice || null,
-          max: newFilters.maxPrice || null,
+          min: newFilters.minPrice,
+          max: newFilters.maxPrice,
         })
       );
     }
@@ -172,7 +295,21 @@ export function MarketplacePage() {
   };
 
   const handleCreateItem = () => {
-    navigate('/marketplace/create');
+    navigate('/marketplace?action=create');
+  };
+
+  const getPageTitle = () => {
+    if (filters.type === ListingType.COURSE) {
+      return 'Static Courses';
+    } else if (filters.type === ListingType.ONLINE_COURSE) {
+      return 'Interactive Courses';
+    } else {
+      return 'All Listings';
+    }
+  };
+
+  const handleBack = () => {
+    navigate('/marketplace');
   };
 
   const categories = [
@@ -203,7 +340,12 @@ export function MarketplacePage() {
   return (
     <div className="container py-8">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">Skill Exchange Marketplace</h1>
+        <div>
+          <Button variant="outline" onClick={handleBack} className="mb-4">
+            <ArrowLeft className="mr-2 h-4 w-4" /> Back to Selection
+          </Button>
+          <h1 className="text-3xl font-bold">{getPageTitle()}</h1>
+        </div>
         <Button onClick={handleCreateItem}>
           <Plus className="mr-2 h-4 w-4" /> List New Item
         </Button>
@@ -215,6 +357,7 @@ export function MarketplacePage() {
           category: filters.category || undefined,
           skillName: filters.skillName || undefined,
           proficiencyLevel: filters.proficiencyLevel || undefined,
+          type: filters.type || undefined,
           minPrice: filters.priceRange.min || undefined,
           maxPrice: filters.priceRange.max || undefined,
           sortBy: filters.sortBy,

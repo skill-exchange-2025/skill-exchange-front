@@ -1,84 +1,93 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { MarketplaceItem } from './marketplaceApi';
+import { RootState } from '@/redux/store';
+import { ListingType, MarketplaceItem } from './marketplaceApi';
+
+interface PriceRange {
+  min: number | undefined;
+  max: number | undefined;
+}
+
+interface MarketplaceFilters {
+  search: string;
+  category?: string;
+  skillName?: string;
+  proficiencyLevel?: string;
+  type?: ListingType;
+  priceRange: PriceRange;
+  sortBy: string;
+  sortOrder: 'asc' | 'desc';
+}
+
+interface PaginationState {
+  currentPage: number;
+  itemsPerPage: number;
+  totalItems: number;
+}
+
+interface UserPreferences {
+  viewMode: 'grid' | 'list';
+}
 
 export interface MarketplaceState {
+  filters: MarketplaceFilters;
+  pagination: PaginationState;
+  userPreferences: UserPreferences;
   selectedItem: MarketplaceItem | null;
-  filters: {
-    search: string;
-    category: string | null;
-    skillName: string | null;
-    proficiencyLevel: string | null;
-    priceRange: {
-      min: number | null;
-      max: number | null;
-    };
-    sortBy: string;
-    sortOrder: 'asc' | 'desc';
-  };
-  pagination: {
-    currentPage: number;
-    itemsPerPage: number;
-    totalItems: number;
-  };
-  userPreferences: {
-    viewMode: 'grid' | 'list';
-  };
 }
 
 const initialState: MarketplaceState = {
-  selectedItem: null,
   filters: {
     search: '',
-    category: null,
-    skillName: null,
-    proficiencyLevel: null,
+    category: undefined,
+    skillName: undefined,
+    proficiencyLevel: undefined,
+    type: undefined,
     priceRange: {
-      min: null,
-      max: null,
+      min: undefined,
+      max: undefined,
     },
     sortBy: 'createdAt',
     sortOrder: 'desc',
   },
   pagination: {
     currentPage: 1,
-    itemsPerPage: 12,
+    itemsPerPage: 9,
     totalItems: 0,
   },
   userPreferences: {
     viewMode: 'grid',
   },
+  selectedItem: null,
 };
 
-const marketplaceSlice = createSlice({
+export const marketplaceSlice = createSlice({
   name: 'marketplace',
   initialState,
   reducers: {
-    setSelectedItem: (state, action: PayloadAction<MarketplaceItem | null>) => {
-      state.selectedItem = action.payload;
-    },
     setSearchTerm: (state, action: PayloadAction<string>) => {
       state.filters.search = action.payload;
-      state.pagination.currentPage = 1;
+      state.pagination.currentPage = 1; // Reset to first page when search changes
     },
-    setCategoryFilter: (state, action: PayloadAction<string | null>) => {
+    setCategoryFilter: (state, action: PayloadAction<string | undefined>) => {
       state.filters.category = action.payload;
       state.pagination.currentPage = 1;
     },
-    setSkillNameFilter: (state, action: PayloadAction<string | null>) => {
+    setSkillNameFilter: (state, action: PayloadAction<string | undefined>) => {
       state.filters.skillName = action.payload;
       state.pagination.currentPage = 1;
     },
     setProficiencyLevelFilter: (
       state,
-      action: PayloadAction<string | null>
+      action: PayloadAction<string | undefined>
     ) => {
       state.filters.proficiencyLevel = action.payload;
       state.pagination.currentPage = 1;
     },
-    setPriceRange: (
-      state,
-      action: PayloadAction<{ min: number | null; max: number | null }>
-    ) => {
+    setTypeFilter: (state, action: PayloadAction<ListingType | undefined>) => {
+      state.filters.type = action.payload;
+      state.pagination.currentPage = 1;
+    },
+    setPriceRange: (state, action: PayloadAction<PriceRange>) => {
       state.filters.priceRange = action.payload;
       state.pagination.currentPage = 1;
     },
@@ -93,7 +102,7 @@ const marketplaceSlice = createSlice({
     },
     setItemsPerPage: (state, action: PayloadAction<number>) => {
       state.pagination.itemsPerPage = action.payload;
-      state.pagination.currentPage = 1;
+      state.pagination.currentPage = 1; // Reset to first page when items per page changes
     },
     setTotalItems: (state, action: PayloadAction<number>) => {
       state.pagination.totalItems = action.payload;
@@ -101,7 +110,11 @@ const marketplaceSlice = createSlice({
     setViewMode: (state, action: PayloadAction<'grid' | 'list'>) => {
       state.userPreferences.viewMode = action.payload;
     },
-    resetFilters: (state) => {
+    setSelectedItem: (state, action: PayloadAction<MarketplaceItem | null>) => {
+      state.selectedItem = action.payload;
+    },
+    clearAllFilters: (state) => {
+      // Reset all filters to their initial values
       state.filters = initialState.filters;
       state.pagination.currentPage = 1;
     },
@@ -109,11 +122,11 @@ const marketplaceSlice = createSlice({
 });
 
 export const {
-  setSelectedItem,
   setSearchTerm,
   setCategoryFilter,
   setSkillNameFilter,
   setProficiencyLevelFilter,
+  setTypeFilter,
   setPriceRange,
   setSortBy,
   setSortOrder,
@@ -121,18 +134,17 @@ export const {
   setItemsPerPage,
   setTotalItems,
   setViewMode,
-  resetFilters,
+  setSelectedItem,
+  clearAllFilters,
 } = marketplaceSlice.actions;
 
 // Selectors
-export const selectSelectedItem = (state: { marketplace: MarketplaceState }) =>
-  state.marketplace.selectedItem;
-export const selectFilters = (state: { marketplace: MarketplaceState }) =>
-  state.marketplace.filters;
-export const selectPagination = (state: { marketplace: MarketplaceState }) =>
+export const selectFilters = (state: RootState) => state.marketplace.filters;
+export const selectPagination = (state: RootState) =>
   state.marketplace.pagination;
-export const selectUserPreferences = (state: {
-  marketplace: MarketplaceState;
-}) => state.marketplace.userPreferences;
+export const selectUserPreferences = (state: RootState) =>
+  state.marketplace.userPreferences;
+export const selectSelectedItem = (state: RootState) =>
+  state.marketplace.selectedItem;
 
 export default marketplaceSlice.reducer;

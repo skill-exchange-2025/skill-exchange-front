@@ -1,14 +1,7 @@
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useLocation } from 'react-router-dom';
-import {
-  ShoppingBag,
-  Package,
-  MessageSquare,
-  Store,
-  Heart,
-  Home,
-} from 'lucide-react';
+import { MessageSquare, Store, Heart, Home } from 'lucide-react';
 import { motion, useScroll } from 'framer-motion';
 import { useEffect, useState } from 'react';
 

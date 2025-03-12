@@ -1,4 +1,4 @@
-import { motion, useAnimation } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import {
@@ -15,7 +15,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export function LandingPage() {
   return (
@@ -56,12 +56,12 @@ export function LandingPage() {
             portfolio on Skilly - the intuitive skill exchange platform.
           </p>
           <div className="mt-10 flex gap-4">
-            <Link to="/login">
+            <Link to="/signup">
               <Button size="lg">
                 Join Skilly <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
-            <Link to="/explore">
+            <Link to="/login">
               <Button size="lg" variant="outline">
                 Explore Skills
               </Button>
@@ -584,7 +584,6 @@ interface TestimonialCarouselProps {
 const TestimonialCarousel = ({ testimonials }: TestimonialCarouselProps) => {
   const [isPaused, setIsPaused] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
-  const controls = useAnimation();
 
   // Create an extended list of testimonials for infinite scrolling effect
   const extendedTestimonials = [

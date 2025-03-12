@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -19,18 +19,23 @@ import {
 } from '@/components/ui/select';
 import {
   useGetMarketplaceItemByIdQuery,
-  useCreateMarketplaceItemMutation,
+  useCreateCourseMutation,
+  useCreateOnlineCourseMutation,
   useUpdateMarketplaceItemMutation,
-  CreateMarketplaceItemRequest,
+  CreateCourseRequest,
+  CreateOnlineCourseRequest,
+  ListingType,
 } from '@/redux/features/marketplace/marketplaceApi';
-import { ArrowLeft, Save, X, Upload, Image } from 'lucide-react';
+import { ArrowLeft, Save, X, Upload } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useSelector } from 'react-redux';
 import { toast } from 'sonner';
 import cryptoIcon from '@/assets/icons/crypto.png';
+import { useImageUpload } from '@/hooks/useImageUpload';
 
 export function CreateEditMarketplaceItem() {
   const { id } = useParams<{ id: string }>();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const isEditMode = !!id;
 
@@ -38,18 +43,35 @@ export function CreateEditMarketplaceItem() {
   const authState = useSelector((state: any) => state.auth);
   const isAuthenticated = !!authState.token && !!authState.user;
 
-  const [formData, setFormData] = useState<CreateMarketplaceItemRequest>({
+  // Extended form data to include all possible fields
+  const [formData, setFormData] = useState({
     title: '',
     description: '',
     price: 0,
     category: '',
     skillName: '',
     proficiencyLevel: '',
-    tags: [],
-    imagesUrl: [],
+    tags: [] as string[],
+    imagesUrl: [] as string[],
+    type: '' as ListingType | '',
+
+    // Course specific fields
+    contentDescription: '',
+    contentUrls: [] as string[],
+
+    // Online course specific fields
+    location: '',
+    maxStudents: 0,
+    startDate: '',
+    endDate: '',
+    videoUrl: '',
+    materials: [] as string[],
+    durationHours: 0,
   });
 
   const [tagInput, setTagInput] = useState('');
+  const [contentUrlInput, setContentUrlInput] = useState('');
+  const [materialUrlInput, setMaterialUrlInput] = useState('');
   const [uploadedImages, setUploadedImages] = useState<File[]>([]);
   const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -58,10 +80,48 @@ export function CreateEditMarketplaceItem() {
     skip: !isEditMode,
   });
 
-  const [createItem, { isLoading: isCreating }] =
-    useCreateMarketplaceItemMutation();
+  const [createCourse, { isLoading: isCreatingCourse }] =
+    useCreateCourseMutation();
+  const [createOnlineCourse, { isLoading: isCreatingOnlineCourse }] =
+    useCreateOnlineCourseMutation();
   const [updateItem, { isLoading: isUpdating }] =
     useUpdateMarketplaceItemMutation();
+  const { uploadImages, isUploading } = useImageUpload();
+
+  // Check if type parameter exists and redirect if not (for new listings)
+  useEffect(() => {
+    if (!isEditMode) {
+      const typeParam = searchParams.get('type');
+      if (!typeParam) {
+        // Redirect to the listing type selection page with create action
+        navigate('/marketplace?action=create');
+        return;
+      }
+    }
+  }, [isEditMode, searchParams, navigate]);
+
+  // Set the type from URL parameter if it exists
+  useEffect(() => {
+    const typeParam = searchParams.get('type');
+    if (typeParam && !isEditMode) {
+      // Make sure the type is valid
+      if (
+        typeParam === ListingType.COURSE ||
+        typeParam === ListingType.ONLINE_COURSE
+      ) {
+        setFormData((prev) => ({
+          ...prev,
+          type: typeParam as ListingType,
+        }));
+      } else {
+        // If invalid type, navigate back to selection
+        toast.error('Invalid listing type', {
+          description: 'Please select a valid listing type.',
+        });
+        navigate('/marketplace?action=create');
+      }
+    }
+  }, [searchParams, isEditMode, navigate]);
 
   useEffect(() => {
     if (isEditMode && existingItem) {
@@ -74,6 +134,24 @@ export function CreateEditMarketplaceItem() {
         proficiencyLevel: existingItem.proficiencyLevel,
         tags: existingItem.tags || [],
         imagesUrl: existingItem.imagesUrl || [],
+        type: existingItem.type || '',
+
+        // Course specific fields
+        contentDescription: existingItem.contentDescription || '',
+        contentUrls: existingItem.contentUrls || [],
+
+        // Online course specific fields
+        location: existingItem.location || '',
+        maxStudents: existingItem.maxStudents || 0,
+        startDate: existingItem.startDate
+          ? existingItem.startDate.substring(0, 10)
+          : '',
+        endDate: existingItem.endDate
+          ? existingItem.endDate.substring(0, 10)
+          : '',
+        videoUrl: existingItem.videoUrl || '',
+        materials: existingItem.materials || [],
+        durationHours: existingItem.durationHours || 0,
       });
     }
   }, [isEditMode, existingItem]);
@@ -84,28 +162,22 @@ export function CreateEditMarketplaceItem() {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: name === 'price' ? parseFloat(value) || 0 : value,
+      [name]: value,
     }));
   };
 
-  const handleCategoryChange = (value: string) => {
+  const handleSelectChange = (name: string, value: string) => {
     setFormData((prev) => ({
       ...prev,
-      category: value,
+      [name]: value,
     }));
   };
 
-  const handleSkillNameChange = (value: string) => {
+  const handleNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      skillName: value,
-    }));
-  };
-
-  const handleProficiencyLevelChange = (value: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      proficiencyLevel: value,
+      [name]: parseFloat(value) || 0,
     }));
   };
 
@@ -119,75 +191,168 @@ export function CreateEditMarketplaceItem() {
     }
   };
 
-  const handleRemoveTag = (tag: string) => {
+  const handleRemoveTag = (tagToRemove: string) => {
     setFormData((prev) => ({
       ...prev,
-      tags: prev.tags.filter((t) => t !== tag),
+      tags: prev.tags.filter((tag) => tag !== tagToRemove),
     }));
   };
 
-  const handleTagInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      handleAddTag();
+  const handleAddContentUrl = () => {
+    if (
+      contentUrlInput.trim() &&
+      !formData.contentUrls.includes(contentUrlInput.trim())
+    ) {
+      setFormData((prev) => ({
+        ...prev,
+        contentUrls: [...prev.contentUrls, contentUrlInput.trim()],
+      }));
+      setContentUrlInput('');
     }
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
+  const handleRemoveContentUrl = (urlToRemove: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      contentUrls: prev.contentUrls.filter((url) => url !== urlToRemove),
+    }));
+  };
 
-    const newFiles = Array.from(files);
-    setUploadedImages((prev) => [...prev, ...newFiles]);
+  const handleAddMaterialUrl = () => {
+    if (
+      materialUrlInput.trim() &&
+      !formData.materials.includes(materialUrlInput.trim())
+    ) {
+      setFormData((prev) => ({
+        ...prev,
+        materials: [...prev.materials, materialUrlInput.trim()],
+      }));
+      setMaterialUrlInput('');
+    }
+  };
 
-    // Create preview URLs for the images
-    const newPreviewUrls = newFiles.map((file) => URL.createObjectURL(file));
-    setImagePreviewUrls((prev) => [...prev, ...newPreviewUrls]);
+  const handleRemoveMaterialUrl = (urlToRemove: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      materials: prev.materials.filter((url) => url !== urlToRemove),
+    }));
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const newFiles = Array.from(e.target.files);
+      setUploadedImages((prev) => [...prev, ...newFiles]);
+
+      // Create preview URLs
+      const newPreviewUrls = newFiles.map((file) => URL.createObjectURL(file));
+      setImagePreviewUrls((prev) => [...prev, ...newPreviewUrls]);
+    }
   };
 
   const handleRemoveImage = (index: number) => {
-    setUploadedImages((prev) => prev.filter((_, i) => i !== index));
+    // Remove from preview
+    setImagePreviewUrls((prev) => {
+      const newUrls = [...prev];
+      URL.revokeObjectURL(newUrls[index]); // Clean up URL object
+      newUrls.splice(index, 1);
+      return newUrls;
+    });
 
-    // Revoke the object URL to avoid memory leaks
-    URL.revokeObjectURL(imagePreviewUrls[index]);
-    setImagePreviewUrls((prev) => prev.filter((_, i) => i !== index));
+    // Remove from files
+    setUploadedImages((prev) => {
+      const newFiles = [...prev];
+      newFiles.splice(index, 1);
+      return newFiles;
+    });
+  };
+
+  const handleRemoveExistingImage = (url: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      imagesUrl: prev.imagesUrl.filter((imgUrl) => imgUrl !== url),
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!isAuthenticated) {
-      toast.error('Authentication Error', {
+      toast.error('Authentication Required', {
         description:
           'You must be logged in to create or edit marketplace items.',
       });
       return;
     }
 
+    // Validate required fields
+    if (!formData.title.trim()) {
+      toast.error('Title Required', {
+        description: 'Please enter a title for your listing.',
+      });
+      return;
+    }
+
+    if (!formData.description.trim()) {
+      toast.error('Description Required', {
+        description: 'Please enter a description for your listing.',
+      });
+      return;
+    }
+
+    if (!formData.category || formData.category === 'select-category') {
+      toast.error('Category Required', {
+        description: 'Please select a category for your listing.',
+      });
+      return;
+    }
+
+    if (!formData.skillName || formData.skillName === 'select-skill') {
+      toast.error('Skill Name Required', {
+        description: 'Please select a skill name for your listing.',
+      });
+      return;
+    }
+
+    if (
+      !formData.proficiencyLevel ||
+      formData.proficiencyLevel === 'select-level'
+    ) {
+      toast.error('Proficiency Level Required', {
+        description: 'Please select a proficiency level for your listing.',
+      });
+      return;
+    }
+
+    if (!formData.type || formData.type === ('select' as any)) {
+      toast.error('Listing Type Required', {
+        description: 'Please select a listing type.',
+      });
+      return;
+    }
+
     try {
-      // Handle image uploads first if there are any
-      const currentImages = formData.imagesUrl || [];
-      let imageUrls = [...currentImages];
-
+      // Upload images if any
+      let imageUrls = [...formData.imagesUrl];
       if (uploadedImages.length > 0) {
-        // In a real implementation, you would upload the files to a server/cloud storage
-        // and get back URLs. For now, we'll simulate this with local URLs
-        toast.info('Uploading images...', {
-          description:
-            'This is a simulation. In a real app, images would be uploaded to a server.',
-        });
-
-        // In a real implementation, this would be replaced with actual API calls to upload the images
-        // For now, we'll just use the preview URLs
-        imageUrls = [...imageUrls, ...imagePreviewUrls];
+        const uploadedUrls = await uploadImages(uploadedImages);
+        imageUrls = [...imageUrls, ...uploadedUrls];
       }
 
-      const updatedFormData = {
-        ...formData,
+      // Prepare the data based on the listing type
+      let updatedFormData: any = {
+        title: formData.title,
+        description: formData.description,
+        price: formData.price,
+        category: formData.category,
+        skillName: formData.skillName,
+        proficiencyLevel: formData.proficiencyLevel,
+        tags: formData.tags,
+        type: formData.type,
         imagesUrl: imageUrls,
       };
 
       if (isEditMode && id) {
+        // For editing, use the updateItem mutation regardless of type
         await updateItem({
           id,
           data: updatedFormData,
@@ -195,13 +360,45 @@ export function CreateEditMarketplaceItem() {
         toast.success('Item Updated', {
           description: 'Your marketplace item has been updated successfully.',
         });
+
+        // Navigate back to the item detail page
+        navigate(`/marketplace/item/${id}`);
       } else {
-        await createItem(updatedFormData).unwrap();
-        toast.success('Item Created', {
-          description: 'Your marketplace item has been created successfully.',
-        });
+        // For creating, use the appropriate mutation based on type
+        if (formData.type === ListingType.COURSE) {
+          const courseData: CreateCourseRequest = {
+            ...updatedFormData,
+            contentDescription: formData.contentDescription,
+            contentUrls: formData.contentUrls,
+          };
+          await createCourse(courseData).unwrap();
+          toast.success('Course Created', {
+            description: 'Your course has been created successfully.',
+          });
+
+          // Navigate to the courses page
+          navigate('/marketplace/courses');
+        } else if (formData.type === ListingType.ONLINE_COURSE) {
+          const onlineCourseData: CreateOnlineCourseRequest = {
+            ...updatedFormData,
+            location: formData.location,
+            maxStudents: formData.maxStudents,
+            startDate: formData.startDate,
+            endDate: formData.endDate,
+            videoUrl: formData.videoUrl,
+            materials: formData.materials,
+            durationHours: formData.durationHours,
+          };
+          await createOnlineCourse(onlineCourseData).unwrap();
+          toast.success('Interactive Course Created', {
+            description:
+              'Your interactive course has been created successfully.',
+          });
+
+          // Navigate to the online courses page
+          navigate('/marketplace/online-courses');
+        }
       }
-      navigate('/marketplace');
     } catch (error) {
       console.error('Error submitting form:', error);
       toast.error('Error', {
@@ -212,7 +409,11 @@ export function CreateEditMarketplaceItem() {
   };
 
   const handleBack = () => {
-    navigate(isEditMode ? `/marketplace/${id}` : '/marketplace');
+    if (isEditMode && id) {
+      navigate(`/marketplace/item/${id}`);
+    } else {
+      navigate('/marketplace');
+    }
   };
 
   const skillOptions = [
@@ -239,6 +440,15 @@ export function CreateEditMarketplaceItem() {
     'Health',
     'Other',
   ];
+
+  const listingTypeOptions = [
+    { value: 'select', label: 'Select a type' },
+    { value: ListingType.COURSE, label: 'Static Course' },
+    { value: ListingType.ONLINE_COURSE, label: 'Interactive Course' },
+  ];
+
+  const isSubmitting =
+    isCreatingCourse || isCreatingOnlineCourse || isUpdating || isUploading;
 
   return (
     <div className="container py-8">
@@ -293,14 +503,22 @@ export function CreateEditMarketplaceItem() {
                   Category
                 </label>
                 <Select
-                  value={formData.category}
-                  onValueChange={handleCategoryChange}
+                  value={formData.category || 'select-category'}
+                  onValueChange={(value) =>
+                    handleSelectChange(
+                      'category',
+                      value === 'select-category' ? '' : value
+                    )
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select a category" />
                   </SelectTrigger>
                   <SelectContent>
-                    {categoryOptions.map((category: string) => (
+                    <SelectItem value="select-category">
+                      Select a category
+                    </SelectItem>
+                    {categoryOptions.map((category) => (
                       <SelectItem key={category} value={category}>
                         {category}
                       </SelectItem>
@@ -317,13 +535,19 @@ export function CreateEditMarketplaceItem() {
                   Skill Name
                 </label>
                 <Select
-                  value={formData.skillName}
-                  onValueChange={handleSkillNameChange}
+                  value={formData.skillName || 'select-skill'}
+                  onValueChange={(value) =>
+                    handleSelectChange(
+                      'skillName',
+                      value === 'select-skill' ? '' : value
+                    )
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select a skill" />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="select-skill">Select a skill</SelectItem>
                     {skillOptions.map((skill) => (
                       <SelectItem key={skill} value={skill}>
                         {skill}
@@ -332,7 +556,9 @@ export function CreateEditMarketplaceItem() {
                   </SelectContent>
                 </Select>
               </div>
+            </div>
 
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label
                   htmlFor="proficiencyLevel"
@@ -341,13 +567,19 @@ export function CreateEditMarketplaceItem() {
                   Proficiency Level
                 </label>
                 <Select
-                  value={formData.proficiencyLevel}
-                  onValueChange={handleProficiencyLevelChange}
+                  value={formData.proficiencyLevel || 'select-level'}
+                  onValueChange={(value) =>
+                    handleSelectChange(
+                      'proficiencyLevel',
+                      value === 'select-level' ? '' : value
+                    )
+                  }
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select proficiency level" />
+                    <SelectValue placeholder="Select a level" />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="select-level">Select a level</SelectItem>
                     {proficiencyLevels.map((level) => (
                       <SelectItem key={level} value={level}>
                         {level}
@@ -356,55 +588,280 @@ export function CreateEditMarketplaceItem() {
                   </SelectContent>
                 </Select>
               </div>
+
+              <div>
+                <label
+                  htmlFor="price"
+                  className="block text-sm font-medium mb-1"
+                >
+                  Price (Credits)
+                </label>
+                <div className="relative">
+                  <Input
+                    id="price"
+                    name="price"
+                    type="number"
+                    min="0"
+                    value={formData.price}
+                    onChange={handleNumberChange}
+                    required
+                  />
+                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                    <img src={cryptoIcon} alt="Credits" className="h-4 w-4" />
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div>
-              <label
-                htmlFor="price"
-                className="block text-sm font-medium mb-1 flex items-center gap-2"
-              >
-                Price <img src={cryptoIcon} alt="Credits" className="h-4 w-4" />
+              <label htmlFor="type" className="block text-sm font-medium mb-1">
+                Listing Type
               </label>
-              <Input
-                id="price"
-                name="price"
-                type="number"
-                min="0"
-                step="0.01"
-                value={formData.price}
-                onChange={handleChange}
-                required
-              />
+              <Select
+                value={formData.type || 'select'}
+                onValueChange={(value) =>
+                  handleSelectChange('type', value === 'select' ? '' : value)
+                }
+                disabled={!!searchParams.get('type') || isEditMode}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a listing type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {listingTypeOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
+
+            {/* Course specific fields */}
+            {formData.type === ListingType.COURSE && (
+              <div className="space-y-4 border p-4 rounded-md">
+                <h3 className="font-medium text-lg">Course Details</h3>
+
+                <div>
+                  <label
+                    htmlFor="contentDescription"
+                    className="block text-sm font-medium mb-1"
+                  >
+                    Course Content Description
+                  </label>
+                  <Textarea
+                    id="contentDescription"
+                    name="contentDescription"
+                    value={formData.contentDescription}
+                    onChange={handleChange}
+                    rows={3}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    Content URLs
+                  </label>
+                  <div className="flex gap-2 mb-2">
+                    <Input
+                      value={contentUrlInput}
+                      onChange={(e) => setContentUrlInput(e.target.value)}
+                      placeholder="Enter content URL"
+                    />
+                    <Button
+                      type="button"
+                      onClick={handleAddContentUrl}
+                      variant="outline"
+                    >
+                      Add
+                    </Button>
+                  </div>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {formData.contentUrls.map((url, index) => (
+                      <Badge key={index} variant="secondary">
+                        {url.length > 30 ? url.substring(0, 30) + '...' : url}
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveContentUrl(url)}
+                          className="ml-2 text-red-500 hover:text-red-700"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Online Course specific fields */}
+            {formData.type === ListingType.ONLINE_COURSE && (
+              <div className="space-y-4 border p-4 rounded-md">
+                <h3 className="font-medium text-lg">
+                  Interactive Course Details
+                </h3>
+
+                <div>
+                  <label
+                    htmlFor="location"
+                    className="block text-sm font-medium mb-1"
+                  >
+                    Location
+                  </label>
+                  <Input
+                    id="location"
+                    name="location"
+                    value={formData.location}
+                    onChange={handleChange}
+                    placeholder="Online or physical location"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label
+                      htmlFor="startDate"
+                      className="block text-sm font-medium mb-1"
+                    >
+                      Start Date
+                    </label>
+                    <Input
+                      id="startDate"
+                      name="startDate"
+                      type="date"
+                      value={formData.startDate}
+                      onChange={handleChange}
+                    />
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="endDate"
+                      className="block text-sm font-medium mb-1"
+                    >
+                      End Date
+                    </label>
+                    <Input
+                      id="endDate"
+                      name="endDate"
+                      type="date"
+                      value={formData.endDate}
+                      onChange={handleChange}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label
+                      htmlFor="maxStudents"
+                      className="block text-sm font-medium mb-1"
+                    >
+                      Maximum Students
+                    </label>
+                    <Input
+                      id="maxStudents"
+                      name="maxStudents"
+                      type="number"
+                      min="0"
+                      value={formData.maxStudents}
+                      onChange={handleNumberChange}
+                    />
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="durationHours"
+                      className="block text-sm font-medium mb-1"
+                    >
+                      Duration (Hours)
+                    </label>
+                    <Input
+                      id="durationHours"
+                      name="durationHours"
+                      type="number"
+                      min="0"
+                      value={formData.durationHours}
+                      onChange={handleNumberChange}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="videoUrl"
+                    className="block text-sm font-medium mb-1"
+                  >
+                    Video URL
+                  </label>
+                  <Input
+                    id="videoUrl"
+                    name="videoUrl"
+                    value={formData.videoUrl}
+                    onChange={handleChange}
+                    placeholder="Link to course preview video"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    Course Materials
+                  </label>
+                  <div className="flex gap-2 mb-2">
+                    <Input
+                      value={materialUrlInput}
+                      onChange={(e) => setMaterialUrlInput(e.target.value)}
+                      placeholder="Enter material URL"
+                    />
+                    <Button
+                      type="button"
+                      onClick={handleAddMaterialUrl}
+                      variant="outline"
+                    >
+                      Add
+                    </Button>
+                  </div>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {formData.materials.map((url, index) => (
+                      <Badge key={index} variant="secondary">
+                        {url.length > 30 ? url.substring(0, 30) + '...' : url}
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveMaterialUrl(url)}
+                          className="ml-2 text-red-500 hover:text-red-700"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div>
               <label htmlFor="tags" className="block text-sm font-medium mb-1">
                 Tags
               </label>
-              <div className="flex gap-2">
+              <div className="flex gap-2 mb-2">
                 <Input
                   id="tags"
                   value={tagInput}
                   onChange={(e) => setTagInput(e.target.value)}
-                  onKeyDown={handleTagInputKeyDown}
-                  placeholder="Add a tag and press Enter"
+                  placeholder="Enter a tag"
                 />
                 <Button type="button" onClick={handleAddTag} variant="outline">
                   Add
                 </Button>
               </div>
               <div className="flex flex-wrap gap-2 mt-2">
-                {formData.tags.map((tag) => (
-                  <Badge
-                    key={tag}
-                    variant="secondary"
-                    className="flex items-center gap-1"
-                  >
+                {formData.tags.map((tag, index) => (
+                  <Badge key={index} variant="secondary">
                     {tag}
                     <button
                       type="button"
                       onClick={() => handleRemoveTag(tag)}
-                      className="text-muted-foreground hover:text-foreground"
+                      className="ml-2 text-red-500 hover:text-red-700"
                     >
                       <X className="h-3 w-3" />
                     </button>
@@ -414,102 +871,98 @@ export function CreateEditMarketplaceItem() {
             </div>
 
             <div>
-              <label
-                htmlFor="images"
-                className="block text-sm font-medium mb-1"
-              >
-                Images
-              </label>
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <Input
-                    id="images"
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    className="hidden"
-                    ref={fileInputRef}
-                    onChange={handleFileChange}
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => fileInputRef.current?.click()}
-                    className="w-full flex items-center justify-center gap-2"
+              <label className="block text-sm font-medium mb-1">Images</label>
+              <div className="flex flex-wrap gap-4 mb-4">
+                {formData.imagesUrl.map((url, index) => (
+                  <div
+                    key={`existing-${index}`}
+                    className="relative w-24 h-24 border rounded-md overflow-hidden"
                   >
-                    <Upload className="h-4 w-4" />
-                    Upload Images
-                  </Button>
+                    <img
+                      src={url}
+                      alt={`Existing ${index}`}
+                      className="w-full h-full object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveExistingImage(url)}
+                      className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-700"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                ))}
+                {imagePreviewUrls.map((url, index) => (
+                  <div
+                    key={`new-${index}`}
+                    className="relative w-24 h-24 border rounded-md overflow-hidden"
+                  >
+                    <img
+                      src={url}
+                      alt={`New ${index}`}
+                      className="w-full h-full object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveImage(index)}
+                      className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-700"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                ))}
+                <div
+                  className="w-24 h-24 border-2 border-dashed rounded-md flex items-center justify-center cursor-pointer hover:bg-gray-50"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <Upload className="h-6 w-6 text-gray-400" />
                 </div>
-
-                {/* Image previews */}
-                {imagePreviewUrls.length > 0 && (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 mt-2">
-                    {imagePreviewUrls.map((url, index) => (
-                      <div key={index} className="relative group">
-                        <img
-                          src={url}
-                          alt={`Preview ${index}`}
-                          className="h-24 w-full object-cover rounded-md"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveImage(index)}
-                          className="absolute top-1 right-1 bg-black bg-opacity-50 rounded-full p-1 text-white opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          <X className="h-3 w-3" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* Existing image URLs */}
-                {formData.imagesUrl && formData.imagesUrl.length > 0 && (
-                  <div className="mt-2">
-                    <p className="text-sm font-medium mb-1">Existing Images</p>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-                      {formData.imagesUrl.map((url, index) => (
-                        <div key={index} className="relative group">
-                          <img
-                            src={url}
-                            alt={`Image ${index}`}
-                            className="h-24 w-full object-cover rounded-md"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setFormData((prev) => ({
-                                ...prev,
-                                imagesUrl: prev.imagesUrl
-                                  ? prev.imagesUrl.filter((_, i) => i !== index)
-                                  : [],
-                              }));
-                            }}
-                            className="absolute top-1 right-1 bg-black bg-opacity-50 rounded-full p-1 text-white opacity-0 group-hover:opacity-100 transition-opacity"
-                          >
-                            <X className="h-3 w-3" />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                <p className="text-xs text-muted-foreground">
-                  Upload images of your item. You can upload multiple images.
-                </p>
               </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={handleImageChange}
+                className="hidden"
+              />
             </div>
           </CardContent>
-          <CardFooter>
-            <Button
-              type="submit"
-              disabled={isCreating || isUpdating}
-              className="w-full"
-            >
-              <Save className="mr-2 h-4 w-4" />
-              {isEditMode ? 'Update' : 'Create'} Item
+          <CardFooter className="flex justify-between">
+            <Button variant="outline" onClick={handleBack}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? (
+                <>
+                  <svg
+                    className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Save className="mr-2 h-4 w-4" />
+                  Save
+                </>
+              )}
             </Button>
           </CardFooter>
         </form>
