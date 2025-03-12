@@ -11,7 +11,6 @@ import {
   GraduationCap,
   Star,
   MessageSquare,
-  Handshake,
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react';
@@ -180,7 +179,7 @@ export function LandingPage() {
                   ease: 'easeInOut',
                 }}
               >
-                <Handshake className="h-8 w-8 text-primary" />
+                <MessageSquare className="h-8 w-8 text-primary" />
               </motion.div>
             </motion.div>
             <h3 className="text-xl font-semibold">Connect & Exchange</h3>
