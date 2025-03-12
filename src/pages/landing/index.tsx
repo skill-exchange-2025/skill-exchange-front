@@ -55,12 +55,12 @@ export function LandingPage() {
             portfolio on Skilly - the intuitive skill exchange platform.
           </p>
           <div className="mt-10 flex gap-4">
-            <Link to="/login">
+            <Link to="/signup">
               <Button size="lg">
                 Join Skilly <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
-            <Link to="/explore">
+            <Link to="/login">
               <Button size="lg" variant="outline">
                 Explore Skills
               </Button>

@@ -40,7 +40,7 @@ export const creditsApi = baseApi.injectEndpoints({
         url: `/payments/transactions/${id}/complete`,
         method: 'PUT',
       }),
-      invalidatesTags: (result, error, id) => [
+      invalidatesTags: (_result, _error, id) => [
         { type: 'MarketplaceItem', id },
         { type: 'MarketplaceItem', id: 'LIST' },
         'Credits',

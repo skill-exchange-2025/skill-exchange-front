@@ -1,3 +1,5 @@
+import { ListingType } from '@/redux/features/marketplace/marketplaceApi';
+
 export interface MarketplaceItem {
   _id?: string;
   title: string;
@@ -7,6 +9,7 @@ export interface MarketplaceItem {
   skillName: string;
   proficiencyLevel: string;
   tags: string[];
+  type: ListingType;
 
   seller?: {
     _id: string;
@@ -19,6 +22,19 @@ export interface MarketplaceItem {
   imagesUrl?: string[];
   views?: number;
   __v?: number;
+
+  // Course specific fields (static content)
+  contentUrls?: string[];
+  contentDescription?: string;
+
+  // Online course specific fields (interactive/live sessions)
+  location?: string;
+  maxStudents?: number;
+  startDate?: string;
+  endDate?: string;
+  videoUrl?: string;
+  materials?: string[];
+  durationHours?: number;
 }
 
 export interface CreateMarketplaceItemRequest {
@@ -29,7 +45,26 @@ export interface CreateMarketplaceItemRequest {
   skillName: string;
   proficiencyLevel: string;
   tags: string[];
+  type: ListingType;
   imagesUrl?: string[];
+}
+
+export interface CreateCourseRequest extends CreateMarketplaceItemRequest {
+  type: ListingType.COURSE;
+  contentUrls?: string[];
+  contentDescription?: string;
+}
+
+export interface CreateOnlineCourseRequest
+  extends CreateMarketplaceItemRequest {
+  type: ListingType.ONLINE_COURSE;
+  location?: string;
+  maxStudents?: number;
+  startDate?: string;
+  endDate?: string;
+  videoUrl?: string;
+  materials?: string[];
+  durationHours?: number;
 }
 
 export interface MarketplaceState {
@@ -39,6 +74,7 @@ export interface MarketplaceState {
     category: string | null;
     skillName: string | null;
     proficiencyLevel: string | null;
+    type: ListingType | null;
     priceRange: {
       min: number | null;
       max: number | null;
@@ -61,12 +97,11 @@ export interface MarketplaceFilters {
   category?: string;
   skillName?: string;
   proficiencyLevel?: string;
+  type?: ListingType;
   minPrice?: number;
   maxPrice?: number;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
-  page?: number;
-  limit?: number;
 }
 
 export interface PurchaseResponse {

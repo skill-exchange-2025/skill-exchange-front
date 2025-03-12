@@ -20,6 +20,8 @@ import { VerifyEmail } from '@/pages/auth/verify-email';
 import { MarketplacePage } from '@/pages/marketplace';
 import { MarketplaceItemDetail } from '@/pages/marketplace/item-detail';
 import { CreateEditMarketplaceItem } from '@/pages/marketplace/create-edit-item';
+import { ListingTypeSelection } from '@/pages/marketplace/listing-type-selection';
+import { TransactionsPage } from '@/pages/marketplace/transactions';
 
 const router = createBrowserRouter([
   {
@@ -43,18 +45,43 @@ const router = createBrowserRouter([
           { path: 'terms', element: <Terms /> },
           { path: 'forgot-password', element: <ForgotPassword /> },
           { path: 'signup', element: <SignUp /> },
-          { path: 'marketplace', element: <MarketplacePage /> },
+          { path: 'marketplace', element: <ListingTypeSelection /> },
+          { path: 'marketplace/all', element: <MarketplacePage /> },
           {
-            path: 'marketplace/:id',
+            path: 'marketplace/courses',
+            element: <MarketplacePage type="course" />,
+          },
+          {
+            path: 'marketplace/online-courses',
+            element: <MarketplacePage type="onlineCourse" />,
+          },
+          {
+            path: 'marketplace/item/:id',
             element: <MarketplaceItemDetail />,
           },
           {
             path: 'marketplace/create',
-            element: <CreateEditMarketplaceItem />,
+            element: (
+              <ProtectedRoute>
+                <CreateEditMarketplaceItem />
+              </ProtectedRoute>
+            ),
           },
           {
             path: 'marketplace/edit/:id',
-            element: <CreateEditMarketplaceItem />,
+            element: (
+              <ProtectedRoute>
+                <CreateEditMarketplaceItem />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: 'marketplace/transactions',
+            element: (
+              <ProtectedRoute>
+                <TransactionsPage />
+              </ProtectedRoute>
+            ),
           },
         ],
       },

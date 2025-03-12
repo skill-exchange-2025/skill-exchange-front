@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useVerifyEmailQuery } from '@/redux/features/auth/authApi';
 import { Button } from '@/components/ui/button';
@@ -8,15 +7,22 @@ export function VerifyEmail() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const token = searchParams.get('token');
-  
+
   // Pass token directly to the query hook
-  const { data, error, isLoading } = useVerifyEmailQuery(token ?? '', {
+  const { error, isLoading } = useVerifyEmailQuery(token ?? '', {
     skip: !token, // Skip the query if there's no token
   });
 
   const status = isLoading ? 'loading' : error ? 'error' : 'success';
-  const errorMessage = error && 'data' in error 
-    ? (error.data as any)?.message ?? 'Verification failed'
+  const errorMessage: string = error
+    ? typeof error === 'object' &&
+      error !== null &&
+      'data' in error &&
+      error.data &&
+      typeof error.data === 'object' &&
+      'message' in error.data
+      ? String(error.data.message)
+      : 'Verification failed'
     : 'An unexpected error occurred';
 
   return (
