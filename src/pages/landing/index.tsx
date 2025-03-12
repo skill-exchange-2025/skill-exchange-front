@@ -1,4 +1,4 @@
-import { motion, useAnimation } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import {
@@ -11,11 +11,10 @@ import {
   GraduationCap,
   Star,
   MessageSquare,
-  Handshake,
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export function LandingPage() {
   return (
@@ -180,7 +179,7 @@ export function LandingPage() {
                   ease: 'easeInOut',
                 }}
               >
-                <Handshake className="h-8 w-8 text-primary" />
+                <MessageSquare className="h-8 w-8 text-primary" />
               </motion.div>
             </motion.div>
             <h3 className="text-xl font-semibold">Connect & Exchange</h3>
@@ -584,7 +583,6 @@ interface TestimonialCarouselProps {
 const TestimonialCarousel = ({ testimonials }: TestimonialCarouselProps) => {
   const [isPaused, setIsPaused] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
-  const controls = useAnimation();
 
   // Create an extended list of testimonials for infinite scrolling effect
   const extendedTestimonials = [
