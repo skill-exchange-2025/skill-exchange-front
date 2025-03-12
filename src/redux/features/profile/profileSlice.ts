@@ -97,7 +97,33 @@ const profileSlice = createSlice({
                     state.error = action.error?.message ?? "Failed to fetch completion status";
                 }
             )   ;
+// In /src/redux/features/profile/profileSlice.ts
+// In the extraReducers section:
 
+        builder.addMatcher(
+            profileApi.endpoints.uploadAvatar.matchFulfilled,
+            (state, action) => {
+                state.status = "succeeded";
+                if (state.profile) {
+                    state.profile.avatar = action.payload.avatarUrl;
+                }
+            }
+        );
+
+        builder.addMatcher(
+            profileApi.endpoints.uploadAvatar.matchPending,
+            (state) => {
+                state.status = "loading";
+            }
+        );
+
+        builder.addMatcher(
+            profileApi.endpoints.uploadAvatar.matchRejected,
+            (state, action) => {
+                state.status = "failed";
+                state.error = action.error.message || "Failed to upload avatar";
+            }
+        );
     },
 });
 

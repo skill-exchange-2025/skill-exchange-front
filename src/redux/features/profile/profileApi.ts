@@ -33,13 +33,29 @@ export const profileApi = baseApi.injectEndpoints({
                 method: "GET",
             }),
         }),
-        
+
+        uploadAvatar: builder.mutation<{ avatarUrl: string }, File>({
+            query: (file) => {
+                const formData = new FormData();
+                formData.append('avatar', file);
+
+                return {
+                    url: "/profile/avatar",
+                    method: "POST",
+                    body: formData,
+                    // Don't set Content-Type header - axios will set it with boundary
+                    formData: true,
+                };
+            },
+        }),
     }),
+        
 });
 
 export const {
     useFetchProfileQuery,
     useCreateProfileMutation,
     useGetProfileCompletionStatusQuery,
+    useUploadAvatarMutation,
     useUpdateProfileMutation,
 } = profileApi;
