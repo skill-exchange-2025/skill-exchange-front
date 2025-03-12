@@ -154,7 +154,6 @@ export const ProfileView: React.FC = () => {
                 <CardContent className="p-0">
                     <div className="flex flex-col md:flex-row gap-6 relative p-6">
                         {/* Avatar Section */}
-                        // Update just the Avatar section within the existing code
                         <Avatar className="h-24 w-24 border-4 border-background -mt-12 md:-mt-14 shadow-md">
                             {profile.avatarUrl ? (
                                 <AvatarImage

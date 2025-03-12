@@ -15,6 +15,7 @@ import ProtectedRoute from '@/components/layout/ProtectedRoute';
 import AdminRoutes from './AdminRoutes';
 import UserRoutes from './UserRoutes';
 import DashboardLayout from '@/components/layout/DashboardLayout'; // Added this import
+import UserDashboard from '@/components/layout/UserDashboard'; // Added this import
 import LoginForm from '@/pages/auth/Login'; // Added this import
 import { VerifyEmail } from '@/pages/auth/verify-email';
 import { MarketplacePage } from '@/pages/marketplace';
@@ -98,7 +99,7 @@ const router = createBrowserRouter([
         path: 'user',
         element: (
           <ProtectedRoute>
-            <DashboardLayout />
+            <UserDashboard />
           </ProtectedRoute>
         ),
         children: [{ path: '*', element: <UserRoutes /> }],
