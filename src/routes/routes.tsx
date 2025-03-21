@@ -45,19 +45,45 @@ const router = createBrowserRouter([
           { path: 'terms', element: <Terms /> },
           { path: 'forgot-password', element: <ForgotPassword /> },
           { path: 'signup', element: <SignUp /> },
-          { path: 'marketplace', element: <ListingTypeSelection /> },
-          { path: 'marketplace/all', element: <MarketplacePage /> },
+          {
+            path: 'marketplace',
+            element: (
+              <ProtectedRoute>
+                <ListingTypeSelection />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: 'marketplace/all',
+            element: (
+              <ProtectedRoute>
+                <MarketplacePage type="Allcourse" />
+              </ProtectedRoute>
+            ),
+          },
           {
             path: 'marketplace/courses',
-            element: <MarketplacePage type="course" />,
+            element: (
+              <ProtectedRoute>
+                <MarketplacePage type="course" />
+              </ProtectedRoute>
+            ),
           },
           {
             path: 'marketplace/online-courses',
-            element: <MarketplacePage type="onlineCourse" />,
+            element: (
+              <ProtectedRoute>
+                <MarketplacePage type="onlineCourse" />
+              </ProtectedRoute>
+            ),
           },
           {
             path: 'marketplace/item/:id',
-            element: <MarketplaceItemDetail />,
+            element: (
+              <ProtectedRoute>
+                <MarketplaceItemDetail />
+              </ProtectedRoute>
+            ),
           },
           {
             path: 'marketplace/create',

@@ -27,6 +27,9 @@ export function MarketplaceItemCard({
   const isGrid = viewMode === 'grid';
   const typeInfo = getListingTypeInfo(item);
 
+  // Debug log to see seller information
+  console.log(`Item ${item._id} seller:`, item.seller);
+
   // Function to safely format date
   const formatDate = (dateString?: string) => {
     if (!dateString) return 'Unknown date';
@@ -127,7 +130,7 @@ export function MarketplaceItemCard({
                   />
                 </div>
               ) : (
-                <div className="h-48 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/30 flex items-center justify-center">
+                <div className="h-48 bg-transparent flex items-center justify-center">
                   <div className="text-5xl opacity-40 dark:opacity-60">
                     {typeInfo.icon}
                   </div>
@@ -231,7 +234,9 @@ export function MarketplaceItemCard({
                   </div>
                   <div className="flex items-center gap-1">
                     <User className="h-3 w-3" />
-                    {item.seller?.name || 'Unknown seller'}
+                    {item.seller?.name ||
+                      item.seller?.email ||
+                      'Unknown seller'}
                   </div>
                 </div>
               </CardFooter>
@@ -261,7 +266,7 @@ export function MarketplaceItemCard({
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                 />
               ) : (
-                <div className="w-full h-full bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/30 flex items-center justify-center">
+                <div className="w-full h-full bg-transparent flex items-center justify-center">
                   <div className="text-4xl opacity-40 dark:opacity-60">
                     {typeInfo.icon}
                   </div>
@@ -367,8 +372,10 @@ export function MarketplaceItemCard({
                     {formatDate(item.createdAt)}
                   </div>
                   <div className="flex items-center gap-1">
-                    <Eye className="h-3 w-3" />
-                    {formatViewCount(item.views)}
+                    <User className="h-3 w-3" />
+                    {item.seller?.name ||
+                      item.seller?.email ||
+                      'Unknown seller'}
                   </div>
                 </div>
               </CardFooter>

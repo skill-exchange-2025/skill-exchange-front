@@ -542,10 +542,16 @@ export function MarketplaceItemDetail() {
                   </h3>
                   <div className="flex items-center gap-2 bg-muted/30 p-2 rounded-md">
                     <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center">
-                      {item.seller?.name?.charAt(0) || 'U'}
+                      {item.seller?.name?.charAt(0) ||
+                        item.seller?.email?.charAt(0) ||
+                        'U'}
                     </div>
                     <div>
-                      <p className="font-medium">{item.seller?.name}</p>
+                      <p className="font-medium">
+                        {item.seller?.name ||
+                          item.seller?.email ||
+                          'Unknown seller'}
+                      </p>
                       <p className="text-xs text-muted-foreground">
                         Member since{' '}
                         {new Date(item.createdAt || '').getFullYear()}
