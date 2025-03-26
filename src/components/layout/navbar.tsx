@@ -110,6 +110,10 @@ export function Navbar() {
                     <DropdownMenuItem asChild>
                       <Link to="/user/profile">Manage Profile</Link>
                     </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/user/courses">Manage My Courses</Link>
+                    </DropdownMenuItem>
+
                     <DropdownMenuItem onClick={handleSignOut}>
                       Sign Out
                     </DropdownMenuItem>

@@ -1,5 +1,6 @@
 import { baseApi } from '@/redux/api/baseApi';
 import { PaginatedResponse } from '@/types/user';
+import {Lesson} from "@/types/lesson.ts";
 
 // Define listing types enum
 export enum ListingType {
@@ -29,6 +30,8 @@ export interface MarketplaceItem {
   imagesUrl?: string[];
   views?: number;
   __v?: number;
+  isPurchased?: boolean;
+  lessons?: Lesson[]; // Add this property
 
   // Course specific fields (static content)
   contentUrls?: string[];

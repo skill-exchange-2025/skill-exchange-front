@@ -322,6 +322,12 @@ export function MarketplaceItemDetail() {
     }
   };
 
+
+
+  const handleViewLessons = () => {
+    navigate(`/marketplace/courses/${id}/lessons`);
+  };
+
   const handlePurchaseClick = () => {
     // Check if user has enough credits
     if (walletData && item && walletData.balance < item.price) {
@@ -556,31 +562,54 @@ export function MarketplaceItemDetail() {
               </CardContent>
               <CardFooter className="flex justify-between bg-muted/10 border-t">
                 {isOwner ? (
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      onClick={handleEdit}
-                      className="flex items-center gap-1"
-                    >
-                      <Edit className="h-4 w-4" /> Edit
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      onClick={() => setDeleteDialogOpen(true)}
-                      disabled={isDeleting}
-                      className="flex items-center gap-1"
-                    >
-                      <Trash className="h-4 w-4" /> Delete
-                    </Button>
-                  </div>
+                    <div className="flex gap-2">
+                      <Button
+                          variant="outline"
+                          onClick={handleEdit}
+                          className="flex items-center gap-1"
+                      >
+                        <Edit className="h-4 w-4" /> Edit
+                      </Button>
+                      <Button
+                          variant="destructive"
+                          onClick={() => setDeleteDialogOpen(true)}
+                          disabled={isDeleting}
+                          className="flex items-center gap-1"
+                      >
+                        <Trash className="h-4 w-4" /> Delete
+                      </Button>
+                      {(item.type === ListingType.COURSE || item.type === ListingType.ONLINE_COURSE) && (
+                          <Button
+                              variant="default"
+                              onClick={handleViewLessons}
+                              className="flex items-center gap-1"
+                          >
+                            <BookOpen className="h-4 w-4" /> View Lessons
+                          </Button>
+                      )}
+                    </div>
                 ) : (
-                  <Button
-                    onClick={handlePurchaseClick}
-                    disabled={isPurchasing}
-                    className="flex items-center gap-1 w-full"
-                  >
-                    <ShoppingCart className="h-4 w-4" /> Purchase Now
-                  </Button>
+                    <div className="flex gap-2 w-full">
+                      {/* Show View Lessons button if the user has purchased the course */}
+                      {(item.type === ListingType.COURSE || item.type === ListingType.ONLINE_COURSE) &&
+                          item.isPurchased && (
+                              <Button
+                                  variant="default"
+                                  onClick={handleViewLessons}
+                                  className="flex items-center gap-1"
+                              >
+                                <BookOpen className="h-4 w-4" /> View Lessons
+                              </Button>
+                          )}
+                      <Button
+                          onClick={handlePurchaseClick}
+                          disabled={isPurchasing || item.isPurchased}
+                          className="flex items-center gap-1 flex-1"
+                      >
+                        <ShoppingCart className="h-4 w-4" />
+                        {item.isPurchased ? 'Purchased' : 'Purchase Now'}
+                      </Button>
+                    </div>
                 )}
               </CardFooter>
             </div>

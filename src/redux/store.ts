@@ -13,9 +13,10 @@ import storage from 'redux-persist/lib/storage';
 import { baseApi } from './api/baseApi';
 import authReducer from './features/auth/authSlice';
 import profileReducer from './features/profile/profileSlice';
-import usersReducer from './features/users/usersSlice.ts';
+import usersReducer from './features/users/usersSlice';
 import marketplaceReducer from './features/marketplace/marketplaceSlice';
 import creditsReducer from './features/credits/creditsSlice';
+import { lessonsReducer } from './features/lessons/lessonsSlice'; // Update this import
 
 const persistConfig = {
   key: 'auth',
@@ -32,15 +33,17 @@ export const store = configureStore({
     auth: persistedAuthReducer,
     marketplace: marketplaceReducer,
     credits: creditsReducer,
+    lessons: lessonsReducer,
   },
   middleware: (getDefaultMiddlewares) =>
-    getDefaultMiddlewares({
-      serializableCheck: {
-        ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
-      },
-    }).concat(baseApi.middleware),
+      getDefaultMiddlewares({
+        serializableCheck: {
+          ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
+        },
+      }).concat(baseApi.middleware),
 });
 
+// Define RootState and AppDispatch types
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
 
