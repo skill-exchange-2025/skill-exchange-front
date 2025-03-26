@@ -4,23 +4,23 @@ import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import { Navbar } from './navbar';
 import { Footer } from './footer'; // You'll need to create this component
+import { FeatureNavbar } from './FeatureNavbar';
+import { useAppSelector } from '@/redux/hooks';
+import { useCurrentUser } from '@/redux/features/auth/authSlice';
 
 const { Content } = Layout;
 
 const DashboardLayout = () => {
+  const currentUser = useAppSelector(useCurrentUser);
+
   return (
     <Layout style={{ minHeight: '100vh', overflow: 'hidden' }}>
       <Sidebar />
-      <Layout>
+      <Layout className="flex flex-col">
         <Navbar />
-        <Content className="bg-background">
-          <div
-            style={{
-              padding: 24,
-              minHeight: 360,
-              overflow: 'hidden',
-            }}
-          >
+        {currentUser && <FeatureNavbar />}
+        <Content className="bg-background dark:bg-background">
+          <div className="max-w-[1200px] mx-auto p-5 min-h-[calc(100vh-120px)]">
             <Outlet />
           </div>
         </Content>

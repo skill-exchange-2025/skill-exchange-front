@@ -10,7 +10,6 @@ export interface MarketplaceItem {
   proficiencyLevel: string;
   tags: string[];
   type: ListingType;
-
   seller?: {
     _id: string;
     name: string;
