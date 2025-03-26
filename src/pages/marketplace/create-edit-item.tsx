@@ -33,6 +33,66 @@ import { toast } from 'sonner';
 import cryptoIcon from '@/assets/icons/crypto.png';
 import { useImageUpload } from '@/hooks/useImageUpload';
 
+// Add image compression utility function
+const compressImage = async (file: File): Promise<File> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target?.result as string;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+
+        // Calculate new dimensions while maintaining aspect ratio
+        const maxSize = 1200; // Maximum dimension
+        if (width > height && width > maxSize) {
+          height = Math.round((height * maxSize) / width);
+          width = maxSize;
+        } else if (height > maxSize) {
+          width = Math.round((width * maxSize) / height);
+          height = maxSize;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          reject(new Error('Could not get canvas context'));
+          return;
+        }
+
+        ctx.drawImage(img, 0, 0, width, height);
+
+        // Convert to blob with reduced quality
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) {
+              reject(new Error('Could not create blob'));
+              return;
+            }
+
+            // Create a new file with the compressed blob
+            const compressedFile = new File([blob], file.name, {
+              type: 'image/jpeg',
+              lastModified: Date.now(),
+            });
+
+            resolve(compressedFile);
+          },
+          'image/jpeg',
+          0.7 // Quality parameter (0.7 = 70% quality)
+        );
+      };
+      img.onerror = (error) => reject(error);
+    };
+    reader.onerror = (error) => reject(error);
+  });
+};
+
 export function CreateEditMarketplaceItem() {
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
@@ -238,14 +298,30 @@ export function CreateEditMarketplaceItem() {
     }));
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      const newFiles = Array.from(e.target.files);
-      setUploadedImages((prev) => [...prev, ...newFiles]);
+      try {
+        const newFiles = Array.from(e.target.files);
 
-      // Create preview URLs
-      const newPreviewUrls = newFiles.map((file) => URL.createObjectURL(file));
-      setImagePreviewUrls((prev) => [...prev, ...newPreviewUrls]);
+        // Compress each image before adding to state
+        const compressedFiles = await Promise.all(
+          newFiles.map((file) => compressImage(file))
+        );
+
+        setUploadedImages((prev) => [...prev, ...compressedFiles]);
+
+        // Create preview URLs
+        const newPreviewUrls = compressedFiles.map((file) =>
+          URL.createObjectURL(file)
+        );
+        setImagePreviewUrls((prev) => [...prev, ...newPreviewUrls]);
+      } catch (error) {
+        console.error('Error compressing images:', error);
+        toast.error('Error processing images', {
+          description:
+            'There was a problem processing your images. Please try again.',
+        });
+      }
     }
   };
 
@@ -331,31 +407,44 @@ export function CreateEditMarketplaceItem() {
     }
 
     try {
-      // Upload images if any
-      let imageUrls = [...formData.imagesUrl];
+      // Handle image uploads first if there are any
+      let updatedImagesUrl = [...formData.imagesUrl];
       if (uploadedImages.length > 0) {
         const uploadedUrls = await uploadImages(uploadedImages);
-        imageUrls = [...imageUrls, ...uploadedUrls];
+        updatedImagesUrl = [...updatedImagesUrl, ...uploadedUrls];
       }
 
-      // Prepare the data based on the listing type
-      let updatedFormData: any = {
-        title: formData.title,
-        description: formData.description,
-        price: formData.price,
-        category: formData.category,
-        skillName: formData.skillName,
-        proficiencyLevel: formData.proficiencyLevel,
-        tags: formData.tags,
-        type: formData.type,
-        imagesUrl: imageUrls,
+      // Prepare the base form data
+      const updatedFormData = {
+        ...formData,
+        imagesUrl: updatedImagesUrl,
+        type: formData.type as ListingType,
       };
 
       if (isEditMode && id) {
-        // For editing, use the updateItem mutation regardless of type
+        // For editing, use the updateItem mutation with the appropriate data structure
+        const updateData = {
+          ...updatedFormData,
+          // Include course-specific fields if it's a course
+          ...(formData.type === ListingType.COURSE && {
+            contentDescription: formData.contentDescription,
+            contentUrls: formData.contentUrls,
+          }),
+          // Include online course-specific fields if it's an online course
+          ...(formData.type === ListingType.ONLINE_COURSE && {
+            location: formData.location,
+            maxStudents: formData.maxStudents,
+            startDate: formData.startDate,
+            endDate: formData.endDate,
+            videoUrl: formData.videoUrl,
+            materials: formData.materials,
+            durationHours: formData.durationHours,
+          }),
+        };
+
         await updateItem({
           id,
-          data: updatedFormData,
+          data: updateData,
         }).unwrap();
         toast.success('Item Updated', {
           description: 'Your marketplace item has been updated successfully.',
@@ -368,6 +457,7 @@ export function CreateEditMarketplaceItem() {
         if (formData.type === ListingType.COURSE) {
           const courseData: CreateCourseRequest = {
             ...updatedFormData,
+            type: ListingType.COURSE,
             contentDescription: formData.contentDescription,
             contentUrls: formData.contentUrls,
           };
@@ -381,6 +471,7 @@ export function CreateEditMarketplaceItem() {
         } else if (formData.type === ListingType.ONLINE_COURSE) {
           const onlineCourseData: CreateOnlineCourseRequest = {
             ...updatedFormData,
+            type: ListingType.ONLINE_COURSE,
             location: formData.location,
             maxStudents: formData.maxStudents,
             startDate: formData.startDate,

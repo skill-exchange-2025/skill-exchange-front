@@ -1,6 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Moon, Sun } from 'lucide-react';
+import { Moon, Sun, Bell } from 'lucide-react';
 import cryptoIcon from '@/assets/icons/crypto.png';
 import logoImage from '@/assets/icons/logo.png';
 import { useTheme } from '@/components/theme-provider';
@@ -18,6 +18,7 @@ import { CreditPurchaseDialog } from '../credits/CreditPurchaseDialog';
 import { useGetUserCreditsQuery } from '@/redux/features/credits/creditsApi';
 import { useCurrentProfile } from '@/redux/features/profile/profileSlice';
 import { useFetchProfileQuery } from '@/redux/features/profile/profileApi';
+import { Badge } from '@/components/ui/badge';
 
 export function Navbar() {
   const { theme, setTheme } = useTheme();
@@ -26,12 +27,39 @@ export function Navbar() {
   const currentUser = useAppSelector(useCurrentUser);
   const userProfile = useAppSelector(useCurrentProfile);
   const [creditDialogOpen, setCreditDialogOpen] = useState(false);
+  const [notifications, setNotifications] = useState<
+    Array<{
+      id: string;
+      message: string;
+      type: 'transaction' | 'system';
+      read: boolean;
+    }>
+  >([]);
   const { data: creditsData } = useGetUserCreditsQuery();
 
   // Fetch profile if we have a user but no profile
   const { refetch: refetchProfile } = useFetchProfileQuery(undefined, {
     skip: !currentUser || !!userProfile,
   });
+
+  // Listen for notification events
+  useEffect(() => {
+    const handleNotification = (event: CustomEvent) => {
+      const { message, type } = event.detail;
+      addNotification(message, type);
+    };
+
+    window.addEventListener(
+      'addNotification',
+      handleNotification as EventListener
+    );
+    return () => {
+      window.removeEventListener(
+        'addNotification',
+        handleNotification as EventListener
+      );
+    };
+  }, []);
 
   // Try to load profile if user exists but profile doesn't
   useEffect(() => {
@@ -88,6 +116,36 @@ export function Navbar() {
     }
   };
 
+  // Function to add a new notification
+  const addNotification = (message: string, type: 'transaction' | 'system') => {
+    const newNotification = {
+      id: Date.now().toString(),
+      message,
+      type,
+      read: false,
+    };
+    setNotifications((prev) => [newNotification, ...prev]);
+  };
+
+  // Function to mark a notification as read
+  const markAsRead = (id: string) => {
+    setNotifications((prev) =>
+      prev.map((notification) =>
+        notification.id === id ? { ...notification, read: true } : notification
+      )
+    );
+  };
+
+  // Function to mark all notifications as read
+  const markAllAsRead = () => {
+    setNotifications((prev) =>
+      prev.map((notification) => ({ ...notification, read: true }))
+    );
+  };
+
+  // Get unread notifications count
+  const unreadCount = notifications.filter((n) => !n.read).length;
+
   return (
     <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background dark:bg-background">
       <div className="mx-auto w-full max-w-[1200px] px-4 sm:px-6 lg:px-8">
@@ -142,6 +200,67 @@ export function Navbar() {
                     {creditsData?.balance || 0}
                   </span>
                 </div>
+
+                {/* Notifications */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="relative">
+                      <Bell className="h-5 w-5" />
+                      {unreadCount > 0 && (
+                        <Badge
+                          variant="destructive"
+                          className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-xs"
+                        >
+                          {unreadCount}
+                        </Badge>
+                      )}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-80">
+                    <div className="flex items-center justify-between p-2 border-b">
+                      <h4 className="font-medium">Notifications</h4>
+                      {unreadCount > 0 && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={markAllAsRead}
+                          className="text-xs"
+                        >
+                          Mark all as read
+                        </Button>
+                      )}
+                    </div>
+                    <div className="max-h-[300px] overflow-y-auto">
+                      {notifications.length === 0 ? (
+                        <div className="p-4 text-center text-sm text-muted-foreground">
+                          No notifications
+                        </div>
+                      ) : (
+                        notifications.map((notification) => (
+                          <DropdownMenuItem
+                            key={notification.id}
+                            className={`flex flex-col items-start p-3 cursor-pointer ${
+                              !notification.read ? 'bg-accent/50' : ''
+                            }`}
+                            onClick={() => markAsRead(notification.id)}
+                          >
+                            <div className="flex items-center justify-between w-full">
+                              <span className="text-sm font-medium">
+                                {notification.message}
+                              </span>
+                              {!notification.read && (
+                                <div className="h-2 w-2 rounded-full bg-primary" />
+                              )}
+                            </div>
+                            <span className="text-xs text-muted-foreground mt-1">
+                              {new Date().toLocaleString()}
+                            </span>
+                          </DropdownMenuItem>
+                        ))
+                      )}
+                    </div>
+                  </DropdownMenuContent>
+                </DropdownMenu>
 
                 {/* User Avatar & Profile Menu */}
                 <DropdownMenu>

@@ -57,7 +57,7 @@ const router = createBrowserRouter([
             path: 'marketplace/all',
             element: (
               <ProtectedRoute>
-                <MarketplacePage type="Allcourse" />
+                <MarketplacePage />
               </ProtectedRoute>
             ),
           },

@@ -108,6 +108,7 @@ export interface Transaction {
   listing: MarketplaceItem;
   status: 'pending' | 'completed' | 'cancelled';
   amount: number;
+  review: Review | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -349,7 +350,12 @@ export const marketplaceApi = baseApi.injectEndpoints({
         method: 'POST',
         body: { listingId },
       }),
-      invalidatesTags: [{ type: 'MarketplaceItem', id: 'LIST' }],
+      invalidatesTags: [
+        { type: 'MarketplaceItem', id: 'LIST' },
+        { type: 'MarketplaceItem', id: 'COURSES' },
+        { type: 'MarketplaceItem', id: 'ONLINE_COURSES' },
+        'Credits',
+      ],
     }),
 
     // Transaction endpoints

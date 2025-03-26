@@ -78,22 +78,18 @@ export function MarketplaceFilterBar({
   };
 
   const handleCategoryChange = (value: string) => {
-    // Convert "_all" special value back to empty string for the filter
+    // Convert "_all" special value back to undefined for the filter
     onFilterChange({ category: value === '_all' ? undefined : value });
   };
 
   const handleSkillChange = (value: string) => {
-    // Convert "_all" special value back to empty string for the filter
+    // Convert "_all" special value back to undefined for the filter
     onFilterChange({ skillName: value === '_all' ? undefined : value });
   };
 
   const handleProficiencyChange = (value: string) => {
-    // Convert "_all" special value back to empty string for the filter
+    // Convert "_all" special value back to undefined for the filter
     onFilterChange({ proficiencyLevel: value === '_all' ? undefined : value });
-  };
-
-  const handleSortByChange = (value: string) => {
-    onFilterChange({ sortBy: value });
   };
 
   const handleSortOrderChange = (value: 'asc' | 'desc') => {
@@ -262,24 +258,6 @@ export function MarketplaceFilterBar({
               onValueChange={handlePriceChange}
               className="py-4"
             />
-          </div>
-
-          <div className="space-y-2">
-            <h3 className="text-sm font-medium">Sort By</h3>
-            <Select
-              value={filters.sortBy || 'createdAt'}
-              onValueChange={handleSortByChange}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Sort By" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="createdAt">Date Added</SelectItem>
-                <SelectItem value="price">Price</SelectItem>
-                <SelectItem value="title">Title</SelectItem>
-                <SelectItem value="views">Views</SelectItem>
-              </SelectContent>
-            </Select>
           </div>
 
           <div className="space-y-2">

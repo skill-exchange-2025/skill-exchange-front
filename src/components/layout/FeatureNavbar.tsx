@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useLocation } from 'react-router-dom';
-import { MessageSquare, Store, Heart, Home } from 'lucide-react';
+import { MessageSquare, Store, Heart, Home, Book, MessageCircle } from 'lucide-react';
 import { motion, useScroll } from 'framer-motion';
 import { useEffect, useState } from 'react';
 
@@ -22,8 +22,8 @@ export function FeatureNavbar() {
     { name: 'Home', path: '/', icon: Home },
     { name: 'Channels', path: '/channels', icon: MessageSquare },
     { name: 'Marketplace', path: '/marketplace', icon: Store },
-    { name: 'Messages', path: '/messages', icon: MessageSquare },
-    { name: 'Favorites', path: '/favorites', icon: Heart },
+    { name: 'Chat', path: '/chat', icon: MessageCircle },
+    { name: 'Courses', path: '/courses', icon: Book },
   ];
 
   return (

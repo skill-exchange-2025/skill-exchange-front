@@ -337,7 +337,7 @@ export function MarketplaceItemDetail() {
     try {
       await deleteItem(id || '').unwrap();
       toast.success('Item deleted successfully');
-      navigate('/marketplace/listings');
+      navigate('/marketplace/all');
     } catch (err) {
       toast.error('Failed to delete item');
       console.error('Failed to delete item:', err);
@@ -361,14 +361,24 @@ export function MarketplaceItemDetail() {
       const result = await purchaseItem(id || '').unwrap();
       setTransaction(result);
 
-      toast.success('Item purchased successfully!');
+      // Show success message and add notification
+      toast.success('Item purchased successfully!', {
+        description: 'Your credits have been updated.',
+      });
 
-      // For courses, show the complete transaction dialog
-      if (item?.type === 'course' || item?.type === 'onlineCourse') {
-        setCompleteDialogOpen(true);
-      } else {
-        navigate('/marketplace/listings');
-      }
+      // Add notification for purchase
+      const notification = new CustomEvent('addNotification', {
+        detail: {
+          message: `Successfully purchased ${item?.title}`,
+          type: 'transaction',
+        },
+      });
+      window.dispatchEvent(notification);
+
+      // Invalidate the wallet query to refresh credits amount
+      dispatch(marketplaceApi.util.invalidateTags(['Credits']));
+      // Navigate back to marketplace
+      navigate('/marketplace/all');
     } catch (err) {
       toast.error('Failed to purchase item');
       console.error('Failed to purchase item:', err);
@@ -382,7 +392,16 @@ export function MarketplaceItemDetail() {
     try {
       await completeTransaction(transaction._id).unwrap();
       toast.success('Transaction completed successfully!');
-      setReviewDialogOpen(true);
+      // Add notification for transaction completion
+      const notification = new CustomEvent('addNotification', {
+        detail: {
+          message: `Transaction completed for ${item?.title}`,
+          type: 'transaction',
+        },
+      });
+      window.dispatchEvent(notification);
+      // Show review button instead of automatically opening review dialog
+      setReviewDialogOpen(false);
     } catch (err) {
       toast.error('Failed to complete transaction');
       console.error('Failed to complete transaction:', err);
@@ -400,15 +419,23 @@ export function MarketplaceItemDetail() {
         comment: reviewComment,
       }).unwrap();
       toast.success('Review submitted successfully!');
-      navigate('/marketplace/listings');
+      navigate('/marketplace/all');
     } catch (err) {
       toast.error('Failed to submit review');
       console.error('Failed to submit review:', err);
     }
   };
 
+  // Add function to handle review button click
+  const handleReviewClick = () => {
+    setReviewDialogOpen(true);
+  };
+
   // Determine if current user is the seller
   const isOwner = currentUser && item?.seller?._id === currentUser._id;
+
+  // Add function to check if user can review
+  const canReview = transaction?.status === 'completed' && !transaction?.review;
 
   if (isLoading) {
     return <ItemDetailSkeleton />;
@@ -653,6 +680,34 @@ export function MarketplaceItemDetail() {
               </Card>
             </motion.div>
           )}
+
+          {/* Add Review Button in the details section */}
+          {canReview && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="mt-4"
+            >
+              <Card className="shadow-md">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Star className="h-5 w-5 text-yellow-500" />
+                      <span className="font-medium">Leave a Review</span>
+                    </div>
+                    <Button
+                      onClick={handleReviewClick}
+                      className="flex items-center gap-2"
+                    >
+                      <Star className="h-4 w-4" />
+                      Write Review
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          )}
         </div>
       </div>
 
@@ -757,7 +812,7 @@ export function MarketplaceItemDetail() {
         onOpenChange={setReviewDialogOpen}
         title="Submit Review"
         description="Please provide your feedback for this transaction."
-        confirmText="Submit"
+        confirmText="Submit Review"
         onConfirm={handleSubmitReview}
       >
         <div className="space-y-4">
