@@ -105,7 +105,7 @@ const profileSlice = createSlice({
             (state, action) => {
                 state.status = "succeeded";
                 if (state.profile) {
-                    state.profile.avatar = action.payload.avatarUrl;
+                    state.profile.avatarUrl = action.payload.avatarUrl;
                 }
             }
         );

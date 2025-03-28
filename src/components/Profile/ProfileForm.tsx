@@ -153,7 +153,6 @@ export const ProfileForm: React.FC = () => {
                         />
                         {errors.bio && <span className="text-red-500 text-sm">{errors.bio.message}</span>}
                     </div>
-                    // Replace the existing avatar section with this updated version:
                     <div className="flex flex-col items-center space-y-2">
                         <input
                             type="file"
