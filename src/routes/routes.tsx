@@ -22,6 +22,9 @@ import { MarketplaceItemDetail } from '@/pages/marketplace/item-detail';
 import { CreateEditMarketplaceItem } from '@/pages/marketplace/create-edit-item';
 import { ListingTypeSelection } from '@/pages/marketplace/listing-type-selection';
 import { TransactionsPage } from '@/pages/marketplace/transactions';
+import MessagingLayout from '../pages/messaging/MessagingLayout';
+import ChannelPage from '../pages/messaging/ChannelPage';
+import ChannelListPage from '../pages/messaging/ChannelListPage';
 
 const router = createBrowserRouter([
   {
@@ -108,6 +111,19 @@ const router = createBrowserRouter([
                 <TransactionsPage />
               </ProtectedRoute>
             ),
+          },
+          // Messaging routes
+          {
+            path: 'messaging',
+            element: (
+              <ProtectedRoute>
+                <MessagingLayout />
+              </ProtectedRoute>
+            ),
+            children: [
+              { index: true, element: <ChannelListPage /> },
+              { path: ':channelId', element: <ChannelPage /> },
+            ],
           },
         ],
       },

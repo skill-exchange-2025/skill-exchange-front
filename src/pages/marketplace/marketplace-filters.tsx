@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import {
-  Grid2X2,
+  LayoutGrid,
   List,
   Search,
   SlidersHorizontal,
@@ -155,7 +155,7 @@ export function MarketplaceFilterBar({
             onClick={() => onViewModeChange('grid')}
             className={viewMode === 'grid' ? 'bg-primary/10' : ''}
           >
-            <Grid2X2 className="h-4 w-4" />
+            <LayoutGrid className="h-4 w-4" />
           </Button>
           <Button
             variant="outline"

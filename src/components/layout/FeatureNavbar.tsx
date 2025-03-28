@@ -1,7 +1,14 @@
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useLocation } from 'react-router-dom';
-import { MessageSquare, Store, Heart, Home, Book, MessageCircle } from 'lucide-react';
+import {
+  MessageSquare,
+  Store,
+  Heart,
+  Home,
+  Book,
+  MessageCircle,
+} from 'lucide-react';
 import { motion, useScroll } from 'framer-motion';
 import { useEffect, useState } from 'react';
 
@@ -9,6 +16,7 @@ export function FeatureNavbar() {
   const location = useLocation();
   const { scrollY } = useScroll();
   const [isScrolled, setIsScrolled] = useState(false);
+  const isMessagingPage = location.pathname.includes('/messaging');
 
   // Track scroll position to add blur and hide names
   useEffect(() => {
@@ -20,7 +28,7 @@ export function FeatureNavbar() {
 
   const navItems = [
     { name: 'Home', path: '/', icon: Home },
-    { name: 'Channels', path: '/channels', icon: MessageSquare },
+    { name: 'Channels', path: '/messaging', icon: MessageSquare },
     { name: 'Marketplace', path: '/marketplace', icon: Store },
     { name: 'Chat', path: '/chat', icon: MessageCircle },
     { name: 'Courses', path: '/courses', icon: Book },
@@ -28,16 +36,18 @@ export function FeatureNavbar() {
 
   return (
     <motion.div
-      className={cn(
-        'flex transition-all duration-300 rounded-full bg-accent/50 dark:bg-accent/10 p-1.5 space-x-8 sticky top-0 z-40 self-center mx-auto my-3',
-        isScrolled && 'backdrop-blur-md bg-accent/30 dark:bg-accent/5'
-      )}
+      className={`flex transition-all duration-300 bg-accent/50 dark:bg-accent/10 p-1.5 sticky top-0 z-40 rounded-full space-x-8 self-center mx-auto ${
+        isMessagingPage ? 'mb-1' : 'my-3'
+      }`}
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
       {navItems.map((item) => {
-        const isActive = location.pathname === item.path;
+        const isActive =
+          item.path === '/'
+            ? location.pathname === item.path
+            : location.pathname.startsWith(item.path);
         const Icon = item.icon;
 
         return (

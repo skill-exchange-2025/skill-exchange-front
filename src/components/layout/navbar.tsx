@@ -324,6 +324,9 @@ export function Navbar() {
                       <DropdownMenuItem asChild className="cursor-pointer">
                         <Link to="/user/profile">Manage Profile</Link>
                       </DropdownMenuItem>
+                      <DropdownMenuItem asChild className="cursor-pointer">
+                        <Link to="/messaging">Messages</Link>
+                      </DropdownMenuItem>
                       <DropdownMenuItem
                         onClick={handleSignOut}
                         className="cursor-pointer"
