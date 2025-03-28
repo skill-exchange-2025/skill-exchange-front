@@ -23,6 +23,9 @@ import { MarketplaceItemDetail } from '@/pages/marketplace/item-detail';
 import { CreateEditMarketplaceItem } from '@/pages/marketplace/create-edit-item';
 import { ListingTypeSelection } from '@/pages/marketplace/listing-type-selection';
 import { TransactionsPage } from '@/pages/marketplace/transactions';
+import MessagingLayout from '../pages/messaging/MessagingLayout';
+import ChannelPage from '../pages/messaging/ChannelPage';
+import ChannelListPage from '../pages/messaging/ChannelListPage';
 
 const router = createBrowserRouter([
   {
@@ -46,19 +49,45 @@ const router = createBrowserRouter([
           { path: 'terms', element: <Terms /> },
           { path: 'forgot-password', element: <ForgotPassword /> },
           { path: 'signup', element: <SignUp /> },
-          { path: 'marketplace', element: <ListingTypeSelection /> },
-          { path: 'marketplace/all', element: <MarketplacePage /> },
+          {
+            path: 'marketplace',
+            element: (
+              <ProtectedRoute>
+                <ListingTypeSelection />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: 'marketplace/all',
+            element: (
+              <ProtectedRoute>
+                <MarketplacePage />
+              </ProtectedRoute>
+            ),
+          },
           {
             path: 'marketplace/courses',
-            element: <MarketplacePage type="course" />,
+            element: (
+              <ProtectedRoute>
+                <MarketplacePage type="course" />
+              </ProtectedRoute>
+            ),
           },
           {
             path: 'marketplace/online-courses',
-            element: <MarketplacePage type="onlineCourse" />,
+            element: (
+              <ProtectedRoute>
+                <MarketplacePage type="onlineCourse" />
+              </ProtectedRoute>
+            ),
           },
           {
             path: 'marketplace/item/:id',
-            element: <MarketplaceItemDetail />,
+            element: (
+              <ProtectedRoute>
+                <MarketplaceItemDetail />
+              </ProtectedRoute>
+            ),
           },
           {
             path: 'marketplace/create',
@@ -83,6 +112,19 @@ const router = createBrowserRouter([
                 <TransactionsPage />
               </ProtectedRoute>
             ),
+          },
+          // Messaging routes
+          {
+            path: 'messaging',
+            element: (
+              <ProtectedRoute>
+                <MessagingLayout />
+              </ProtectedRoute>
+            ),
+            children: [
+              { index: true, element: <ChannelListPage /> },
+              { path: ':channelId', element: <ChannelPage /> },
+            ],
           },
         ],
       },

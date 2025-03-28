@@ -57,24 +57,16 @@ export function MarketplaceItemCard({
         icon = '🌱'; // Seedling for beginners
         break;
       case 'intermediate':
-        color = 'bg-blue-100 text-blue-800 hover:bg-blue-200 border-blue-300';
+        color =
+          'bg-orange-100 text-orange-800 hover:bg-orange-200 border-orange-300';
         darkColor =
-          'dark:bg-blue-900/40 dark:text-blue-300 dark:border-blue-700';
+          'dark:bg-orange-900/40 dark:text-orange-300 dark:border-orange-700';
         icon = '🌿'; // Growing plant for intermediate
         break;
       case 'advanced':
-        color =
-          'bg-purple-100 text-purple-800 hover:bg-purple-200 border-purple-300';
-        darkColor =
-          'dark:bg-purple-900/40 dark:text-purple-300 dark:border-purple-700';
+        color = 'bg-red-100 text-red-800 hover:bg-red-200 border-red-300';
+        darkColor = 'dark:bg-red-900/40 dark:text-red-300 dark:border-red-700';
         icon = '🌳'; // Full tree for advanced
-        break;
-      case 'expert':
-        color =
-          'bg-amber-100 text-amber-800 hover:bg-amber-200 border-amber-300';
-        darkColor =
-          'dark:bg-amber-900/40 dark:text-amber-300 dark:border-amber-700';
-        icon = '✨'; // Sparkles for expert
         break;
       default:
         color = 'bg-gray-100 text-gray-800 hover:bg-gray-200 border-gray-300';
@@ -116,7 +108,7 @@ export function MarketplaceItemCard({
         whileHover={{ y: -5 }}
       >
         <Link to={`/marketplace/item/${item._id}`} className="block h-full">
-          <Card className="overflow-hidden h-full flex flex-col hover:shadow-xl transition-all duration-300 border-2 border-border/40 dark:border-primary/20 group bg-white dark:bg-slate-800 hover:border-primary/30 dark:hover:border-primary/40">
+          <Card className="overflow-hidden h-full flex flex-col hover:shadow-xl transition-all duration-300 border-2 border-border/40 dark:border-primary/20 group hover:border-primary/30 dark:hover:border-primary/40">
             <div className="relative">
               {item.imagesUrl && item.imagesUrl.length > 0 ? (
                 <div className="h-48 overflow-hidden">
@@ -163,7 +155,7 @@ export function MarketplaceItemCard({
             </div>
 
             <div className="flex-grow flex flex-col">
-              <CardHeader className="pb-2 pt-3 bg-white dark:bg-slate-800">
+              <CardHeader className="pb-2 pt-3">
                 <div className="flex justify-between items-start gap-2">
                   <CardTitle className="text-lg line-clamp-1 group-hover:text-primary transition-colors">
                     {item.title}
@@ -178,7 +170,7 @@ export function MarketplaceItemCard({
                 </CardDescription>
               </CardHeader>
 
-              <CardContent className="pb-2 flex-grow bg-white dark:bg-slate-800">
+              <CardContent className="pb-2 flex-grow">
                 {/* Proficiency level and skill */}
                 <div className="space-y-2 mb-3">
                   {item.proficiencyLevel && (
@@ -223,7 +215,7 @@ export function MarketplaceItemCard({
                 )}
               </CardContent>
 
-              <CardFooter className="pt-0 text-xs text-muted-foreground dark:text-slate-400 border-t dark:border-slate-700 mt-auto bg-slate-50 dark:bg-slate-900/50">
+              <CardFooter className="pt-0 text-xs text-muted-foreground   ">
                 <div className="w-full flex justify-between items-center">
                   <div className="flex items-center gap-1">
                     <Clock className="h-3 w-3" />
@@ -251,7 +243,7 @@ export function MarketplaceItemCard({
       whileHover={{ x: 5 }}
     >
       <Link to={`/marketplace/item/${item._id}`}>
-        <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 border-2 border-border/40 dark:border-primary/20 group bg-white dark:bg-slate-800 hover:border-primary/30 dark:hover:border-primary/40">
+        <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 border-2 border-border/40 dark:border-primary/20 group hover:border-primary/30 dark:hover:border-primary/40">
           <div className="flex">
             <div className="relative w-32 h-32 sm:w-48 sm:h-48">
               {item.imagesUrl && item.imagesUrl.length > 0 ? (
@@ -293,7 +285,7 @@ export function MarketplaceItemCard({
             </div>
 
             <div className="flex-1 flex flex-col">
-              <CardHeader className="pb-2 bg-white dark:bg-slate-800">
+              <CardHeader className="pb-2">
                 <div className="flex justify-between items-start gap-2">
                   <div>
                     <CardTitle className="text-lg group-hover:text-primary transition-colors">
@@ -310,7 +302,7 @@ export function MarketplaceItemCard({
                 </div>
               </CardHeader>
 
-              <CardContent className="py-0 flex-grow bg-white dark:bg-slate-800">
+              <CardContent className="py-0 flex-grow">
                 <div className="flex flex-wrap gap-2 mb-3">
                   {item.proficiencyLevel &&
                     getLevelBadge(item.proficiencyLevel)}
@@ -360,15 +352,11 @@ export function MarketplaceItemCard({
                 )}
               </CardContent>
 
-              <CardFooter className="pt-0 text-xs text-muted-foreground dark:text-slate-400 border-t dark:border-slate-700 mt-auto bg-slate-50 dark:bg-slate-900/50">
+              <CardFooter className="pt-0 text-xs text-muted-foreground">
                 <div className="w-full flex justify-between items-center">
                   <div className="flex items-center gap-1">
                     <Clock className="h-3 w-3" />
                     {formatDate(item.createdAt)}
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Eye className="h-3 w-3" />
-                    {formatViewCount(item.views)}
                   </div>
                 </div>
               </CardFooter>

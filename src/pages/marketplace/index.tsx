@@ -118,6 +118,9 @@ export function MarketplacePage({ type }: MarketplacePageProps) {
       if (typeParam) {
         console.log('Setting type filter from URL param:', typeParam);
         dispatch(setTypeFilter(typeParam as ListingType));
+      } else {
+        // Clear type filter if no type is specified
+        dispatch(setTypeFilter(undefined));
       }
     }
 
@@ -242,30 +245,27 @@ export function MarketplacePage({ type }: MarketplacePageProps) {
     }
 
     // Handle individual filter changes
-    if (newFilters.search !== undefined) {
-      dispatch(setSearchTerm(newFilters.search));
+    if ('search' in newFilters) {
+      dispatch(setSearchTerm(newFilters.search || ''));
     }
 
-    if (newFilters.category !== undefined) {
+    if ('category' in newFilters) {
       dispatch(setCategoryFilter(newFilters.category));
     }
 
-    if (newFilters.skillName !== undefined) {
+    if ('skillName' in newFilters) {
       dispatch(setSkillNameFilter(newFilters.skillName));
     }
 
-    if (newFilters.proficiencyLevel !== undefined) {
+    if ('proficiencyLevel' in newFilters) {
       dispatch(setProficiencyLevelFilter(newFilters.proficiencyLevel));
     }
 
-    if (newFilters.type !== undefined) {
+    if ('type' in newFilters) {
       dispatch(setTypeFilter(newFilters.type));
     }
 
-    if (
-      newFilters.minPrice !== undefined ||
-      newFilters.maxPrice !== undefined
-    ) {
+    if ('minPrice' in newFilters || 'maxPrice' in newFilters) {
       dispatch(
         setPriceRange({
           min: newFilters.minPrice,
@@ -274,12 +274,12 @@ export function MarketplacePage({ type }: MarketplacePageProps) {
       );
     }
 
-    if (newFilters.sortBy) {
-      dispatch(setSortBy(newFilters.sortBy));
+    if ('sortBy' in newFilters) {
+      dispatch(setSortBy(newFilters.sortBy || 'createdAt'));
     }
 
-    if (newFilters.sortOrder) {
-      dispatch(setSortOrder(newFilters.sortOrder));
+    if ('sortOrder' in newFilters) {
+      dispatch(setSortOrder(newFilters.sortOrder || 'desc'));
     }
 
     // Reset to first page when filters change

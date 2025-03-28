@@ -16,6 +16,7 @@ import profileReducer from './features/profile/profileSlice';
 import usersReducer from './features/users/usersSlice.ts';
 import marketplaceReducer from './features/marketplace/marketplaceSlice';
 import creditsReducer from './features/credits/creditsSlice';
+import channelsReducer from './features/messaging/channelsSlice';
 
 const persistConfig = {
   key: 'auth',
@@ -32,6 +33,7 @@ export const store = configureStore({
     auth: persistedAuthReducer,
     marketplace: marketplaceReducer,
     credits: creditsReducer,
+    channels: channelsReducer,
   },
   middleware: (getDefaultMiddlewares) =>
     getDefaultMiddlewares({

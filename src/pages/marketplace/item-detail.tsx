@@ -233,50 +233,65 @@ export function MarketplaceItemDetail() {
     };
   }, [dispatch]);
 
-  // Increment view count when the component mounts - only for different users, not the seller
+  // Handle view count increment - separate useEffect that runs only once when component mounts
   useEffect(() => {
-    if (!id || !item || viewCountUpdatedRef.current) return;
+    // Create a flag to run this effect only once
+    let isMounted = true;
 
-    // Don't increment view count if the current user is the seller
-    const isOwner =
-      currentUser && item.seller && item.seller._id === currentUser._id;
-    if (isOwner) {
-      console.log(
-        'Seller viewing their own item - not incrementing view count'
-      );
-      return;
-    }
+    const updateViewCount = async () => {
+      // Only proceed if we have valid ID, item data, and haven't updated view count yet
+      if (!id || !item || !isMounted || viewCountUpdatedRef.current) return;
 
-    // Check if this user has already viewed this item using localStorage
-    const viewedItems = JSON.parse(localStorage.getItem('viewedItems') || '{}');
+      // Don't increment view count if current user is the seller
+      const isOwner =
+        currentUser && item.seller && item.seller._id === currentUser._id;
+      if (isOwner) {
+        console.log(
+          'Seller viewing their own item - not incrementing view count'
+        );
+        return;
+      }
 
-    // If user has already viewed this item, don't increment
-    if (viewedItems[id]) {
-      console.log(
-        'User already viewed this item - not incrementing view count'
-      );
-      return;
-    }
+      // Generate a unique storage key that will persist for this visit
+      const visitorId =
+        localStorage.getItem('visitorId') ||
+        `visitor_${Math.random().toString(36).substring(2, 15)}`;
 
-    // Mark this item as viewed by this user
-    viewedItems[id] = true;
-    localStorage.setItem('viewedItems', JSON.stringify(viewedItems));
+      // Store the visitorId if not already set
+      if (!localStorage.getItem('visitorId')) {
+        localStorage.setItem('visitorId', visitorId);
+      }
 
-    // Set flag to prevent multiple updates
-    viewCountUpdatedRef.current = true;
+      // Create a storage key specific to this visitor and this item
+      const viewKey = `viewed_${id}_${visitorId}`;
 
-    console.log('Incrementing view count for item:', id);
+      // Check if this specific visitor has already viewed this specific item
+      const hasViewed = localStorage.getItem(viewKey);
 
-    // Update local view count immediately for better UX
-    const newViewCount = (item.views || 0) + 1;
-    updateItem({
-      id,
-      data: { views: newViewCount },
-    })
-      .then(() => {
+      if (hasViewed) {
+        console.log(
+          'This visitor has already viewed this item - not incrementing view count'
+        );
+        return;
+      }
+
+      // Mark this view to prevent duplicate counts
+      viewCountUpdatedRef.current = true;
+      localStorage.setItem(viewKey, 'true');
+
+      console.log('Incrementing view count for item:', id);
+
+      try {
+        // Update view count in the database
+        const newViewCount = (item.views || 0) + 1;
+        await updateItem({
+          id,
+          data: { views: newViewCount },
+        }).unwrap();
+
         console.log('View count updated successfully');
 
-        // Invalidate all relevant caches to ensure the updated view count is shown in listing pages
+        // Invalidate cache to show updated counts in listings
         dispatch(
           marketplaceApi.util.invalidateTags([
             { type: 'MarketplaceItem', id: 'LIST' },
@@ -284,16 +299,23 @@ export function MarketplaceItemDetail() {
             { type: 'MarketplaceItem', id: 'ONLINE_COURSES' },
           ])
         );
-      })
-      .catch((err) => {
+      } catch (err) {
         console.error('Failed to update view count:', err);
-        // Reset the flag if the update fails, so we can try again
+        // Reset the flag in case of error
         viewCountUpdatedRef.current = false;
-        // Remove this item from viewed items to allow retry
-        delete viewedItems[id];
-        localStorage.setItem('viewedItems', JSON.stringify(viewedItems));
-      });
-  }, [id, item, updateItem, dispatch, currentUser]);
+        localStorage.removeItem(viewKey);
+      }
+    };
+
+    // Call the function
+    updateViewCount();
+
+    // Cleanup function
+    return () => {
+      isMounted = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, item?.seller?._id]); // Minimal dependencies to avoid re-running
 
   const handleBack = () => {
     // Navigate back to the appropriate listing type page
@@ -315,7 +337,7 @@ export function MarketplaceItemDetail() {
     try {
       await deleteItem(id || '').unwrap();
       toast.success('Item deleted successfully');
-      navigate('/marketplace/listings');
+      navigate('/marketplace/all');
     } catch (err) {
       toast.error('Failed to delete item');
       console.error('Failed to delete item:', err);
@@ -339,14 +361,24 @@ export function MarketplaceItemDetail() {
       const result = await purchaseItem(id || '').unwrap();
       setTransaction(result);
 
-      toast.success('Item purchased successfully!');
+      // Show success message and add notification
+      toast.success('Item purchased successfully!', {
+        description: 'Your credits have been updated.',
+      });
 
-      // For courses, show the complete transaction dialog
-      if (item?.type === 'course' || item?.type === 'onlineCourse') {
-        setCompleteDialogOpen(true);
-      } else {
-        navigate('/marketplace/listings');
-      }
+      // Add notification for purchase
+      const notification = new CustomEvent('addNotification', {
+        detail: {
+          message: `Successfully purchased ${item?.title}`,
+          type: 'transaction',
+        },
+      });
+      window.dispatchEvent(notification);
+
+      // Invalidate the wallet query to refresh credits amount
+      dispatch(marketplaceApi.util.invalidateTags(['Credits']));
+      // Navigate back to marketplace
+      navigate('/marketplace/all');
     } catch (err) {
       toast.error('Failed to purchase item');
       console.error('Failed to purchase item:', err);
@@ -360,7 +392,16 @@ export function MarketplaceItemDetail() {
     try {
       await completeTransaction(transaction._id).unwrap();
       toast.success('Transaction completed successfully!');
-      setReviewDialogOpen(true);
+      // Add notification for transaction completion
+      const notification = new CustomEvent('addNotification', {
+        detail: {
+          message: `Transaction completed for ${item?.title}`,
+          type: 'transaction',
+        },
+      });
+      window.dispatchEvent(notification);
+      // Show review button instead of automatically opening review dialog
+      setReviewDialogOpen(false);
     } catch (err) {
       toast.error('Failed to complete transaction');
       console.error('Failed to complete transaction:', err);
@@ -378,15 +419,23 @@ export function MarketplaceItemDetail() {
         comment: reviewComment,
       }).unwrap();
       toast.success('Review submitted successfully!');
-      navigate('/marketplace/listings');
+      navigate('/marketplace/all');
     } catch (err) {
       toast.error('Failed to submit review');
       console.error('Failed to submit review:', err);
     }
   };
 
+  // Add function to handle review button click
+  const handleReviewClick = () => {
+    setReviewDialogOpen(true);
+  };
+
   // Determine if current user is the seller
   const isOwner = currentUser && item?.seller?._id === currentUser._id;
+
+  // Add function to check if user can review
+  const canReview = transaction?.status === 'completed' && !transaction?.review;
 
   if (isLoading) {
     return <ItemDetailSkeleton />;
@@ -446,86 +495,94 @@ export function MarketplaceItemDetail() {
 
   return (
     <div className="container py-8">
-      <Button variant="outline" onClick={handleBack} className="mb-8">
+      <Button variant="outline" onClick={handleBack} className="mb-6">
         <ArrowLeft className="mr-2 h-4 w-4" /> Back to Marketplace
       </Button>
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <Card className="overflow-hidden shadow-md">
-          <div className="md:flex">
-            {item.imagesUrl && item.imagesUrl.length > 0 ? (
-              <div className="md:w-1/2">
-                <img
-                  src={item.imagesUrl[0]}
-                  alt={item.title}
-                  className="w-full h-full object-cover rounded-t-xl md:rounded-l-xl md:rounded-t-none"
-                />
-              </div>
-            ) : (
-              <div className="md:w-1/2 bg-muted flex items-center justify-center p-12">
-                <div className="text-8xl opacity-30">{typeInfo.icon}</div>
-              </div>
-            )}
-            <div
-              className={`md:w-${
-                item.imagesUrl && item.imagesUrl.length > 0 ? '1/2' : 'full'
-              } flex flex-col`}
-            >
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        {/* Image section */}
+        <div className="md:col-span-2">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <Card className="overflow-hidden shadow-md">
+              {item.imagesUrl && item.imagesUrl.length > 0 ? (
+                <div className="w-full">
+                  <img
+                    src={item.imagesUrl[0]}
+                    alt={item.title}
+                    className="w-full h-[400px] object-cover"
+                  />
+                </div>
+              ) : (
+                <div className="w-full h-[400px] bg-muted flex items-center justify-center">
+                  <div className="text-8xl opacity-30">{typeInfo.icon}</div>
+                </div>
+              )}
+            </Card>
+          </motion.div>
+        </div>
+
+        {/* Details section */}
+        <div className="space-y-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <Card className="shadow-md">
               <CardHeader>
-                <div className="flex justify-between items-start">
-                  <div>
-                    <div className="flex items-center gap-2 mb-2">
-                      <CardTitle className="text-2xl">{item.title}</CardTitle>
-                      <Badge
-                        variant="secondary"
-                        className="flex items-center gap-1 bg-black/70 text-white shadow-md"
-                      >
-                        <span className="text-lg">{typeInfo.icon}</span>
-                        {typeInfo.label}
-                      </Badge>
-                    </div>
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      {item.category && (
-                        <Badge
-                          variant="outline"
-                          className="flex items-center gap-1"
-                        >
-                          <Tag className="h-3 w-3" />
-                          {item.category}
-                        </Badge>
-                      )}
-                      {item.proficiencyLevel &&
-                        getLevelBadge(item.proficiencyLevel)}
-                      {item.skillName && (
-                        <Badge
-                          variant="outline"
-                          className="bg-amber-100 text-amber-800 border-amber-300"
-                        >
-                          <Sparkles className="h-3 w-3 mr-1" />
-                          {item.skillName}
-                        </Badge>
-                      )}
-                    </div>
+                <div className="flex flex-col">
+                  <div className="flex items-center gap-2 mb-2">
+                    <CardTitle className="text-2xl">{item.title}</CardTitle>
+                    <Badge
+                      variant="secondary"
+                      className="flex items-center gap-1 bg-black/70 text-white shadow-md"
+                    >
+                      <span className="text-lg">{typeInfo.icon}</span>
+                      {typeInfo.label}
+                    </Badge>
                   </div>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {item.category && (
+                      <Badge
+                        variant="outline"
+                        className="flex items-center gap-1"
+                      >
+                        <Tag className="h-3 w-3" />
+                        {item.category}
+                      </Badge>
+                    )}
+                    {item.proficiencyLevel &&
+                      getLevelBadge(item.proficiencyLevel)}
+                    {item.skillName && (
+                      <Badge
+                        variant="outline"
+                        className="bg-amber-100 text-amber-800 border-amber-300"
+                      >
+                        <Sparkles className="h-3 w-3 mr-1" />
+                        {item.skillName}
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <h3 className="font-semibold flex items-center gap-2">
+                    <BookOpen className="h-4 w-4" /> Description
+                  </h3>
                   <div className="text-2xl font-bold flex items-center gap-2 bg-primary/10 p-2 rounded-md">
                     <img src={cryptoIcon} alt="Credits" className="h-6 w-6" />
                     {Math.round(item.price)}
                   </div>
                 </div>
-              </CardHeader>
-              <CardContent className="flex-grow">
-                <div className="mb-4">
-                  <h3 className="font-semibold mb-2 text-lg flex items-center gap-2">
-                    <BookOpen className="h-4 w-4" /> Description
-                  </h3>
-                  <p className="text-muted-foreground">{item.description}</p>
-                </div>
 
-                <div className="grid grid-cols-2 gap-2 mb-4">
+                <p className="text-muted-foreground">{item.description}</p>
+
+                <div className="space-y-2">
                   <div className="flex items-center gap-2 text-sm">
                     <Clock className="h-4 w-4 text-muted-foreground" />
                     <span>Listed {formattedDate}</span>
@@ -536,25 +593,6 @@ export function MarketplaceItemDetail() {
                   </div>
                 </div>
 
-                <div className="mb-4">
-                  <h3 className="font-semibold mb-2 flex items-center gap-2">
-                    <User className="h-4 w-4" /> Seller
-                  </h3>
-                  <div className="flex items-center gap-2 bg-muted/30 p-2 rounded-md">
-                    <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center">
-                      {item.seller?.name?.charAt(0) || 'U'}
-                    </div>
-                    <div>
-                      <p className="font-medium">{item.seller?.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        Member since{' '}
-                        {new Date(item.createdAt || '').getFullYear()}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-              <CardFooter className="flex justify-between bg-muted/10 border-t">
                 {isOwner ? (
                   <div className="flex gap-2">
                     <Button
@@ -582,42 +620,102 @@ export function MarketplaceItemDetail() {
                     <ShoppingCart className="h-4 w-4" /> Purchase Now
                   </Button>
                 )}
-              </CardFooter>
-            </div>
-          </div>
-        </Card>
-      </motion.div>
+              </CardContent>
+            </Card>
+          </motion.div>
 
-      {/* Tags section */}
-      {item.tags && item.tags.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="mt-4"
-        >
-          <Card className="shadow-sm">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm">Tags</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap gap-2">
-                {item.tags.map((tag, index) => (
-                  <Badge key={index} variant="outline" className="text-xs">
-                    {tag}
-                  </Badge>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-      )}
+          {/* Seller section */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+          >
+            <Card className="shadow-md">
+              <CardHeader>
+                <CardTitle className="text-sm">Seller</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center space-x-3">
+                  <div className="h-12 w-12 rounded-full bg-primary/20 flex items-center justify-center text-lg font-medium">
+                    {item.seller?.name?.charAt(0) ||
+                      item.seller?.email?.charAt(0) ||
+                      'U'}
+                  </div>
+                  <div>
+                    <p className="font-medium">
+                      {item.seller?.name ||
+                        item.seller?.email ||
+                        'Unknown seller'}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Member since{' '}
+                      {new Date(item.createdAt || '').getFullYear()}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          {/* Tags section */}
+          {item.tags && item.tags.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+            >
+              <Card className="shadow-sm">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm">Tags</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-wrap gap-2">
+                    {item.tags.map((tag, index) => (
+                      <Badge key={index} variant="outline" className="text-xs">
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          )}
+
+          {/* Add Review Button in the details section */}
+          {canReview && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="mt-4"
+            >
+              <Card className="shadow-md">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Star className="h-5 w-5 text-yellow-500" />
+                      <span className="font-medium">Leave a Review</span>
+                    </div>
+                    <Button
+                      onClick={handleReviewClick}
+                      className="flex items-center gap-2"
+                    >
+                      <Star className="h-4 w-4" />
+                      Write Review
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          )}
+        </div>
+      </div>
 
       {/* Listing Type Specific Content */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
+        transition={{ duration: 0.5, delay: 0.3 }}
         className="mt-8"
       >
         <Card className="shadow-md">
@@ -663,6 +761,7 @@ export function MarketplaceItemDetail() {
         </Card>
       </motion.div>
 
+      {/* Dialogs */}
       <ConfirmationDialog
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
@@ -713,7 +812,7 @@ export function MarketplaceItemDetail() {
         onOpenChange={setReviewDialogOpen}
         title="Submit Review"
         description="Please provide your feedback for this transaction."
-        confirmText="Submit"
+        confirmText="Submit Review"
         onConfirm={handleSubmitReview}
       >
         <div className="space-y-4">
