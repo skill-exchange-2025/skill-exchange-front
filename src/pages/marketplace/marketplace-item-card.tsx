@@ -64,7 +64,7 @@ export function MarketplaceItemCard({
         icon = '🌿'; // Growing plant for intermediate
         break;
       case 'advanced':
-        color = 'bg-red-100 text-red-800 hover:bg-red-200 border-red  -300';
+        color = 'bg-red-100 text-red-800 hover:bg-red-200 border-red-300';
         darkColor = 'dark:bg-red-900/40 dark:text-red-300 dark:border-red-700';
         icon = '🌳'; // Full tree for advanced
         break;
