@@ -14,11 +14,20 @@ const MessagingLayout: React.FC = () => {
   const { data, isLoading, error } = useGetChannelsQuery({});
 
   useEffect(() => {
-    // Connect to socket when component mounts
+    // Initialize socket connection when component mounts
     socketService.connect();
 
+    // Set up reconnection mechanism if connection drops
+    const checkConnectionInterval = setInterval(() => {
+      if (!socketService.isConnected()) {
+        console.log('Socket connection check: Reconnecting...');
+        socketService.connect();
+      }
+    }, 10000); // Check every 10 seconds
+
     return () => {
-      // Disconnect from socket when component unmounts
+      // Clean up on unmount
+      clearInterval(checkConnectionInterval);
       socketService.disconnect();
     };
   }, []);

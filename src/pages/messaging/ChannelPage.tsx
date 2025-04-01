@@ -39,8 +39,7 @@ import {
   useJoinChannelMutation,
   useLeaveChannelMutation,
 } from '../../redux/api/messagingApi';
-import { useToast } from '../../hooks/use-toast';
-
+import { toast } from 'sonner';
 const ChannelPage: React.FC = () => {
   const { channelId } = useParams<{ channelId: string }>();
   const navigate = useNavigate();
@@ -53,7 +52,6 @@ const ChannelPage: React.FC = () => {
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [joinChannel, { isLoading: isJoining }] = useJoinChannelMutation();
   const [leaveChannel, { isLoading: isLeaving }] = useLeaveChannelMutation();
-  const { toast } = useToast();
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   const { channels, currentChannel, lastSelectedChannelId, messages } =
@@ -77,8 +75,7 @@ const ChannelPage: React.FC = () => {
 
     try {
       await joinChannel(channelId).unwrap();
-      toast({
-        title: 'Joined channel',
+      toast.success('Joined channel', {
         description: 'You have successfully joined the channel',
       });
 
@@ -92,10 +89,8 @@ const ChannelPage: React.FC = () => {
       });
     } catch (error) {
       console.error('Failed to join channel:', error);
-      toast({
-        title: 'Error',
+      toast.error('Error', {
         description: 'Failed to join channel',
-        variant: 'destructive',
       });
     }
   };
@@ -112,8 +107,7 @@ const ChannelPage: React.FC = () => {
       });
 
       await leaveChannel(channelId).unwrap();
-      toast({
-        title: 'Left channel',
+      toast.success('Left channel', {
         description: 'You have successfully left the channel',
       });
 
@@ -124,10 +118,8 @@ const ChannelPage: React.FC = () => {
       navigate('/messaging');
     } catch (error) {
       console.error('Failed to leave channel:', error);
-      toast({
-        title: 'Error',
+      toast.error('Error', {
         description: 'Failed to leave channel',
-        variant: 'destructive',
       });
     }
   };
@@ -430,8 +422,7 @@ const ChannelPage: React.FC = () => {
                     className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md mb-1 cursor-pointer"
                     onClick={() => {
                       // Scroll to message logic would go here
-                      toast({
-                        title: 'Message found',
+                      toast.success('Message found', {
                         description: 'Scrolled to message',
                       });
                     }}
