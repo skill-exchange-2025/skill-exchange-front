@@ -1,35 +1,37 @@
+// src/types/lessons.ts
+
 export interface Instructor {
     _id: string;
     name: string;
     email: string;
 }
 
-export interface Lessons {
+export interface Lesson {
     _id: string;
-    instructor: Instructor;
+    instructor?: Instructor;
     title: string;
     description: string;
     duration: number;
-    type: string;
+    content: string;       // changed from "textContent" to "content"
     order: number;
-    status: string;
-    textContent: string;
-    videoUrl?: string;  // Optional video URL
-    materials: string[];  // Assumed to be an array of string (e.g., file URLs)
-    imageUrls: string[];  // Array of image URLs
+    status: 'draft' | 'published' | 'archived';
+    videoUrl?: string;
+    materials: string[];
+    imageUrls: string[];
     isPreview: boolean;
-    createdAt: string;
-    updatedAt: string;
+    createdAt?: string;
+    updatedAt?: string;
 }
+
 interface PaginationState {
     currentPage: number;
     itemsPerPage: number;
     totalItems: number;
 }
 
-interface LessonsState {
-    lessons: Lessons[];
-    selectedLesson: Lessons | null;
+export interface LessonsState {
+    lessons: Lesson[];
+    selectedLesson: Lesson | null;
     error: string | null;
     loading: boolean;
     pagination: PaginationState;

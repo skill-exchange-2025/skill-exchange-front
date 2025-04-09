@@ -1,3 +1,4 @@
+
 import { baseApi } from '@/redux/api/baseApi';
 
 export interface Lesson {
@@ -6,6 +7,7 @@ export interface Lesson {
     description: string;
     duration: number;
     content: string;
+    type: string;
     order: number;
     instructor?: {
         _id: string;
@@ -30,7 +32,7 @@ export interface CreateLessonDto {
     description: string;
     duration: number;
     content: string;
-
+    // If `type` is required on the server side you may add it here, or if not, leave it out.
     materials?: string[];
     videoUrl?: string;
 }

@@ -1,7 +1,8 @@
+
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '@/redux/store';
-import { lessonApi } from '@/redux/features/lessons/lessonApi.tsx';
-import { Lessons } from '@/types/lessons';
+import { lessonApi } from '@/redux/features/lessons/lessonApi';
+import { Lesson } from '@/types/lessons';
 
 interface PaginationState {
     currentPage: number;
@@ -10,8 +11,8 @@ interface PaginationState {
 }
 
 interface LessonsState {
-    lessons: Lessons[];
-    selectedLesson: Lessons | null;
+    lessons: Lesson[];
+    selectedLesson: Lesson | null;
     filters: {
         search: string;
         status: string;
@@ -45,27 +46,20 @@ const lessonsSlice = createSlice({
     reducers: {
         setSearchTerm: (state, action: PayloadAction<string>) => {
             state.filters.search = action.payload;
-            state.pagination.currentPage = 1; // Reset to first page when search changes
+            state.pagination.currentPage = 1;
         },
-        setStatusFilter: (state, action: PayloadAction<string>) => {
-            state.filters.status = action.payload;
-            state.pagination.currentPage = 1; // Reset to first page when filter changes
-        },
-        setInstructorFilter: (state, action: PayloadAction<string>) => {
-            state.filters.instructor = action.payload;
-            state.pagination.currentPage = 1; // Reset to first page when filter changes
-        },
+        // ... other reducers ...
         setCurrentPage: (state, action: PayloadAction<number>) => {
             state.pagination.currentPage = action.payload;
         },
         setItemsPerPage: (state, action: PayloadAction<number>) => {
             state.pagination.itemsPerPage = action.payload;
-            state.pagination.currentPage = 1; // Reset to first page when items per page changes
+            state.pagination.currentPage = 1;
         },
         setTotalItems: (state, action: PayloadAction<number>) => {
             state.pagination.totalItems = action.payload;
         },
-        setSelectedLesson: (state, action: PayloadAction<LessonType | null>) => {
+        setSelectedLesson: (state, action: PayloadAction<Lesson | null>) => {
             state.selectedLesson = action.payload;
         },
         setError: (state, action: PayloadAction<string>) => {
@@ -92,8 +86,6 @@ const lessonsSlice = createSlice({
 
 export const {
     setSearchTerm,
-    setStatusFilter,
-    setInstructorFilter,
     setCurrentPage,
     setItemsPerPage,
     setTotalItems,
@@ -101,7 +93,6 @@ export const {
     setError,
 } = lessonsSlice.actions;
 
-// Selectors
 export const selectLessons = (state: RootState) => state.lessons.lessons;
 export const selectSelectedLesson = (state: RootState) => state.lessons.selectedLesson;
 export const selectFilters = (state: RootState) => state.lessons.filters;
