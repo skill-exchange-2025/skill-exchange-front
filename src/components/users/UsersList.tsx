@@ -1,4 +1,4 @@
-import { useDeleteUserMutation, useGetUsersQuery } from "@/redux/features/users/usersApi";
+import { useActivateUserMutation,useDeleteUserMutation, useGetUsersQuery, useUpdateUserStatusMutation } from "@/redux/features/users/usersApi";
 import { User } from "@/types/user";
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,8 +9,10 @@ import { selectFilters, selectPagination } from "@/redux/features/users/usersSli
 import { useState } from "react";
 import { UserModal } from "./UserModal";
 
+
 export const UsersList: React.FC<{ users: User[] }> = ({ users }) => {
     const [deleteUser] = useDeleteUserMutation();
+    const [updateUserStatus] = useUpdateUserStatusMutation(); // Add the mutation
     const filters = useSelector(selectFilters);
     const pagination = useSelector(selectPagination);
     const {refetch: getUsers } = useGetUsersQuery({
@@ -33,6 +35,20 @@ export const UsersList: React.FC<{ users: User[] }> = ({ users }) => {
         setSelectedUser(user);
         setIsEditModalOpen(true);
     };
+    const [activateUser] = useActivateUserMutation();  // Add this line for activation
+
+const handleStatusChange = async (user: User) => {
+    if (user.isActive) {
+        // Deactivate user
+        await updateUserStatus({ userId: user._id, isActive: false });
+    } else {
+        // Activate user
+        await activateUser(user._id);  // Call the activateUser mutation
+    }
+    await getUsers();  // Refetch the user list after status change
+};
+
+    
 
     return (
         <Card className="p-4">
@@ -53,11 +69,21 @@ export const UsersList: React.FC<{ users: User[] }> = ({ users }) => {
                             <TableCell className="flex gap-2">
                                 <Button variant="outline" onClick={() => handleEdit(user)}>Edit</Button>
                                 <Dialog open={isDialogOpen && selectedUser?._id === user._id} onOpenChange={setIsDialogOpen}>
-                                    <DialogTrigger asChild>
-                                        <Button variant="destructive" onClick={() => { setSelectedUser(user); setIsDialogOpen(true); }}>
-                                            Delete
-                                        </Button>
-                                    </DialogTrigger>
+                                <DialogTrigger asChild>
+  <div className="flex gap-2">
+    <Button variant="destructive" onClick={() => { setSelectedUser(user); setIsDialogOpen(true); }}>
+      Delete
+    </Button>
+    <Button
+      variant={user.isActive ? "default" : "destructive"}
+      onClick={() => handleStatusChange(user)}
+    >
+      {user.isActive ? "Deactivate" : "Activate"}
+    </Button>
+  </div>
+</DialogTrigger>
+
+
                                     <DialogContent>
                                         <DialogHeader>
                                             <DialogTitle>Confirm Deletion</DialogTitle>
