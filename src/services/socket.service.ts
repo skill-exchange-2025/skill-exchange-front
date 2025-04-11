@@ -30,7 +30,20 @@ class SocketService {
     }
 
     try {
-      const token = localStorage.getItem('token');
+      // Try to get token from localStorage first
+      let token = localStorage.getItem('token');
+
+      // If no token in localStorage, check Redux store
+      if (!token) {
+        const state = store.getState();
+        token = state.auth.token;
+
+        // If token found in Redux, save it to localStorage for future use
+        if (token) {
+          localStorage.setItem('token', token);
+        }
+      }
+
       if (!token) {
         console.error('No token found, cannot connect to socket');
         return;
