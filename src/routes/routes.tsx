@@ -26,6 +26,7 @@ import { TransactionsPage } from '@/pages/marketplace/transactions';
 import MessagingLayout from '../pages/messaging/MessagingLayout';
 import ChannelPage from '../pages/messaging/ChannelPage';
 import ChannelListPage from '../pages/messaging/ChannelListPage';
+import CodingRoomPage from "@/pages/CodingRooms/CodingRoomPage";
 
 const router = createBrowserRouter([
   {
@@ -135,7 +136,7 @@ const router = createBrowserRouter([
             <DashboardLayout />
           </ProtectedRoute>
         ),
-        children: [{ path: '*', element: <AdminRoutes /> }],
+        children: [{ path: '*', element: <AdminRoutes /> },{ path: "coding-rooms/:roomId", element: <CodingRoomPage /> },],
       },
       {
         path: 'user',
@@ -144,7 +145,7 @@ const router = createBrowserRouter([
             <UserDashboard />
           </ProtectedRoute>
         ),
-        children: [{ path: '*', element: <UserRoutes /> }],
+        children: [{ path: '*', element: <UserRoutes /> },{ path: "coding-rooms/:roomId", element: <CodingRoomPage /> },],
       },
     ],
   },
