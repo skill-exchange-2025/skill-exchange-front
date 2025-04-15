@@ -1,4 +1,3 @@
-
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '@/redux/store';
 import { lessonApi } from '@/redux/features/lessons/lessonApi';
@@ -59,8 +58,12 @@ const lessonsSlice = createSlice({
         setTotalItems: (state, action: PayloadAction<number>) => {
             state.pagination.totalItems = action.payload;
         },
-        setSelectedLesson: (state, action: PayloadAction<Lesson | null>) => {
+        // Updated to only accept non-null Lesson objects
+        setSelectedLesson: (state, action: PayloadAction<Lesson>) => {
             state.selectedLesson = action.payload;
+        },
+        clearSelectedLesson: (state) => {
+            state.selectedLesson = null;
         },
         setError: (state, action: PayloadAction<string>) => {
             state.error = action.payload;
@@ -75,11 +78,15 @@ const lessonsSlice = createSlice({
             .addMatcher(lessonApi.endpoints.getLessonsByListing.matchFulfilled, (state, action) => {
                 state.loading = false;
                 state.lessons = action.payload.data;
-                state.pagination.totalItems = action.payload.totalItems;
+                state.pagination.totalItems = action.payload.meta?.total || 0;
             })
             .addMatcher(lessonApi.endpoints.getLessonsByListing.matchRejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message || 'Failed to fetch lessons';
+            })
+            // Add matchers for getLessonById to update selectedLesson
+            .addMatcher(lessonApi.endpoints.getLessonById?.matchFulfilled, (state, action) => {
+                state.selectedLesson = action.payload;
             });
     },
 });
@@ -90,11 +97,19 @@ export const {
     setItemsPerPage,
     setTotalItems,
     setSelectedLesson,
+    clearSelectedLesson,
     setError,
 } = lessonsSlice.actions;
 
 export const selectLessons = (state: RootState) => state.lessons.lessons;
 export const selectSelectedLesson = (state: RootState) => state.lessons.selectedLesson;
+// Add a non-null selector for type safety
+export const selectNonNullSelectedLesson = (state: RootState): Lesson => {
+    if (!state.lessons.selectedLesson) {
+        throw new Error("Selected lesson is null but was expected to be non-null");
+    }
+    return state.lessons.selectedLesson;
+};
 export const selectFilters = (state: RootState) => state.lessons.filters;
 export const selectPagination = (state: RootState) => state.lessons.pagination;
 export const selectLoading = (state: RootState) => state.lessons.loading;

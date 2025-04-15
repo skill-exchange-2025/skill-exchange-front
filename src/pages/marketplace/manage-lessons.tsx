@@ -6,7 +6,7 @@ import { Lesson } from '@/types/lessons';
 import { toast } from 'sonner';
 import { Pagination } from 'antd';
 import { useDispatch, useSelector } from 'react-redux';
-import { setCurrentPage, selectPagination } from '@/redux/features/lessons/lessonsSlice';
+import {setCurrentPage, selectPagination, setSelectedLesson} from '@/redux/features/lessons/lessonsSlice';
 import { useEffect } from "react";
 import {
     Accordion,
@@ -14,27 +14,45 @@ import {
     AccordionItem,
     AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Lock, Check, ChevronRight, BookOpen, GraduationCap, Calendar, Users, Clock, MapPin } from "lucide-react";
+import {
+    Lock,
+    Check,
+    ChevronRight,
+    BookOpen,
+    GraduationCap,
+    Calendar,
+    Users,
+    Clock,
+    MapPin,
+    Plus,
+    Trash2,
+    Edit2,
+    Eye
+} from "lucide-react";
 import { ListingType, useGetMarketplaceItemByIdQuery } from '@/redux/features/marketplace/marketplaceApi';
 import { format } from 'date-fns';
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { useTheme } from 'next-themes';
 
 export function ManageLessons() {
     const navigate = useNavigate();
     const dispatch = useDispatch();
+    const { theme } = useTheme();
 
-    // Get the listing ID from URL params
-    const { itemId } = useParams();
+    const { itemId } = useParams<{ itemId: string }>();
     const { currentPage, itemsPerPage } = useSelector(selectPagination);
 
-    // Fetch the marketplace item details to determine the course type
-    const { data: marketplaceItem, isLoading: isMarketplaceItemLoading } = useGetMarketplaceItemByIdQuery(itemId || '', {
+    const { data: marketplaceItem, isLoading: isMarketplaceItemLoading } = useGetMarketplaceItemByIdQuery(itemId ?? '', {
         skip: !itemId
     });
 
     const { data, isLoading, isError } = useGetLessonsByListingQuery({
-        listingId: itemId,
+        listingId: itemId ?? '',
         page: currentPage,
         limit: itemsPerPage
+    }, {
+        skip: !itemId
     });
 
     useEffect(() => {
@@ -44,6 +62,10 @@ export function ManageLessons() {
     }, [isError]);
 
     const [deleteLesson, { isLoading: isDeleting }] = useDeleteLessonMutation();
+
+    if (!itemId) {
+        return <div className="flex items-center justify-center h-[60vh] text-muted-foreground">Error: Missing listing ID</div>;
+    }
 
     const handleDelete = async (lessonId: string) => {
         try {
@@ -55,7 +77,7 @@ export function ManageLessons() {
     };
 
     const handleEdit = (lessonId: string) => {
-        navigate(`/marketplace/lessons/${lessonId}/edit`);
+        navigate(`/marketplace/item/${itemId}/lessons/${lessonId}/edit`);
     };
 
     const handleCreate = () => {
@@ -67,6 +89,12 @@ export function ManageLessons() {
     };
 
     const handleViewLesson = (lessonId: string) => {
+        if (data && data.data) {
+            const selectedLesson = data.data.find((lesson: Lesson) => lesson._id === lessonId);
+            if (selectedLesson) {
+                dispatch(setSelectedLesson(selectedLesson));
+            }
+        }
         navigate(`/marketplace/item/${itemId}/lessons/${lessonId}`);
     };
 
@@ -74,191 +102,185 @@ export function ManageLessons() {
         return parseInt(lessonId.substring(lessonId.length - 1), 16) % 2 === 0;
     };
 
-    if (isLoading || isMarketplaceItemLoading) return <div>Loading...</div>;
-    if (isError || !data || !marketplaceItem) return <div>Error loading content.</div>;
+    if (isLoading || isMarketplaceItemLoading) {
+        return (
+            <div className="flex items-center justify-center h-[60vh]">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+        );
+    }
 
-    const isStaticCourse = marketplaceItem.type === ListingType.COURSE;
-    const isOnlineCourse = marketplaceItem.type === ListingType.ONLINE_COURSE;
+    if (isError || !data || !marketplaceItem) {
+        return (
+            <div className="flex flex-col items-center justify-center h-[60vh] text-muted-foreground">
+                <BookOpen className="h-12 w-12 mb-4 opacity-50" />
+                <p>Error loading content.</p>
+            </div>
+        );
+    }
 
     return (
-        <div className="container py-8">
-            <Card className="shadow-md">
-                <CardHeader className="bg-gray-50 border-b">
+        <div className="container py-8 space-y-6">
+            <Card className="shadow-md border-0 dark:bg-background">
+                <CardHeader className="border-b border-border bg-card">
                     <div className="flex items-center justify-between">
-                        <div>
+                        <div className="space-y-1">
                             <CardTitle className="text-2xl font-bold">{marketplaceItem.title}</CardTitle>
-                            <p className="text-gray-600 mt-1">{marketplaceItem.description}</p>
+                            <p className="text-muted-foreground">{marketplaceItem.description}</p>
                         </div>
-                        <div className="flex items-center gap-2">
-                            {isStaticCourse ? (
-                                <div className="flex items-center gap-1 text-amber-600">
-                                    <BookOpen className="h-5 w-5" />
-                                    <span>Static Course</span>
-                                </div>
-                            ) : isOnlineCourse ? (
-                                <div className="flex items-center gap-1 text-green-600">
-                                    <GraduationCap className="h-5 w-5" />
+                        <Badge variant="outline" className={marketplaceItem.type === ListingType.ONLINE_COURSE ? "bg-emerald-500/10 text-emerald-500" : "bg-amber-500/10 text-amber-500"}>
+                            {marketplaceItem.type === ListingType.ONLINE_COURSE ? (
+                                <div className="flex items-center gap-1">
+                                    <GraduationCap className="h-4 w-4" />
                                     <span>Interactive Course</span>
                                 </div>
-                            ) : null}
-                        </div>
-                    </div>
-                </CardHeader>
-                <CardContent className="p-6">
-                    {/* Course Details Section */}
-                    {isOnlineCourse && (
-                        <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-                            <h3 className="text-lg font-semibold mb-3">Course Schedule</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                                {marketplaceItem.startDate && (
-                                    <div className="flex items-center gap-2">
-                                        <Calendar className="h-5 w-5 text-gray-500" />
-                                        <div>
-                                            <p className="text-sm text-gray-600">Start Date</p>
-                                            <p className="font-medium">{format(new Date(marketplaceItem.startDate), 'PPP')}</p>
-                                        </div>
-                                    </div>
-                                )}
-                                {marketplaceItem.endDate && (
-                                    <div className="flex items-center gap-2">
-                                        <Calendar className="h-5 w-5 text-gray-500" />
-                                        <div>
-                                            <p className="text-sm text-gray-600">End Date</p>
-                                            <p className="font-medium">{format(new Date(marketplaceItem.endDate), 'PPP')}</p>
-                                        </div>
-                                    </div>
-                                )}
-                                {marketplaceItem.maxStudents && (
-                                    <div className="flex items-center gap-2">
-                                        <Users className="h-5 w-5 text-gray-500" />
-                                        <div>
-                                            <p className="text-sm text-gray-600">Max Students</p>
-                                            <p className="font-medium">{marketplaceItem.maxStudents}</p>
-                                        </div>
-                                    </div>
-                                )}
-                                {marketplaceItem.durationHours && (
-                                    <div className="flex items-center gap-2">
-                                        <Clock className="h-5 w-5 text-gray-500" />
-                                        <div>
-                                            <p className="text-sm text-gray-600">Duration</p>
-                                            <p className="font-medium">{marketplaceItem.durationHours} hours</p>
-                                        </div>
-                                    </div>
-                                )}
-                                {marketplaceItem.location && (
-                                    <div className="flex items-center gap-2">
-                                        <MapPin className="h-5 w-5 text-gray-500" />
-                                        <div>
-                                            <p className="text-sm text-gray-600">Location</p>
-                                            <p className="font-medium">{marketplaceItem.location}</p>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    )}
-
-                    {isStaticCourse && marketplaceItem.contentDescription && (
-                        <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-                            <h3 className="text-lg font-semibold mb-3">Course Content</h3>
-                            <p className="text-gray-700">{marketplaceItem.contentDescription}</p>
-                            {marketplaceItem.contentUrls && marketplaceItem.contentUrls.length > 0 && (
-                                <div className="mt-4">
-                                    <h4 className="text-sm font-medium mb-2">Content Materials</h4>
-                                    <ul className="space-y-2">
-                                        {marketplaceItem.contentUrls.map((url, index) => (
-                                            <li key={index} className="flex items-center gap-2">
-                                                <a
-                                                    href={url}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="text-blue-600 hover:underline"
-                                                >
-                                                    {url.split('/').pop()}
-                                                </a>
-                                            </li>
-                                        ))}
-                                    </ul>
+                            ) : (
+                                <div className="flex items-center gap-1">
+                                    <BookOpen className="h-4 w-4" />
+                                    <span>Static Course</span>
                                 </div>
                             )}
-                        </div>
-                    )}
+                        </Badge>
+                    </div>
+                </CardHeader>
 
-                    <Button onClick={handleCreate} className="mb-6">Create New Lesson</Button>
+                <CardContent className="p-6 space-y-6">
+                    {/* Course Details Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-4 rounded-lg bg-muted/50">
+                        {marketplaceItem.startDate && (
+                            <div className="flex items-center gap-3 p-3 rounded-md bg-background">
+                                <Calendar className="h-5 w-5 text-primary" />
+                                <div>
+                                    <p className="text-xs text-muted-foreground">Start Date</p>
+                                    <p className="font-medium">{format(new Date(marketplaceItem.startDate), 'PPP')}</p>
+                                </div>
+                            </div>
+                        )}
+                        {marketplaceItem.endDate && (
+                            <div className="flex items-center gap-3 p-3 rounded-md bg-background">
+                                <Calendar className="h-5 w-5 text-primary" />
+                                <div>
+                                    <p className="text-xs text-muted-foreground">End Date</p>
+                                    <p className="font-medium">{format(new Date(marketplaceItem.endDate), 'PPP')}</p>
+                                </div>
+                            </div>
+                        )}
+                        {marketplaceItem.maxStudents && (
+                            <div className="flex items-center gap-3 p-3 rounded-md bg-background">
+                                <Users className="h-5 w-5 text-primary" />
+                                <div>
+                                    <p className="text-xs text-muted-foreground">Max Students</p>
+                                    <p className="font-medium">{marketplaceItem.maxStudents}</p>
+                                </div>
+                            </div>
+                        )}
+                        {marketplaceItem.durationHours && (
+                            <div className="flex items-center gap-3 p-3 rounded-md bg-background">
+                                <Clock className="h-5 w-5 text-primary" />
+                                <div>
+                                    <p className="text-xs text-muted-foreground">Duration</p>
+                                    <p className="font-medium">{marketplaceItem.durationHours} hours</p>
+                                </div>
+                            </div>
+                        )}
+                    </div>
 
-                    {/* List of Lessons as Accordion */}
-                    {data.data.length === 0 ? (
-                        <p className="text-center text-gray-500">No lessons available.</p>
-                    ) : (
-                        <Accordion type="single" collapsible className="w-full">
-                            {data.data.map((lesson: Lesson, index: number) => (
-                                <AccordionItem key={lesson._id} value={`item-${index}`} className="border-b border-gray-200">
-                                    <AccordionTrigger className="hover:bg-gray-50 rounded-t-md px-4 py-3 text-left">
-                                        <div className="flex items-center w-full gap-3 text-gray-800">
-                                            <div className="flex items-center justify-center bg-primary text-white w-8 h-8 rounded-full text-sm font-medium">
-                                                {index + 1}
+                    {/* Create Lesson Button */}
+                    <div className="flex justify-end">
+                        <Button onClick={handleCreate} className="gap-2">
+                            <Plus className="h-4 w-4" />
+                            Create New Lesson
+                        </Button>
+                    </div>
+
+                    {/* Lessons List */}
+                    <ScrollArea className="h-[600px] pr-4">
+                        {!data.data || data.data.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center h-[200px] text-muted-foreground">
+                                <BookOpen className="h-12 w-12 mb-4 opacity-50" />
+                                <p>No lessons available.</p>
+                                <p className="text-sm">Create your first lesson to get started.</p>
+                            </div>
+                        ) : (
+                            <Accordion type="single" collapsible className="w-full">
+                                {data.data.map((lesson: Lesson, index: number) => (
+                                    <AccordionItem
+                                        key={lesson._id}
+                                        value={`item-${index}`}
+                                        className="border border-border rounded-lg mb-3 overflow-hidden bg-card"
+                                    >
+                                        <AccordionTrigger className="hover:bg-muted/50 px-4 py-3 [&[data-state=open]]:bg-muted/50">
+                                            <div className="flex items-center w-full gap-3">
+                                                <div className="flex items-center justify-center bg-primary/10 text-primary w-8 h-8 rounded-md text-sm font-medium">
+                                                    {index + 1}
+                                                </div>
+                                                <span className="font-medium flex-grow text-left">{lesson.title}</span>
+                                                {isLessonLocked(lesson._id) ? (
+                                                    <Lock className="h-5 w-5 text-muted-foreground" />
+                                                ) : (
+                                                    <Check className="h-5 w-5 text-emerald-500" />
+                                                )}
                                             </div>
-                                            <span className="font-medium flex-grow">{lesson.title}</span>
-                                            {isLessonLocked(lesson._id) ? (
-                                                <Lock className="h-5 w-5 text-gray-400" />
-                                            ) : (
-                                                <Check className="h-5 w-5 text-green-500" />
-                                            )}
-                                        </div>
-                                    </AccordionTrigger>
-                                    <AccordionContent>
-                                        <div className="bg-gray-50 p-4 rounded-b-md mb-2">
-                                            <p className="text-gray-700 mb-4">{lesson.description}</p>
-
-                                            <div className="flex flex-wrap gap-2">
-                                                <Button
-                                                    variant="default"
-                                                    className="flex items-center gap-1"
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        handleViewLesson(lesson._id);
-                                                    }}
-                                                >
-                                                    View Lesson <ChevronRight className="h-4 w-4" />
-                                                </Button>
-
-                                                <Button
-                                                    variant="outline"
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        handleEdit(lesson._id);
-                                                    }}
-                                                >
-                                                    Edit
-                                                </Button>
-
-                                                <Button
-                                                    variant="destructive"
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        handleDelete(lesson._id);
-                                                    }}
-                                                    disabled={isDeleting}
-                                                >
-                                                    Delete
-                                                </Button>
+                                        </AccordionTrigger>
+                                        <AccordionContent>
+                                            <div className="p-4 space-y-4">
+                                                <p className="text-muted-foreground">{lesson.description}</p>
+                                                <div className="flex flex-wrap gap-2">
+                                                    <Button
+                                                        variant="default"
+                                                        size="sm"
+                                                        className="gap-2"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleViewLesson(lesson._id);
+                                                        }}
+                                                    >
+                                                        <Eye className="h-4 w-4" />
+                                                        View Lesson
+                                                    </Button>
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        className="gap-2"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleEdit(lesson._id);
+                                                        }}
+                                                    >
+                                                        <Edit2 className="h-4 w-4" />
+                                                        Edit
+                                                    </Button>
+                                                    <Button
+                                                        variant="destructive"
+                                                        size="sm"
+                                                        className="gap-2"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleDelete(lesson._id);
+                                                        }}
+                                                        disabled={isDeleting}
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                        Delete
+                                                    </Button>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </AccordionContent>
-                                </AccordionItem>
-                            ))}
-                        </Accordion>
-                    )}
+                                        </AccordionContent>
+                                    </AccordionItem>
+                                ))}
+                            </Accordion>
+                        )}
+                    </ScrollArea>
 
                     {/* Pagination */}
-                    {data.meta.total > itemsPerPage && (
-                        <div className="mt-6 flex justify-center">
+                    {data.meta && data.meta.total > itemsPerPage && (
+                        <div className="flex justify-center pt-4">
                             <Pagination
                                 total={data.meta.total}
                                 current={currentPage}
                                 pageSize={itemsPerPage}
                                 onChange={handlePageChange}
+                                className={theme === 'dark' ? 'ant-pagination-dark' : ''}
                             />
                         </div>
                     )}

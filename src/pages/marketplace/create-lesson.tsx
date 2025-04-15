@@ -40,25 +40,74 @@ interface UploadedFile {
 }
 
 // Custom MarkdownTextarea component
-const MarkdownTextarea = ({ value, onChange, initialRows = 20, className = '', placeholder = '' }) => {
+const MarkdownTextarea = ({
+                              name = 'textContent',
+                              value,
+                              onChange,
+                              initialRows = 20,
+                              className = '',
+                              placeholder = ''
+                          }) => {
     return (
         <div className={`markdown-editor-container ${className}`}>
             <MarkdownEditor
                 value={value}
-                onChange={(value) => {
-                    onChange({ target: { name: 'content', value } });
+                onChange={(val) => {
+                    onChange({ target: { name, value: val } });
                 }}
                 height={`${initialRows * 24}px`}
                 visible={true}
                 placeholder={placeholder}
                 options={{
-                    scrollbarStyle: "overlay",
-                    lineWrapping: true
+                    scrollbarStyle: 'overlay',
+                    lineWrapping: true,
+                    theme: 'light',
+                    mode: 'markdown',
+                    lineNumbers: true,
+                    styleActiveLine: true
                 }}
                 enablePreview={true}
                 previewWidth="50%"
                 className="border rounded-md overflow-hidden"
             />
+        </div>
+    );
+};
+
+const PreviewContent = ({ content }) => {
+    if (!content) {
+        return (
+            <div className="flex flex-col items-center justify-center h-[300px] text-gray-400">
+                <FileText className="h-12 w-12 mb-2" />
+                <p className="text-sm">No content to preview yet. Start writing to see the preview.</p>
+            </div>
+        );
+    }
+
+    return (
+        <div className="prose prose-slate max-w-none">
+            <ReactMarkdown
+                components={{
+                    h1: ({ children }) => <h1 className="text-3xl font-bold mb-4">{children}</h1>,
+                    h2: ({ children }) => <h2 className="text-2xl font-semibold mb-3 mt-6">{children}</h2>,
+                    h3: ({ children }) => <h3 className="text-xl font-medium mb-2 mt-4">{children}</h3>,
+                    p: ({ children }) => <p className="mb-4 text-gray-700 leading-relaxed">{children}</p>,
+                    ul: ({ children }) => <ul className="list-disc pl-6 mb-4 space-y-2">{children}</ul>,
+                    ol: ({ children }) => <ol className="list-decimal pl-6 mb-4 space-y-2">{children}</ol>,
+                    li: ({ children }) => <li className="text-gray-700">{children}</li>,
+                    blockquote: ({ children }) => (
+                        <blockquote className="border-l-4 border-primary pl-4 italic my-4">{children}</blockquote>
+                    ),
+                    code: ({ children }) => (
+                        <code className="bg-gray-100 rounded px-1.5 py-0.5 text-sm font-mono">{children}</code>
+                    ),
+                    pre: ({ children }) => (
+                        <pre className="bg-gray-900 text-white rounded-lg p-4 overflow-x-auto">{children}</pre>
+                    ),
+                }}
+            >
+                {content}
+            </ReactMarkdown>
         </div>
     );
 };
@@ -73,14 +122,19 @@ export function CreateLesson() {
     const [editorLoaded, setEditorLoaded] = useState(false);
     const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
     const [fileUploadError, setFileUploadError] = useState<string | null>(null);
+    const [markdownScore, setMarkdownScore] = useState(0);
+    const [achievements, setAchievements] = useState<string[]>([]);
 
     const [lessonData, setLessonData] = useState({
         title: '',
         description: '',
         duration: 0,
-        content: '',
+        textContent: '',
         materials: [] as string[]
     });
+
+    // Add this new state for split view
+    const [viewMode, setViewMode] = useState<'edit' | 'preview' | 'split'>('edit');
 
     useEffect(() => {
         if (typeof window !== 'undefined') {
@@ -88,12 +142,67 @@ export function CreateLesson() {
         }
     }, []);
 
+    const trackMarkdownUsage = (content: string) => {
+        let score = 0;
+        const newAchievements = [];
+
+        // Headers
+        if (content.includes('#')) score += 10;
+        if (content.includes('##')) {
+            score += 5;
+            if (!achievements.includes('Header Master'))
+                newAchievements.push('Header Master');
+        }
+
+        // Lists
+        if (content.includes('- ')) score += 8;
+        if (content.includes('1. ')) {
+            score += 8;
+            if (!achievements.includes('List Pro'))
+                newAchievements.push('List Pro');
+        }
+
+        // Code blocks
+        if (content.includes('```')) {
+            score += 15;
+            if (!achievements.includes('Code Wizard'))
+                newAchievements.push('Code Wizard');
+        }
+
+        // Tables
+        if (content.includes('|---')) {
+            score += 20;
+            if (!achievements.includes('Table Master'))
+                newAchievements.push('Table Master');
+        }
+
+        setMarkdownScore(score);
+        if (newAchievements.length > 0) {
+            setAchievements([...achievements, ...newAchievements]);
+            newAchievements.forEach(achievement => {
+                toast.success(`🏆 Achievement Unlocked: ${achievement}!`, {
+                    description: "Keep using advanced Markdown features to earn more achievements!"
+                });
+            });
+        }
+    };
+
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setLessonData((prev) => ({
-            ...prev,
-            [name]: name === 'duration' ? Number(value) : value,
-        }));
+
+        setLessonData((prev) => {
+            const newData = {
+                ...prev,
+                [name]: name === 'duration' ? Number(value) : value
+            };
+
+            // Track markdown usage when content changes
+            if (name === 'textContent' || name === 'content') {
+                trackMarkdownUsage(value);
+            }
+
+            return newData;
+        });
     };
 
     const handleFileUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -173,7 +282,7 @@ export function CreateLesson() {
             title: lessonData.title,
             description: lessonData.description,
             duration: Number(lessonData.duration),
-            content: lessonData.content,
+            content: lessonData.textContent,
             materials: lessonData.materials
         };
 
@@ -191,7 +300,7 @@ export function CreateLesson() {
     const insertTemplate = (template) => {
         setLessonData((prev) => ({
             ...prev,
-            content: prev.content ? `${prev.content}\n\n${template}` : template
+            textContent: prev.textContent ? `${prev.textContent}\n\n${template}` : template
         }));
     };
 
@@ -297,140 +406,246 @@ Continue organizing your lesson with additional sections.`;
                         <div>
                             <div className="flex justify-between items-center mb-2">
                                 <label className="block text-sm font-medium">Lesson Content</label>
-                                <div className="space-x-2">
+                                <div className="flex items-center space-x-2">
                                     <Button
                                         type="button"
-                                        variant={previewMode ? "outline" : "default"}
+                                        variant={viewMode === 'edit' ? "default" : "outline"}
                                         size="sm"
-                                        onClick={() => setPreviewMode(false)}
+                                        onClick={() => setViewMode('edit')}
                                     >
                                         <FileText className="h-4 w-4 mr-1" /> Edit
                                     </Button>
                                     <Button
                                         type="button"
-                                        variant={previewMode ? "default" : "outline"}
+                                        variant={viewMode === 'split' ? "default" : "outline"}
                                         size="sm"
-                                        onClick={() => setPreviewMode(true)}
+                                        onClick={() => setViewMode('split')}
+                                    >
+                                        <Eye className="h-4 w-4 mr-1" /> Split View
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        variant={viewMode === 'preview' ? "default" : "outline"}
+                                        size="sm"
+                                        onClick={() => setViewMode('preview')}
                                     >
                                         <Eye className="h-4 w-4 mr-1" /> Preview
                                     </Button>
                                 </div>
                             </div>
 
-                            {previewMode ? (
-                                <div className="prose max-w-none border rounded-md p-4 bg-white min-h-[300px] overflow-y-auto">
-                                    {lessonData.content ? (
-                                        <ReactMarkdown>
-                                            {lessonData.content}
-                                        </ReactMarkdown>
-                                    ) : (
-                                        <p className="text-gray-400 italic">Content preview will appear here...</p>
-                                    )}
-                                </div>
-                            ) : (
-                                <>
-                                    <Tabs defaultValue="editor">
-                                        <TabsList className="mb-2">
-                                            <TabsTrigger value="editor">Editor</TabsTrigger>
-                                            <TabsTrigger value="templates">Templates</TabsTrigger>
-                                            <TabsTrigger value="help">Markdown Help</TabsTrigger>
-                                        </TabsList>
+                            <div className={viewMode === 'split' ? 'grid grid-cols-2 gap-4' : ''}>
+                                {(viewMode === 'edit' || viewMode === 'split') && (
+                                    <div className={viewMode === 'split' ? 'border-r pr-4' : ''}>
+                                        <Tabs defaultValue="editor">
+                                            <TabsList className="mb-2">
+                                                <TabsTrigger value="editor">Editor</TabsTrigger>
+                                                <TabsTrigger value="templates">Templates</TabsTrigger>
+                                                <TabsTrigger value="help">Markdown Help</TabsTrigger>
+                                            </TabsList>
 
-                                        <TabsContent value="editor" className="mt-0">
-                                            {editorLoaded ? (
-                                                <MarkdownTextarea
-                                                    value={lessonData.content}
-                                                    onChange={handleChange}
-                                                    initialRows={12}
-                                                    placeholder={defaultMarkdownPlaceholder}
-                                                    className="min-h-[300px]"
-                                                />
-                                            ) : (
-                                                <Textarea
-                                                    name="content"
-                                                    value={lessonData.content}
-                                                    onChange={handleChange}
-                                                    placeholder={defaultMarkdownPlaceholder}
-                                                    required
-                                                    className="font-mono text-sm min-h-[300px]"
-                                                    rows={12}
-                                                />
-                                            )}
-                                        </TabsContent>
+                                            <TabsContent value="editor" className="mt-0">
+                                                {editorLoaded ? (
+                                                    <MarkdownTextarea
+                                                        name="textContent"
+                                                        value={lessonData.textContent}
+                                                        onChange={handleChange}
+                                                        placeholder="Write your lesson content here..."
+                                                        initialRows={20}
+                                                    />
+                                                ) : (
+                                                    <Textarea
+                                                        name="textContent"
+                                                        value={lessonData.textContent}
+                                                        onChange={handleChange}
+                                                        placeholder={defaultMarkdownPlaceholder}
+                                                        required
+                                                        className="font-mono text-sm min-h-[300px]"
+                                                        rows={12}
+                                                    />
+                                                )}
+                                            </TabsContent>
 
-                                        <TabsContent value="templates" className="mt-0">
-                                            <div className="grid md:grid-cols-2 gap-4">
-                                                <Card className="cursor-pointer hover:border-primary transition-colors" onClick={() => insertTemplate("# Lesson Overview\n\n## Learning Objectives\n- Objective 1\n- Objective 2\n- Objective 3\n\n## Prerequisites\n- Prerequisite 1\n- Prerequisite 2")}>
-                                                    <CardHeader className="py-3">
-                                                        <CardTitle className="text-sm">Lesson Overview</CardTitle>
-                                                    </CardHeader>
-                                                    <CardContent className="py-2 text-xs text-gray-500">
-                                                        Insert lesson objectives and prerequisites structure
-                                                    </CardContent>
-                                                </Card>
-
-                                                <Card className="cursor-pointer hover:border-primary transition-colors" onClick={() => insertTemplate("## Key Concept: [Name]\n\n### Definition\nProvide definition here\n\n### Examples\n1. First example\n2. Second example\n\n### Practice Exercise\nDescribe a practice activity here")}>
-                                                    <CardHeader className="py-3">
-                                                        <CardTitle className="text-sm">Key Concept</CardTitle>
-                                                    </CardHeader>
-                                                    <CardContent className="py-2 text-xs text-gray-500">
-                                                        Insert a key concept with examples and practice
-                                                    </CardContent>
-                                                </Card>
-
-                                                <Card className="cursor-pointer hover:border-primary transition-colors" onClick={() => insertTemplate("## Discussion Questions\n\n1. Question 1?\n   * Hint or guidance\n   * Possible answer\n\n2. Question 2?\n   * Hint or guidance\n   * Possible answer")}>
-                                                    <CardHeader className="py-3">
-                                                        <CardTitle className="text-sm">Discussion Questions</CardTitle>
-                                                    </CardHeader>
-                                                    <CardContent className="py-2 text-xs text-gray-500">
-                                                        Insert discussion questions with hints
-                                                    </CardContent>
-                                                </Card>
-
-                                                <Card className="cursor-pointer hover:border-primary transition-colors" onClick={() => insertTemplate("## Assignment\n\n### Instructions\nProvide detailed instructions here\n\n### Requirements\n- Requirement 1\n- Requirement 2\n\n### Submission Guidelines\nExplain how to submit the assignment")}>
-                                                    <CardHeader className="py-3">
-                                                        <CardTitle className="text-sm">Assignment Template</CardTitle>
-                                                    </CardHeader>
-                                                    <CardContent className="py-2 text-xs text-gray-500">
-                                                        Insert an assignment with instructions
-                                                    </CardContent>
-                                                </Card>
-                                            </div>
-                                        </TabsContent>
-
-                                        <TabsContent value="help" className="mt-0">
-                                            <div className="bg-white p-4 border rounded-md text-sm">
-                                                <h3 className="font-medium mb-2">Markdown Cheat Sheet</h3>
+                                            <TabsContent value="templates" className="mt-0">
                                                 <div className="grid md:grid-cols-2 gap-4">
-                                                    <div className="space-y-2">
-                                                        <h4 className="font-medium text-sm">Headers</h4>
-                                                        <pre className="bg-gray-50 p-2 rounded text-xs"># Heading 1
-## Heading 2
-### Heading 3</pre>
+                                                    <Card className="cursor-pointer hover:border-primary transition-colors" onClick={() => insertTemplate("# 📚 Lesson Overview\n\n## 🎯 Learning Objectives\n- Objective 1\n- Objective 2\n- Objective 3\n\n## 📋 Prerequisites\n- Prerequisite 1\n- Prerequisite 2\n\n## ⏱️ Time Breakdown\n- Introduction (10 min)\n- Main Content (30 min)\n- Practice (15 min)\n- Discussion (5 min)")}>
+                                                        <CardHeader className="py-3">
+                                                            <CardTitle className="text-sm">Detailed Lesson Plan</CardTitle>
+                                                        </CardHeader>
+                                                        <CardContent className="py-2 text-xs text-gray-500">
+                                                            Comprehensive lesson structure with time management
+                                                        </CardContent>
+                                                    </Card>
+
+                                                    <Card className="cursor-pointer hover:border-primary transition-colors" onClick={() => insertTemplate("# 🎯 Interactive Exercise\n\n## 🤔 Challenge Scenario\nDescribe an engaging real-world scenario here\n\n## 🔍 Task Breakdown\n1. Initial Analysis\n   - What do you observe?\n   - What are the key elements?\n\n2. Problem-Solving Steps\n   - Step 1: [Action]\n   - Step 2: [Action]\n   - Step 3: [Action]\n\n## 💡 Hints\n<details>\n<summary>Hint 1</summary>\nFirst helpful hint here\n</details>\n\n<details>\n<summary>Hint 2</summary>\nSecond helpful hint here\n</details>\n\n## ✅ Success Criteria\n- [ ] Criterion 1\n- [ ] Criterion 2\n- [ ] Criterion 3")}>
+                                                        <CardHeader className="py-3">
+                                                            <CardTitle className="text-sm">Interactive Exercise</CardTitle>
+                                                        </CardHeader>
+                                                        <CardContent className="py-2 text-xs text-gray-500">
+                                                            Engaging problem-solving activity with progressive hints
+                                                        </CardContent>
+                                                    </Card>
+
+                                                    <Card className="cursor-pointer hover:border-primary transition-colors" onClick={() => insertTemplate("# 📝 Case Study Analysis\n\n## 📖 Background\nProvide the context and background information\n\n## 🎯 Learning Goals\n- Understanding of...\n- Application of...\n- Analysis of...\n\n## 📊 Case Details\n### Situation\nDescribe the specific situation or problem\n\n### Key Challenges\n1. Challenge 1\n2. Challenge 2\n3. Challenge 3\n\n## 🤔 Discussion Questions\n1. What are the main issues presented in this case?\n2. How would you approach solving these challenges?\n3. What alternatives could be considered?\n\n## 📋 Assignment\n1. Analyze the case using the framework provided\n2. Propose solutions with justification\n3. Reflect on potential outcomes")}>
+                                                        <CardHeader className="py-3">
+                                                            <CardTitle className="text-sm">Case Study Template</CardTitle>
+                                                        </CardHeader>
+                                                        <CardContent className="py-2 text-xs text-gray-500">
+                                                            Detailed case study analysis framework
+                                                        </CardContent>
+                                                    </Card>
+
+                                                    <Card className="cursor-pointer hover:border-primary transition-colors" onClick={() => insertTemplate("# 🔄 Flipped Classroom Guide\n\n## 📚 Pre-class Preparation\n### Required Reading\n- Resource 1\n- Resource 2\n\n### Watch & Learn\n- Video 1: [Topic]\n- Video 2: [Topic]\n\n## 🤔 Reflection Questions\nThink about these questions while preparing:\n1. Question 1?\n2. Question 2?\n\n## 🎯 In-Class Activities\n### Warm-up (10 min)\n- Quick quiz on pre-class material\n- Discussion of key concepts\n\n### Group Work (30 min)\n1. Activity 1\n2. Activity 2\n\n### Wrap-up (10 min)\n- Key takeaways\n- Next steps")}>
+                                                        <CardHeader className="py-3">
+                                                            <CardTitle className="text-sm">Flipped Classroom</CardTitle>
+                                                        </CardHeader>
+                                                        <CardContent className="py-2 text-xs text-gray-500">
+                                                            Structure for flipped classroom methodology
+                                                        </CardContent>
+                                                    </Card>
+
+                                                    <Card className="cursor-pointer hover:border-primary transition-colors" onClick={() => insertTemplate("# 🧪 Practical Workshop\n\n## 🎯 Workshop Overview\nBrief description of the practical session\n\n## 🛠️ Required Tools\n- Tool 1\n- Tool 2\n- Tool 3\n\n## 📝 Step-by-Step Guide\n### 1. Setup (10 min)\n```\nSetup instructions here\n```\n\n### 2. Basic Implementation (20 min)\n```\nCode or implementation steps\n```\n\n### 3. Advanced Features (15 min)\n```\nAdvanced implementation\n```\n\n## 🔍 Common Issues & Solutions\n| Issue | Solution |\n|-------|----------|\n| Issue 1 | Solution 1 |\n| Issue 2 | Solution 2 |\n\n## 🎉 Challenge Exercise\nExtend the workshop with these challenges:\n1. Challenge 1\n2. Challenge 2")}>
+                                                        <CardHeader className="py-3">
+                                                            <CardTitle className="text-sm">Practical Workshop</CardTitle>
+                                                        </CardHeader>
+                                                        <CardContent className="py-2 text-xs text-gray-500">
+                                                            Hands-on workshop structure with practical exercises
+                                                        </CardContent>
+                                                    </Card>
+
+                                                    <Card className="cursor-pointer hover:border-primary transition-colors" onClick={() => insertTemplate("# 🎮 Gamified Learning Module\n\n## 🎯 Quest Overview\nEngaging description of the learning challenge\n\n## 🏆 Achievement Levels\n### Level 1: Beginner\n- Task 1 (100 points)\n- Task 2 (150 points)\n\n### Level 2: Explorer\n- Task 1 (200 points)\n- Task 2 (250 points)\n\n### Level 3: Master\n- Task 1 (300 points)\n- Task 2 (350 points)\n\n## 💫 Special Challenges\n### 🌟 Speed Run\nComplete all tasks within [time limit]\n\n### 🎯 Perfect Score\nComplete all tasks without errors\n\n## 🏅 Rewards\n- Badge 1: [Achievement]\n- Badge 2: [Achievement]\n\n## 📊 Progress Tracking\n- [ ] Level 1 Complete\n- [ ] Level 2 Complete\n- [ ] Level 3 Complete")}>
+                                                        <CardHeader className="py-3">
+                                                            <CardTitle className="text-sm">Gamified Module</CardTitle>
+                                                        </CardHeader>
+                                                        <CardContent className="py-2 text-xs text-gray-500">
+                                                            Gamification structure with achievements and rewards
+                                                        </CardContent>
+                                                    </Card>
+                                                </div>
+                                            </TabsContent>
+
+                                            <TabsContent value="help" className="mt-0">
+                                                <div className="bg-white p-6 border rounded-md space-y-6">
+                                                    <div className="flex items-center justify-between">
+                                                        <h3 className="text-lg font-semibold">Markdown Guide</h3>
+                                                        <div className="text-sm text-primary">
+                                                            <span className="mr-2">🏆 Markdown Mastery Progress</span>
+                                                            <div className="inline-block w-32 h-2 bg-gray-200 rounded-full">
+                                                                <div className="h-full bg-primary rounded-full" style={{ width: `${lessonData.textContent.length > 0 ? Math.min(100, (lessonData.textContent.length / 500) * 100) : 0}%` }}></div>
+                                                            </div>
+                                                        </div>
                                                     </div>
-                                                    <div className="space-y-2">
-                                                        <h4 className="font-medium text-sm">Text Formatting</h4>
-                                                        <pre className="bg-gray-50 p-2 rounded text-xs">**Bold text**
-*Italic text*
-~~Strikethrough~~</pre>
+
+                                                    <div className="grid md:grid-cols-2 gap-6">
+                                                        <div className="space-y-4">
+                                                            <div className="space-y-2">
+                                                                <h4 className="font-medium text-sm flex items-center">
+                                                                    <span className="mr-2">Headers</span>
+                                                                    <span className="text-xs text-primary">+10 points</span>
+                                                                </h4>
+                                                                <pre className="bg-gray-50 p-3 rounded-md text-sm">
+# Main Title
+## Section Title
+### Subsection</pre>
+                                                            </div>
+
+                                                            <div className="space-y-2">
+                                                                <h4 className="font-medium text-sm flex items-center">
+                                                                    <span className="mr-2">Text Styling</span>
+                                                                    <span className="text-xs text-primary">+5 points</span>
+                                                                </h4>
+                                                                <pre className="bg-gray-50 p-3 rounded-md text-sm">
+**Bold Text**
+*Italic Text*
+~~Strikethrough~~
+`Inline Code`</pre>
+                                                            </div>
+
+                                                            <div className="space-y-2">
+                                                                <h4 className="font-medium text-sm flex items-center">
+                                                                    <span className="mr-2">Lists</span>
+                                                                    <span className="text-xs text-primary">+8 points</span>
+                                                                </h4>
+                                                                <pre className="bg-gray-50 p-3 rounded-md text-sm">
+- Bullet point
+  - Nested bullet
+1. Numbered item
+2. Another item
+   - Mixed nesting</pre>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="space-y-4">
+                                                            <div className="space-y-2">
+                                                                <h4 className="font-medium text-sm flex items-center">
+                                                                    <span className="mr-2">Advanced Features</span>
+                                                                    <span className="text-xs text-primary">+15 points</span>
+                                                                </h4>
+                                                                <pre className="bg-gray-50 p-3 rounded-md text-sm">
+{`> Blockquote text
+> Multiple lines
+
+| Table | Header |
+|-------|--------|
+| Cell  | Cell   |
+
+\`\`\`js
+// Code block
+console.log('Hello');
+\`\`\`
+`}</pre>
+                                                            </div>
+
+                                                            <div className="space-y-2">
+                                                                <h4 className="font-medium text-sm flex items-center">
+                                                                    <span className="mr-2">Links & Media</span>
+                                                                    <span className="text-xs text-primary">+12 points</span>
+                                                                </h4>
+                                                                <pre className="bg-gray-50 p-3 rounded-md text-sm">
+[Link Text](URL)
+![Image Alt](URL)
+
+[![Clickable Image](URL)](URL)</pre>
+                                                            </div>
+
+                                                            <div className="space-y-2">
+                                                                <h4 className="font-medium text-sm flex items-center">
+                                                                    <span className="mr-2">Special Elements</span>
+                                                                    <span className="text-xs text-primary">+20 points</span>
+                                                                </h4>
+                                                                <pre className="bg-gray-50 p-3 rounded-md text-sm">
+&lt;details&gt;
+                                                                    &lt;summary&gt;Expandable Section&lt;/summary&gt;
+                                                                    Hidden content here
+                                                                    &lt;/details&gt;
+
+                                                                    - [x] Completed task
+- [ ] Pending task</pre>
+                                                            </div>
+                                                        </div>
                                                     </div>
-                                                    <div className="space-y-2">
-                                                        <h4 className="font-medium text-sm">Lists</h4>
-                                                        <pre className="bg-gray-50 p-2 rounded text-xs">- Bullet point
-1. Numbered list
-   - Nested item</pre>
-                                                    </div>
-                                                    <div className="space-y-2">
-                                                        <h4 className="font-medium text-sm">Links & Images</h4>
-                                                        <pre className="bg-gray-50 p-2 rounded text-xs">[Link text](URL)
-![Image alt](URL)</pre>
+
+                                                    <div className="mt-4 p-4 bg-primary/5 rounded-md">
+                                                        <h4 className="font-medium text-sm mb-2">Pro Tips 💡</h4>
+                                                        <ul className="text-sm space-y-2 text-gray-600">
+                                                            <li>• Use headers to organize your content hierarchically</li>
+                                                            <li>• Include code blocks for technical content</li>
+                                                            <li>• Add tables for structured information</li>
+                                                            <li>• Use task lists for actionable items</li>
+                                                        </ul>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        </TabsContent>
-                                    </Tabs>
-                                </>
-                            )}
+                                            </TabsContent>
+                                        </Tabs>
+                                    </div>
+                                )}
+
+                                {(viewMode === 'preview' || viewMode === 'split') && (
+                                    <div className={`bg-white rounded-lg border p-6 ${viewMode === 'preview' ? 'min-h-[500px]' : 'min-h-[300px]'} overflow-y-auto`}>
+                                        <PreviewContent content={lessonData.textContent} />
+                                    </div>
+                                )}
+                            </div>
                         </div>
 
                         <Separator />
@@ -524,14 +739,14 @@ Continue organizing your lesson with additional sections.`;
                     <div className="bg-gray-50 p-4 rounded-md mb-4">
                         <h3 className="text-sm font-medium mb-2">Lesson Content Preview</h3>
                         <div className="max-h-40 overflow-y-auto prose prose-sm">
-                            {createdLesson?.content ? (
+                            {createdLesson?.textContent ? (
                                 <ReactMarkdown>
-                                    {createdLesson.content.substring(0, 300)}
+                                    {createdLesson.textContent.substring(0, 300)}
                                 </ReactMarkdown>
                             ) : (
                                 <p className="text-gray-500 italic">No content available.</p>
                             )}
-                            {createdLesson?.content && createdLesson.content.length > 300 && (
+                            {createdLesson?.textContent && createdLesson.textContent.length > 300 && (
                                 <div className="text-primary text-sm">
                                     ... (content continues)
                                 </div>
@@ -554,3 +769,5 @@ Continue organizing your lesson with additional sections.`;
 }
 
 export default CreateLesson;
+
+

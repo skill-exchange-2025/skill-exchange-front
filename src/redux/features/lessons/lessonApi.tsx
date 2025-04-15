@@ -6,7 +6,7 @@ export interface Lesson {
     title: string;
     description: string;
     duration: number;
-    content: string;
+    textContent: string;
     type: string;
     order: number;
     instructor?: {
@@ -31,7 +31,7 @@ export interface CreateLessonDto {
     title: string;
     description: string;
     duration: number;
-    content: string;
+    textContent: string;
     // If `type` is required on the server side you may add it here, or if not, leave it out.
     materials?: string[];
     videoUrl?: string;

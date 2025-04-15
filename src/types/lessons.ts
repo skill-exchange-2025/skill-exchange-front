@@ -1,4 +1,3 @@
-
 export interface Instructor {
     _id: string;
     name: string;
@@ -11,7 +10,7 @@ export interface Lesson {
     title: string;
     description: string;
     duration: number;
-    content: string;
+    textContent: string; // Added this field
     order: number;
     status: 'draft' | 'published' | 'archived';
     videoUrl?: string;
