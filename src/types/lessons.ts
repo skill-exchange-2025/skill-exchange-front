@@ -1,4 +1,3 @@
-// src/types/lessons.ts
 
 export interface Instructor {
     _id: string;
@@ -12,7 +11,7 @@ export interface Lesson {
     title: string;
     description: string;
     duration: number;
-    content: string;       // changed from "textContent" to "content"
+    content: string;
     order: number;
     status: 'draft' | 'published' | 'archived';
     videoUrl?: string;
