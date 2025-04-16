@@ -79,8 +79,15 @@ export const channelsSlice = createSlice({
       state.isLoadingMessages = false;
     },
     addMessage: (state, action: PayloadAction<Message>) => {
-      // Add new message to the top of the list
-      state.messages = [action.payload, ...state.messages];
+      // Check if the message already exists to avoid duplicates
+      const messageExists = state.messages.some(
+        (msg) => msg._id === action.payload._id
+      );
+
+      if (!messageExists) {
+        // Add new message to the top of the list
+        state.messages = [action.payload, ...state.messages];
+      }
     },
     updateMessage: (state, action: PayloadAction<Message>) => {
       const messageIndex = state.messages.findIndex(

@@ -28,7 +28,7 @@ import {
   Archive,
   Sparkles,
 } from 'lucide-react';
-import { useToast } from '../../hooks/use-toast';
+import { toast } from 'sonner';
 import { Badge } from '../ui/badge';
 import socketService from '../../services/socket.service';
 import { format } from 'date-fns';
@@ -44,9 +44,7 @@ const ChannelDetails: React.FC<ChannelDetailsProps> = ({
   variant = 'default',
 }) => {
   const { user } = useAppSelector((state) => state.auth);
-  const { toast } = useToast();
   const [joinChannel, { isLoading: isJoining }] = useJoinChannelMutation();
-  const [leaveChannel, { isLoading: isLeaving }] = useLeaveChannelMutation();
 
   // Check if user is a member of the channel
   const isMember = useMemo(() => {
@@ -62,8 +60,7 @@ const ChannelDetails: React.FC<ChannelDetailsProps> = ({
   const handleJoinChannel = async () => {
     try {
       await joinChannel(channel._id).unwrap();
-      toast({
-        title: 'Joined channel',
+      toast.success('Joined channel', {
         description: `You've successfully joined #${channel.name}`,
       });
       // Notify other members via socket
@@ -83,45 +80,12 @@ const ChannelDetails: React.FC<ChannelDetailsProps> = ({
       document.dispatchEvent(joinEvent);
     } catch (error) {
       console.error('Failed to join channel:', error);
-      toast({
-        title: 'Error',
+      toast.error('Error', {
         description: 'Failed to join channel',
-        variant: 'destructive',
       });
     }
   };
 
-  const handleLeaveChannel = async () => {
-    try {
-      await leaveChannel(channel._id).unwrap();
-      toast({
-        title: 'Left channel',
-        description: `You've successfully left #${channel.name}`,
-      });
-      // Notify other members via socket
-      socketService.leaveChannel(channel._id);
-
-      // Manually trigger the system message event
-      const leaveEvent = new CustomEvent('userLeftChannel', {
-        detail: {
-          channelId: channel._id,
-          user: {
-            _id: user?._id || '',
-            name: user?.name || 'Unknown User',
-          },
-        },
-      });
-
-      document.dispatchEvent(leaveEvent);
-    } catch (error) {
-      console.error('Failed to leave channel:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to leave channel',
-        variant: 'destructive',
-      });
-    }
-  };
 
   const getMemberInitials = (name: string) => {
     return name

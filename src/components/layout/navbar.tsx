@@ -329,7 +329,8 @@ export function Navbar() {
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         onClick={handleSignOut}
-                        className="cursor-pointer"
+                        
+                        className="cursor-pointer text-red-500"
                       >
                         Sign Out
                       </DropdownMenuItem>

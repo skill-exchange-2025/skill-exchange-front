@@ -6,8 +6,8 @@ import {
 } from '../../redux/api/messagingApi';
 import { EmojiClickData } from 'emoji-picker-react';
 import { X } from 'lucide-react';
-import { useToast } from '../use-toast';
 import socketService from '../../services/socket.service';
+import { toast } from 'sonner';
 
 interface MessageReactionsProps {
   messageId: string;
@@ -23,7 +23,6 @@ const MessageReactions: React.FC<MessageReactionsProps> = ({
   const { user } = useAppSelector((state) => state.auth);
   const { currentChannel } = useAppSelector((state) => state.channels);
   const [removeReaction] = useRemoveReactionMutation();
-  const { toast } = useToast();
 
   const handleRemoveReaction = async (emoji: string) => {
     if (!currentChannel) return;
@@ -37,10 +36,8 @@ const MessageReactions: React.FC<MessageReactionsProps> = ({
       socketService.removeReaction(messageId, currentChannel._id, emoji);
     } catch (error) {
       console.error('Failed to remove reaction:', error);
-      toast({
-        title: 'Error',
+      toast.error('Error', {
         description: 'Failed to remove reaction',
-        variant: 'destructive',
       });
     }
   };

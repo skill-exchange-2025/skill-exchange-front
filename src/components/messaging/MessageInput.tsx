@@ -28,7 +28,6 @@ import {
   DialogTitle,
   DialogFooter,
 } from '../ui/dialog';
-import { useToast } from '../../hooks/use-toast';
 import { Badge } from '../ui/badge';
 import {
   Tooltip,
@@ -40,7 +39,8 @@ import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import data from '@emoji-mart/data';
 import Picker from '@emoji-mart/react';
 import { useTheme } from 'next-themes';
-
+import socketService from '../../services/socket.service';
+import { toast } from 'sonner';
 interface MessageInputProps {
   channelId: string;
 }
@@ -58,7 +58,36 @@ const emojiCategories = [
 ];
 
 // Common emoji shortcuts
-const quickEmojis = ['👍', '❤️', '😂', '🎉', '🙏', '👏', '🔥', '✅'];
+const quickEmojis = [
+  '👍',
+  '❤️',
+  '😂',
+  '🎉',
+  '🙏',
+  '👏',
+  '🔥',
+  '✅',
+  '👀',
+  '👆',
+  '👇',
+  '👈',
+  '👉',
+  '👌',
+  '👋',
+  '👍',
+  '👎',
+  '👊',
+  '👏',
+  '👐',
+  '👑',
+  '👒',
+  '👓',
+  '👔',
+  '👕',
+  '👖',
+  '👗',
+  '👘',
+];
 
 const MessageInput: React.FC<MessageInputProps> = ({ channelId }) => {
   const [message, setMessage] = useState('');
@@ -67,11 +96,11 @@ const MessageInput: React.FC<MessageInputProps> = ({ channelId }) => {
   const [showPreview, setShowPreview] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const typingTimeoutRef = useRef<NodeJS.Timeout>();
   const [createMessage, { isLoading: isSending }] = useCreateMessageMutation();
   const [uploadFileWithMessage, { isLoading: isUploading }] =
     useUploadFileWithMessageMutation();
   const isSubmitting = isSending || isUploading;
-  const { toast } = useToast();
   const { theme } = useTheme();
   const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
   const [showAttachOptions, setShowAttachOptions] = useState(false);
@@ -82,9 +111,28 @@ const MessageInput: React.FC<MessageInputProps> = ({ channelId }) => {
     }
   }, [channelId]);
 
+  // Handle typing indicator with throttling
+  const handleTyping = () => {
+    if (!channelId) return;
+
+    // Clear existing timeout
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+
+    // Emit typing event (throttled)
+    socketService.emitTyping(channelId);
+
+    // Set timeout to emit stopped typing event
+    typingTimeoutRef.current = setTimeout(() => {
+      socketService.emitStopTyping(channelId);
+    }, 2000); // 2 seconds after last keystroke
+  };
+
   const handleMessageChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setMessage(e.target.value);
     handleTextareaResize(e);
+    handleTyping();
   };
 
   const handleFileSelect = (e: ChangeEvent<HTMLInputElement>) => {
@@ -93,10 +141,8 @@ const MessageInput: React.FC<MessageInputProps> = ({ channelId }) => {
 
       // Check file size (limit to 25MB)
       if (file.size > 25 * 1024 * 1024) {
-        toast({
-          title: 'File too large',
+        toast.error('File too large', {
           description: 'Maximum file size is 25MB',
-          variant: 'destructive',
         });
         return;
       }
@@ -174,55 +220,52 @@ const MessageInput: React.FC<MessageInputProps> = ({ channelId }) => {
     }
   };
 
+  // Clean up typing timeout on unmount or channel change
+  useEffect(() => {
+    return () => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+        if (channelId) {
+          socketService.emitStopTyping(channelId);
+        }
+      }
+    };
+  }, [channelId]);
+
+  // Handle message submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!message.trim() && !selectedFile) return;
 
     try {
-      if (selectedFile) {
-        // Log file details for debugging
-        console.log('Uploading file:', {
-          name: selectedFile.name,
-          type: selectedFile.type,
-          size: selectedFile.size,
-        });
+      // Cancel any pending typing timeout and explicitly stop typing
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+        socketService.emitStopTyping(channelId);
+      }
+      // First send via Socket.IO for real-time update
+      socketService.sendMessage({
+        channelId,
+        content: message,
+        attachment: selectedFile,
+      });
 
-        // Create a FormData object for file upload
+      // Then use API for persistent storage
+      if (selectedFile) {
         const formData = new FormData();
         formData.append('file', selectedFile);
         formData.append('channel', channelId);
-        formData.append('content', message || ''); // Ensure content is never undefined
+        formData.append('content', message || '');
 
-        // Show uploading toast
-        const toastId = toast({
-          title: 'Uploading file...',
-          description: selectedFile.name,
-        });
-
-        // Upload file with message
-        const response = await uploadFileWithMessage(formData).unwrap();
-        console.log('Message with file sent successfully:', response);
-
-        if (response.attachment) {
-          toast({
-            title: 'File uploaded successfully',
-            description: selectedFile.name,
-            variant: 'default',
-          });
-        }
+        await uploadFileWithMessage(formData).unwrap();
       } else {
-        const messageData: CreateMessageDto = {
+        const messageData = {
           channel: channelId,
           content: message,
         };
 
         await createMessage(messageData).unwrap();
-      }
-
-      // Clean up
-      if (previewUrl) {
-        URL.revokeObjectURL(previewUrl);
       }
 
       // Clear form after successful submission
@@ -240,10 +283,8 @@ const MessageInput: React.FC<MessageInputProps> = ({ channelId }) => {
       }
     } catch (error) {
       console.error('Failed to send message:', error);
-      toast({
-        title: 'Error sending message',
+      toast.error('Error sending message', {
         description: 'Please try again later',
-        variant: 'destructive',
       });
     }
   };
@@ -433,8 +474,7 @@ const MessageInput: React.FC<MessageInputProps> = ({ channelId }) => {
                           className="flex flex-col items-center justify-center h-16 w-full"
                           onClick={() => {
                             setShowAttachOptions(false);
-                            toast({
-                              title: 'Coming soon',
+                            toast.error('Coming soon', {
                               description:
                                 'Image capture will be available soon',
                             });
@@ -469,8 +509,7 @@ const MessageInput: React.FC<MessageInputProps> = ({ channelId }) => {
                           className="flex flex-col items-center justify-center h-16 w-full"
                           onClick={() => {
                             setShowAttachOptions(false);
-                            toast({
-                              title: 'Coming soon',
+                            toast.error('Coming soon', {
                               description:
                                 'Voice recording will be available soon',
                             });

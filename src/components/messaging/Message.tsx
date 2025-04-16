@@ -33,7 +33,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
-import { useToast } from '../use-toast';
+import { toast } from 'sonner';
 import socketService from '../../services/socket.service';
 import MessageReactions from './MessageReactions';
 import {
@@ -57,7 +57,6 @@ const Message: React.FC<MessageProps> = ({ message }) => {
   const [addReaction] = useAddReactionMutation();
   const [removeReaction] = useRemoveReactionMutation();
   const [deleteMessage, { isLoading: isDeleting }] = useDeleteMessageMutation();
-  const { toast } = useToast();
 
   const handleEmojiClick = async (emojiData: EmojiClickData) => {
     try {
@@ -90,10 +89,8 @@ const Message: React.FC<MessageProps> = ({ message }) => {
       setShowEmojiPicker(false);
     } catch (error) {
       console.error('Failed to handle reaction:', error);
-      toast({
-        title: 'Error',
+      toast.error('Error', {
         description: 'Failed to process reaction',
-        variant: 'destructive',
       });
     }
   };
@@ -110,10 +107,8 @@ const Message: React.FC<MessageProps> = ({ message }) => {
       socketService.removeReaction(message._id, currentChannel._id, emoji);
     } catch (error) {
       console.error('Failed to remove reaction:', error);
-      toast({
-        title: 'Error',
+      toast.error('Error', {
         description: 'Failed to remove reaction',
-        variant: 'destructive',
       });
     }
   };
@@ -126,16 +121,13 @@ const Message: React.FC<MessageProps> = ({ message }) => {
       // Also notify via socket for real-time updates
       socketService.deleteMessage(message._id, currentChannel._id);
 
-      toast({
-        title: 'Message deleted',
+      toast.success('Message deleted', {
         description: 'Your message has been successfully deleted',
       });
     } catch (error) {
       console.error('Failed to delete message:', error);
-      toast({
-        title: 'Error',
+      toast.error('Error', {
         description: 'Failed to delete message',
-        variant: 'destructive',
       });
     }
   };
@@ -166,8 +158,10 @@ const Message: React.FC<MessageProps> = ({ message }) => {
     if (!message.attachment)
       return <FileIcon size={20} className="text-gray-400" />;
 
-    const filename = message.attachment.originalname.toLowerCase();
-    const mimetype = message.attachment.mimetype;
+    const filename = message.attachment.originalname
+      ? message.attachment.originalname.toLowerCase()
+      : '';
+    const mimetype = message.attachment.mimetype || '';
 
     if (mimetype && mimetype.startsWith('image/')) {
       return <ImageIcon size={20} className="text-blue-500" />;
@@ -196,21 +190,23 @@ const Message: React.FC<MessageProps> = ({ message }) => {
 
   const isImageAttachment = () => {
     if (!message.attachment) return false;
-    const mimetype = message.attachment.mimetype;
+    const mimetype = message.attachment.mimetype || '';
     return mimetype && mimetype.startsWith('image/');
   };
 
   const isPdfAttachment = () => {
     if (!message.attachment) return false;
     const mimetype = message.attachment.mimetype;
-    const filename = message.attachment.originalname.toLowerCase();
+    const filename = message.attachment.originalname
+      ? message.attachment.originalname.toLowerCase()
+      : '';
     return mimetype === 'application/pdf' || filename.endsWith('.pdf');
   };
 
   const getFileSize = () => {
     if (!message.attachment) return '';
 
-    const size = message.attachment.size;
+    const size = message.attachment.size || 0;
     if (size < 1024) {
       return `${size} bytes`;
     } else if (size < 1024 * 1024) {
@@ -301,8 +297,8 @@ const Message: React.FC<MessageProps> = ({ message }) => {
                   <div className="rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 shadow-sm">
                     <div className="relative">
                       <img
-                        src={getAttachmentUrl(message.attachment.path)}
-                        alt={message.attachment.originalname}
+                        src={getAttachmentUrl(message.attachment?.path || '')}
+                        alt={message.attachment?.originalname || 'Attachment'}
                         className="max-h-80 w-auto object-contain bg-gray-50 dark:bg-gray-900"
                         onError={(e) => {
                           console.error(
@@ -324,7 +320,7 @@ const Message: React.FC<MessageProps> = ({ message }) => {
                     </div>
                     <div className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
                       <div className="text-sm truncate text-gray-700 dark:text-gray-300 font-medium">
-                        {message.attachment.originalname}
+                        {message.attachment?.originalname || 'Attachment'}
                       </div>
                       <Button
                         variant="ghost"
@@ -351,7 +347,7 @@ const Message: React.FC<MessageProps> = ({ message }) => {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="text-sm font-medium truncate text-gray-800 dark:text-gray-200">
-                          {message.attachment.originalname}
+                          {message.attachment?.originalname || 'Attachment'}
                         </div>
                         <div className="text-xs text-gray-500 mt-1">
                           {getFileSize()}
@@ -473,14 +469,16 @@ const Message: React.FC<MessageProps> = ({ message }) => {
             <DialogHeader>
               <DialogTitle className="flex items-center">
                 {getFileIcon()}
-                <span className="ml-2">{message.attachment.originalname}</span>
+                <span className="ml-2">
+                  {message.attachment?.originalname || 'Attachment'}
+                </span>
               </DialogTitle>
             </DialogHeader>
             <div className="my-4 flex justify-center bg-gray-50 dark:bg-gray-900 rounded-lg p-2">
               {isImageAttachment() ? (
                 <img
-                  src={getAttachmentUrl(message.attachment.path)}
-                  alt={message.attachment.originalname}
+                  src={getAttachmentUrl(message.attachment?.path || '')}
+                  alt={message.attachment?.originalname || 'Attachment'}
                   className="max-h-[70vh] max-w-full object-contain rounded"
                   onError={(e) => {
                     console.error(
@@ -496,7 +494,7 @@ const Message: React.FC<MessageProps> = ({ message }) => {
                 />
               ) : isPdfAttachment() ? (
                 <iframe
-                  src={getAttachmentUrl(message.attachment.path)}
+                  src={getAttachmentUrl(message.attachment?.path || '')}
                   title="PDF Preview"
                   className="w-full h-[70vh] border-0 rounded"
                   onError={(e) => {
