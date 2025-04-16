@@ -27,6 +27,7 @@ import MessagingLayout from '../pages/messaging/MessagingLayout';
 import ChannelPage from '../pages/messaging/ChannelPage';
 import ChannelListPage from '../pages/messaging/ChannelListPage';
 import CodingRoomPage from "@/pages/CodingRooms/CodingRoomPage";
+import CreateRoomPage from "@/pages/CodingRooms/CreateRoomPage.tsx";
 
 const router = createBrowserRouter([
   {
@@ -130,6 +131,10 @@ const router = createBrowserRouter([
         ],
       },
       {
+        path: "coding-rooms/create",
+        element: <CreateRoomPage />,
+      },
+      {
         path: 'admin',
         element: (
           <ProtectedRoute>
@@ -138,6 +143,7 @@ const router = createBrowserRouter([
         ),
         children: [{ path: '*', element: <AdminRoutes /> },{ path: "coding-rooms/:roomId", element: <CodingRoomPage /> },],
       },
+      { path: "coding-rooms/:roomId", element: <CodingRoomPage /> },
       {
         path: 'user',
         element: (
