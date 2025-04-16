@@ -17,6 +17,7 @@ export interface User {
     email: string;
     name: string;
     phone: number;
+    isActive: boolean;
     roles: string[];
     permissions: string[];
     permissionGroups: string[];
