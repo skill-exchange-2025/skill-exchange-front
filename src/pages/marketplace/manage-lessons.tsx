@@ -17,13 +17,11 @@ import {
 import {
     Lock,
     Check,
-    ChevronRight,
     BookOpen,
     GraduationCap,
     Calendar,
     Users,
     Clock,
-    MapPin,
     Plus,
     Trash2,
     Edit2,

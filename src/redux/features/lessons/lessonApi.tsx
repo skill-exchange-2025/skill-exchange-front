@@ -32,9 +32,10 @@ export interface CreateLessonDto {
     description: string;
     duration: number;
     textContent: string;
-    // If `type` is required on the server side you may add it here, or if not, leave it out.
+    type: string;
     materials?: string[];
     videoUrl?: string;
+    listingId: string;     data: CreateLessonDto;
 }
 
 export interface LessonsPaginatedResponse {

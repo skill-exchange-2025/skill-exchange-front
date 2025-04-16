@@ -59,7 +59,7 @@ export function EditLesson() {
             title: formData.title,
             description: formData.description,
             duration: Number(formData.duration),
-            content: formData.content,
+            textContent: formData.content,
             materials: formData.materials
                 ? formData.materials.split(',').map((s) => s.trim())
                 : [],

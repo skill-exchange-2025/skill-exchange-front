@@ -4,7 +4,6 @@ import { useLocation } from 'react-router-dom';
 import {
   MessageSquare,
   Store,
-  Heart,
   Home,
   Book,
   MessageCircle,

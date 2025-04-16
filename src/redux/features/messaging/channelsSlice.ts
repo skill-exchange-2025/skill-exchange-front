@@ -1,6 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { Channel, ChannelsState, Message } from '../../../types/channel';
-import { messagingApi } from '@/redux/api/messagingApi';
 
 // Get saved channel ID from localStorage if it exists
 const savedChannelId = localStorage.getItem('currentChannelId');
