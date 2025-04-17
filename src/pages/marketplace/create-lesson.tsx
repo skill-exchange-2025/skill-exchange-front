@@ -22,15 +22,11 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import ReactMarkdown from 'react-markdown';
 import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, Suspense } from "react";
 import { filesToBase64 } from '@/utils/fileUpload';
-import dynamic from 'next/dynamic';
+const MarkdownEditor = React.lazy(() => import("@uiw/react-markdown-editor"));
 
-// Dynamically import markdown editor with SSR disabled
-const MarkdownEditor = dynamic(
-    () => import('@uiw/react-markdown-editor'),
-    { ssr: false }
-);
+
 
 interface UploadedFile {
     name: string;
@@ -50,26 +46,28 @@ const MarkdownTextarea = ({
                           }) => {
     return (
         <div className={`markdown-editor-container ${className}`}>
-            <MarkdownEditor
-                value={value}
-                onChange={(val) => {
-                    onChange({ target: { name, value: val } });
-                }}
-                height={`${initialRows * 24}px`}
-                visible={true}
-                placeholder={placeholder}
-                options={{
-                    scrollbarStyle: 'overlay',
-                    lineWrapping: true,
-                    theme: 'light',
-                    mode: 'markdown',
-                    lineNumbers: true,
-                    styleActiveLine: true
-                }}
-                enablePreview={true}
-                previewWidth="50%"
-                className="border rounded-md overflow-hidden"
-            />
+            <Suspense fallback={<div>Loading markdown editor...</div>}>
+                <MarkdownEditor
+                    value={value}
+                    onChange={(val) => {
+                        onChange({ target: { name, value: val } });
+                    }}
+                    height={`${initialRows * 24}px`}
+                    visible={true}
+                    placeholder={placeholder}
+                    options={{
+                        scrollbarStyle: 'overlay',
+                        lineWrapping: true,
+                        theme: 'light',
+                        mode: 'markdown',
+                        lineNumbers: true,
+                        styleActiveLine: true
+                    }}
+                    enablePreview={true}
+                    previewWidth="50%"
+                    className="border rounded-md overflow-hidden"
+                />
+            </Suspense>
         </div>
     );
 };

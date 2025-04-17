@@ -17,7 +17,8 @@ import usersReducer from './features/users/usersSlice.ts';
 import marketplaceReducer from './features/marketplace/marketplaceSlice';
 import creditsReducer from './features/credits/creditsSlice';
 import channelsReducer from './features/messaging/channelsSlice';
-import lessonsReducer from './features/lessons/lessonsSlice';
+// import lessonReducer from './features/lessons/lessonsSlice.ts';
+import chatReducer from './features/chat/chatSlice.ts';
 
 const persistConfig = {
   key: 'auth',
@@ -35,8 +36,8 @@ export const store = configureStore({
     marketplace: marketplaceReducer,
     credits: creditsReducer,
     channels: channelsReducer,
-    lessons: lessonsReducer,
-
+    // lesson:lessonReducer,
+    chat: chatReducer,
   },
   middleware: (getDefaultMiddlewares) =>
     getDefaultMiddlewares({
@@ -48,5 +49,5 @@ export const store = configureStore({
 
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
-export type LessonsStateType = RootState['lessons'];
+// export type LessonsStateType = RootState['lessons'];
 export const persistor = persistStore(store);

@@ -29,6 +29,7 @@ import { CreateLesson } from '@/pages/marketplace/create-lesson';
 import { EditLesson } from '@/pages/marketplace/edit-lesson';
 import { LessonDetail } from '@/pages/marketplace/lesson-detail';
 import ManageLessons from "@/pages/marketplace/manage-lessons.tsx";
+import ChatApp from '@/components/chat/chat';
 
 const router = createBrowserRouter([
   {
@@ -52,6 +53,11 @@ const router = createBrowserRouter([
           { path: 'terms', element: <Terms /> },
           { path: 'forgot-password', element: <ForgotPassword /> },
           { path: 'signup', element: <SignUp /> },
+          { path: 'chat', element:
+            <ProtectedRoute>
+             <ChatApp />
+             </ProtectedRoute>},
+
           {
             path: 'marketplace',
             element: (
