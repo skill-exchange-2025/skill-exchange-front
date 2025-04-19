@@ -19,6 +19,7 @@ import creditsReducer from './features/credits/creditsSlice';
 import channelsReducer from './features/messaging/channelsSlice';
 // import lessonReducer from './features/lessons/lessonsSlice.ts';
 import friendRequestsReducer from './features/friends/friendRequestsSlice';
+import privateMessagesReducer from './features/privatemsgs/privateMessagesSlice';
 
 const persistConfig = {
   key: 'auth',
@@ -38,6 +39,8 @@ export const store = configureStore({
     channels: channelsReducer,
     // lesson:lessonReducer,
     friendRequests: friendRequestsReducer,
+    privateMessages: privateMessagesReducer,
+
 
 
   

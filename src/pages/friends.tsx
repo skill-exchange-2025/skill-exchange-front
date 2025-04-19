@@ -1,13 +1,16 @@
 // src/pages/friends.tsx
+import { useState } from 'react';
 import { FriendRequestList } from '@/components/friends/FriendRequestList';
 import { SendFriendRequest } from '@/components/friends/SendFriendRequest';
-import { Card,CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useGetFriendsQuery } from '@/redux/features/friends/friendRequestApi';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'; // assuming you're re-exporting Radix Avatar here
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { User } from 'lucide-react';
+import PrivateMessageChat from '@/components/privatemsgs/PrivateMessageChat';
 
 export default function FriendsPage() {
   const { data: friends, isLoading } = useGetFriendsQuery();
+  const [selectedFriend, setSelectedFriend] = useState<any>(null); // Add state for selected friend
 
   return (
     <div className="container mx-auto py-8 space-y-6">
@@ -30,7 +33,8 @@ export default function FriendsPage() {
                   {friends?.map((friend) => (
                     <div
                       key={friend._id}
-                      className="flex items-center gap-3 p-3 border rounded-lg"
+                      className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-accent"
+                      onClick={() => setSelectedFriend(friend)} // Add click handler
                     >
                       <Avatar>
                         <AvatarImage
@@ -53,6 +57,21 @@ export default function FriendsPage() {
               )}
             </CardContent>
           </Card>
+
+          {/* Add Chat Section */}
+          {selectedFriend && (
+            <Card className="mt-6">
+              <CardHeader>
+                <CardTitle>Chat with {selectedFriend.name}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <PrivateMessageChat
+                  recipientId={selectedFriend._id}
+                  recipientName={selectedFriend.name}
+                />
+              </CardContent>
+            </Card>
+          )}
         </div>
 
         {/* Friend Requests Section */}

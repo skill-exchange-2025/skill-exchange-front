@@ -160,6 +160,13 @@ const router = createBrowserRouter([
                 </ProtectedRoute>
               ),
             },
+            {
+              path: 'chat/:userId',
+              element: (
+                <ProtectedRoute>
+                  <FriendsPage />
+                </ProtectedRoute>
+              )},
 
 
 

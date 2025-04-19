@@ -69,6 +69,7 @@ export const baseApi = createApi({
     'Lessons',
     'FriendRequest',
     'Friend',
+    'PrivateMessage',
     
   ],
 });
