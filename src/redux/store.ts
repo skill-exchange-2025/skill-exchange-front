@@ -18,7 +18,7 @@ import marketplaceReducer from './features/marketplace/marketplaceSlice';
 import creditsReducer from './features/credits/creditsSlice';
 import channelsReducer from './features/messaging/channelsSlice';
 // import lessonReducer from './features/lessons/lessonsSlice.ts';
-import chatReducer from './features/chat/chatSlice.ts';
+import friendRequestsReducer from './features/friends/friendRequestsSlice';
 
 const persistConfig = {
   key: 'auth',
@@ -37,7 +37,10 @@ export const store = configureStore({
     credits: creditsReducer,
     channels: channelsReducer,
     // lesson:lessonReducer,
-    chat: chatReducer,
+    friendRequests: friendRequestsReducer,
+
+
+  
   },
   middleware: (getDefaultMiddlewares) =>
     getDefaultMiddlewares({

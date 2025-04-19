@@ -23,7 +23,16 @@ export interface User {
     permissionGroups: string[];
     skills: Skill[];
     desiredSkills: DesiredSkill[];
+    avatarUrl?: string;
 }
+export interface FriendRequest {
+    _id: string;
+    sender: User;
+    recipient: User;
+    status: 'pending' | 'accepted' | 'rejected';
+    createdAt: string;
+    updatedAt: string;
+  }
 
 export interface PaginationParams {
     page?: number;
