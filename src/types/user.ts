@@ -43,7 +43,7 @@ export interface PrivateMessage {
     replyTo?: {
       _id: string;
       content: string;
-      sender: string;
+      sender: User;
     } | null;
   }
 
