@@ -1,13 +1,15 @@
 // src/components/friends/FriendRequestList.tsx
-
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useGetFriendRequestsQuery } from '@/redux/features/friends/friendRequestApi';
 import { FriendRequestItem } from './FriendRequestItem';
+import { useAppSelector } from '@/redux/hooks';
+import { selectFriendRequests } from '@/redux/features/friends/friendRequestsSlice';
 
 export const FriendRequestList: React.FC = () => {
-  const { data: friendRequests, isLoading, error } = useGetFriendRequestsQuery();
+  const { isLoading, error } = useGetFriendRequestsQuery();
+  const friendRequests = useAppSelector(selectFriendRequests);
 
   if (isLoading) {
     return (

@@ -1,5 +1,4 @@
 // src/components/friends/SendFriendRequest.tsx
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,7 +14,7 @@ export const SendFriendRequest: React.FC = () => {
     e.preventDefault();
     
     try {
-      await sendRequest({ email }).unwrap();
+      const result = await sendRequest({ email }).unwrap();
       toast({
         title: "Friend request sent",
         description: "Your friend request has been sent successfully",

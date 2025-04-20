@@ -1,11 +1,11 @@
 // src/redux/api/privateMessagesApi.ts
 import { baseApi } from '@/redux/api/baseApi';
-import { Message } from '@/types/channel'; // You might want to create a specific type for private messages
+import { PrivateMessage } from '@/types/user';
 
 export const privateMessagesApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     // Send a private message
-    sendPrivateMessage: builder.mutation<Message, { recipientId: string; content: string }>({
+    sendPrivateMessage: builder.mutation<PrivateMessage, { recipientId: string; content: string,replyTo?: string; }>({
       query: (messageData) => ({
         url: '/private-messages',
         method: 'POST',
@@ -15,7 +15,7 @@ export const privateMessagesApi = baseApi.injectEndpoints({
     }),
 
     // Get messages with a specific user
-    getMessagesWithUser: builder.query<Message[], string>({
+    getMessagesWithUser: builder.query<PrivateMessage[], string>({
       query: (recipientId) => ({
         url: `/private-messages/with/${recipientId}`,
         method: 'GET',
@@ -33,7 +33,7 @@ export const privateMessagesApi = baseApi.injectEndpoints({
     }),
 
     // Edit a message
-    editPrivateMessage: builder.mutation<Message, { messageId: string; content: string }>({
+    editPrivateMessage: builder.mutation<PrivateMessage, { messageId: string; content: string }>({
       query: ({ messageId, content }) => ({
         url: `/private-messages/${messageId}`,
         method: 'PUT',
