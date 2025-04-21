@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@ant-design/icons": "^6.0.0",
     "@emoji-mart/data": "^1.2.1",
     "@emoji-mart/react": "^1.1.1",
     "@heroicons/react": "^2.1.5",
@@ -46,7 +47,7 @@
     "@stripe/react-stripe-js": "^3.1.1",
     "@stripe/stripe-js": "^5.7.0",
     "@uiw/react-markdown-editor": "^6.1.2",
-    "antd": "^5.20.2",
+    "antd": "^5.24.7",
     "axios": "^1.7.9",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -82,7 +83,7 @@
     "@eslint/js": "^9.11.1",
     "@types/node": "^22.7.3",
     "@types/nodemailer": "^6.4.17",
-    "@types/react": "^18.3.9",
+    "@types/react": "^18.3.20",
     "@types/react-dom": "^18.3.0",
     "@types/react-redux": "^7.1.22",
     "@typescript-eslint/eslint-plugin": "^7.13.1",

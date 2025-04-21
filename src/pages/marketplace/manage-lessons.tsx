@@ -17,20 +17,14 @@ import {
 import {
     Lock,
     Check,
-    ChevronRight,
     BookOpen,
     GraduationCap,
-    Calendar,
-    Users,
-    Clock,
-    MapPin,
     Plus,
     Trash2,
     Edit2,
     Eye
 } from "lucide-react";
 import { ListingType, useGetMarketplaceItemByIdQuery } from '@/redux/features/marketplace/marketplaceApi';
-import { format } from 'date-fns';
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useTheme } from 'next-themes';
@@ -145,45 +139,8 @@ export function ManageLessons() {
                 </CardHeader>
 
                 <CardContent className="p-6 space-y-6">
-                    {/* Course Details Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-4 rounded-lg bg-muted/50">
-                        {marketplaceItem.startDate && (
-                            <div className="flex items-center gap-3 p-3 rounded-md bg-background">
-                                <Calendar className="h-5 w-5 text-primary" />
-                                <div>
-                                    <p className="text-xs text-muted-foreground">Start Date</p>
-                                    <p className="font-medium">{format(new Date(marketplaceItem.startDate), 'PPP')}</p>
-                                </div>
-                            </div>
-                        )}
-                        {marketplaceItem.endDate && (
-                            <div className="flex items-center gap-3 p-3 rounded-md bg-background">
-                                <Calendar className="h-5 w-5 text-primary" />
-                                <div>
-                                    <p className="text-xs text-muted-foreground">End Date</p>
-                                    <p className="font-medium">{format(new Date(marketplaceItem.endDate), 'PPP')}</p>
-                                </div>
-                            </div>
-                        )}
-                        {marketplaceItem.maxStudents && (
-                            <div className="flex items-center gap-3 p-3 rounded-md bg-background">
-                                <Users className="h-5 w-5 text-primary" />
-                                <div>
-                                    <p className="text-xs text-muted-foreground">Max Students</p>
-                                    <p className="font-medium">{marketplaceItem.maxStudents}</p>
-                                </div>
-                            </div>
-                        )}
-                        {marketplaceItem.durationHours && (
-                            <div className="flex items-center gap-3 p-3 rounded-md bg-background">
-                                <Clock className="h-5 w-5 text-primary" />
-                                <div>
-                                    <p className="text-xs text-muted-foreground">Duration</p>
-                                    <p className="font-medium">{marketplaceItem.durationHours} hours</p>
-                                </div>
-                            </div>
-                        )}
-                    </div>
+
+
 
                     {/* Create Lesson Button */}
                     <div className="flex justify-end">
