@@ -12,6 +12,16 @@ export default function FriendsPage() {
   const { data: friends, isLoading } = useGetFriendsQuery();
   const [selectedFriend, setSelectedFriend] = useState<any>(null); // Add state for selected friend
 
+  const handleFriendClick = (friend: any) => {
+    if (selectedFriend && selectedFriend._id === friend._id) {
+      // If the same friend is clicked, stop the conversation
+      setSelectedFriend(null);
+    } else {
+      // Otherwise, start a new conversation
+      setSelectedFriend(friend);
+    }
+  };
+
   return (
     <div className="container mx-auto py-8 space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -34,7 +44,7 @@ export default function FriendsPage() {
                     <div
                       key={friend._id}
                       className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-accent"
-                      onClick={() => setSelectedFriend(friend)} // Add click handler
+                      onClick={() => handleFriendClick(friend)} // Add click handler
                     >
                       <Avatar>
                         <AvatarImage
