@@ -20,7 +20,10 @@ interface PrivateMessageChatProps {
 interface ReplyToMessage {
   _id: string;
   content: string;
-  sender: User;
+  sender: {
+    _id: string;
+    name: string;
+  };
 }
 
 const PrivateMessageChat: React.FC<PrivateMessageChatProps> = ({ 
@@ -130,13 +133,17 @@ const PrivateMessageChat: React.FC<PrivateMessageChatProps> = ({
     setReplyTo({
       _id: msg._id,
       content: msg.content,
-      sender: msg.sender
+      sender: {
+        _id: msg.sender._id,
+        name: msg.sender.name
+      }
     });
   };
-
+  
   const cancelReply = () => {
     setReplyTo(null);
   };
+ 
 
   const handleDeleteMessage = async (messageId: string) => {
     try {
@@ -183,8 +190,11 @@ const PrivateMessageChat: React.FC<PrivateMessageChatProps> = ({
   return (
     <div className="flex flex-col h-[calc(100vh-180px)]">
       <div className="p-4 border-b">
-        <h2 className="text-lg font-semibold">Chat with {recipientName}</h2>
-      </div>
+  <h2 className="text-lg font-semibold">
+    {recipientData?.name ? `Chat with ${recipientData.name}` : 'Loading...'}
+  </h2>
+</div>
+
   
       <ScrollArea className="flex-1 px-4">
         <div className="space-y-4 py-4 overflow-hidden">
@@ -201,20 +211,24 @@ const PrivateMessageChat: React.FC<PrivateMessageChatProps> = ({
               width: 'fit-content'
             }}
           >
-              {msg.replyTo && (
-                <div className="text-sm text-gray-600 border-l-2 border-gray-400 pl-2 mb-1">
-                  <div className="italic">
-                    {msg.sender._id === recipientId
-                      ? msg.replyTo.sender._id === recipientId
-                        ? `${recipientName} replied to themselves`
-                        : `${recipientName} replied to you`
-                      : msg.replyTo.sender._id === recipientId
-                        ? `You replied to ${recipientName}`
-                        : 'You replied to yourself'}
-                  </div>
-                  <div className="truncate">{msg.replyTo.content}</div>
-                </div>
-              )}
+             {msg.replyTo && (
+  <div className="text-sm text-gray-600 border-l-2 border-gray-400 pl-2 mb-1">
+    <div className="italic">
+ {msg.sender._id === currentUserId ? (
+  msg.replyTo?.sender._id === currentUserId
+    ? 'You replied to yourself'
+    : `You replied to ${msg.replyTo?.sender.name}`
+) : (
+  msg.replyTo?.sender._id === currentUserId
+    ? `${msg.sender.name} replied to you`
+    : `${msg.sender.name} replied to themself`
+)}
+
+
+    </div>
+    <div className="truncate">{msg.replyTo.content}</div>
+  </div>
+)}
   
               {editingMessageId === msg._id ? (
                 <div className="flex gap-2">

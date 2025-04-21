@@ -6,6 +6,12 @@ import { User } from '@/types/user';
 
 export const friendRequestApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
+    searchUsers: builder.query<User[], string>({
+      query: (name) => ({
+        url: `/friend-requests/search?name=${encodeURIComponent(name)}`,
+        method: 'GET',
+      }),
+    }),
     getFriendRequests: builder.query<FriendRequest[], void>({
       query: () => ({
         url: '/friend-requests',
@@ -58,6 +64,7 @@ export const friendRequestApi = baseApi.injectEndpoints({
 });
 
 export const {
+  useSearchUsersQuery,
   useGetFriendRequestsQuery,
   useGetFriendsQuery,
   useSendFriendRequestMutation,

@@ -33,17 +33,26 @@ export interface FriendRequest {
     createdAt: string;
     updatedAt: string;
   }
-export interface PrivateMessage {
+  export interface PrivateMessage {
     _id: string;
-    sender: User;        // Changed from string to User
-    recipient: User;
+    sender: {
+      _id: string;
+      name: string;
+    };
+    recipient: {
+      _id: string;
+      name: string;
+    };
     content: string;
     createdAt: string;
     updatedAt: string;
     replyTo?: {
       _id: string;
       content: string;
-      sender: User;
+      sender: {
+        _id: string;
+        name: string;
+      };
     } | null;
   }
 

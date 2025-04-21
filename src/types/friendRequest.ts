@@ -12,7 +12,7 @@ export interface FriendRequest {
 }
 
 export interface CreateFriendRequestDto {
-  email: string;
+  name: string;
 }
 
 export interface FriendRequestResponse {
