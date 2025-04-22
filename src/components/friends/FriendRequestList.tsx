@@ -4,12 +4,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useGetFriendRequestsQuery } from '@/redux/features/friends/friendRequestApi';
 import { FriendRequestItem } from './FriendRequestItem';
-import { useAppSelector } from '@/redux/hooks';
-import { selectFriendRequests } from '@/redux/features/friends/friendRequestsSlice';
+
 
 export const FriendRequestList: React.FC = () => {
-  const { isLoading, error } = useGetFriendRequestsQuery();
-  const friendRequests = useAppSelector(selectFriendRequests);
+  const { data: friendRequests = [], isLoading, error } = useGetFriendRequestsQuery();
+
 
   if (isLoading) {
     return (
@@ -41,12 +40,12 @@ export const FriendRequestList: React.FC = () => {
         <CardTitle className="text-xl">Friend Requests</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {friendRequests?.length === 0 ? (
+        {friendRequests.length === 0 ? (
           <p className="text-center text-muted-foreground py-8">
             No friend requests at the moment
           </p>
         ) : (
-          friendRequests?.map((request) => (
+          friendRequests.map((request) => (
             <FriendRequestItem key={request._id} request={request} />
           ))
         )}

@@ -44,20 +44,23 @@ class SocketService {
     if (!this.socket) return;
 
     // Existing friend request events
-    this.socket.on('friendRequest:new', (request) => {
-      const currentRequests = store.getState().friendRequests.friendRequests;
-      store.dispatch(setFriendRequests([...currentRequests, request]));
-    });
+this.socket.on('friendRequest:new', (request) => {
+  const currentRequests = store.getState().friendRequests.friendRequests;
+  store.dispatch(setFriendRequests([...currentRequests, request]));
+});
 
-    this.socket.on('friendRequest:accepted', (data) => {
-      const currentRequests = store.getState().friendRequests.friendRequests;
-      const currentFriends = store.getState().friendRequests.friends;
-      
-      store.dispatch(setFriendRequests(
-        currentRequests.filter(req => req._id !== data.requestId)
-      ));
-      store.dispatch(setFriends([...currentFriends, data.newFriend]));
-    });
+this.socket.on('friendRequest:accepted', (data) => {
+  const currentRequests = store.getState().friendRequests.friendRequests;
+  const currentFriends = store.getState().friendRequests.friends;
+  
+  store.dispatch(setFriendRequests(
+    currentRequests.filter(req => req._id !== data.requestId)
+  ));
+  // Make sure the new friend is properly added to the list
+  if (data.newFriend && !currentFriends.find(f => f._id === data.newFriend._id)) {
+    store.dispatch(setFriends([...currentFriends, data.newFriend]));
+  }
+});
 
     this.socket.on('friendRequest:rejected', (requestId) => {
       const currentRequests = store.getState().friendRequests.friendRequests;
