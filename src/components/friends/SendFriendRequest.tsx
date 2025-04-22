@@ -24,7 +24,7 @@ export const SendFriendRequest: React.FC = () => {
   
   // Get current friend requests to check status
   const { data: friendRequests = [] } = useGetFriendRequestsQuery();
-
+  
   const [sendRequest, { isLoading: isSending }] = useSendFriendRequestMutation();
   const [cancelRequest, { isLoading: isCancelling }] = useCancelFriendRequestMutation();
 
@@ -58,7 +58,7 @@ export const SendFriendRequest: React.FC = () => {
 
   const handleFriendAction = async (user: any) => {
     const pendingRequest = getPendingRequest(user._id);
-        try {
+    try {
       if (pendingRequest) {
         await cancelRequest(pendingRequest._id).unwrap();
         toast({

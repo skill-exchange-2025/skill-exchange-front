@@ -34,7 +34,20 @@ export const friendRequestApi = baseApi.injectEndpoints({
         method: 'POST',
         body: createFriendDto,
       }),
-      invalidatesTags: ['FriendRequest','Friend'],
+      async onQueryStarted(_, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+          // Extract the friendRequest property from the response
+          dispatch(
+            friendRequestApi.util.updateQueryData('getFriendRequests', undefined, (draft) => {
+              draft.push(data.friendRequest); // Push the friendRequest object instead of the whole response
+            })
+          );
+        } catch {
+          // Handle error if needed
+        }
+      },
+      invalidatesTags: ['FriendRequest', 'Friend'],
     }),
 
     acceptFriendRequest: builder.mutation<FriendRequestResponse, string>({
