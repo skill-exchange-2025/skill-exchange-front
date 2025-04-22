@@ -53,18 +53,41 @@ export const friendRequestApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ['FriendRequest'],
     }),
+    checkFriendStatus: builder.query<{
+      status: 'friends' | 'request-sent' | 'request-received' | 'none',
+      requestId?: string
+    }, string>({
+      query: (userId) => ({
+        url: `/friend-requests/status/${userId}`,
+        method: 'GET',
+      }),
+    }),
 
     cancelFriendRequest: builder.mutation<void, string>({
       query: (requestId) => ({
         url: `/friend-requests/${requestId}`,
         method: 'DELETE',
       }),
+      async onQueryStarted(requestId, { dispatch, queryFulfilled }) {
+        // Optimistic update
+        const patchResult = dispatch(
+          friendRequestApi.util.updateQueryData('getFriendRequests', undefined, (draft) => {
+            return draft.filter(request => request._id !== requestId);
+          })
+        );
+        try {
+          await queryFulfilled;
+        } catch {
+          patchResult.undo();
+        }
+      },
       invalidatesTags: ['FriendRequest'],
     }),
   }),
 });
 
 export const {
+  useCheckFriendStatusQuery,
   useSearchUsersQuery,
   useGetFriendRequestsQuery,
   useGetFriendsQuery,

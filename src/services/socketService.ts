@@ -61,6 +61,12 @@ this.socket.on('friendRequest:accepted', (data) => {
     store.dispatch(setFriends([...currentFriends, data.newFriend]));
   }
 });
+this.socket.on('friendRequest:cancelled', (requestId) => {
+  const currentRequests = store.getState().friendRequests.friendRequests;
+  store.dispatch(setFriendRequests(
+    currentRequests.filter(req => req._id !== requestId)
+  ));
+});
 
     this.socket.on('friendRequest:rejected', (requestId) => {
       const currentRequests = store.getState().friendRequests.friendRequests;
