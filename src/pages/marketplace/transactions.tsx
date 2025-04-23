@@ -19,7 +19,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
-  useGetTransactionsQuery,
+  useGetBuyerTransactionsQuery,
   useCompleteTransactionMutation,
   useCreateReviewMutation,
   Transaction,
@@ -57,7 +57,7 @@ export function TransactionsPage() {
   const [rating, setRating] = useState(5);
   const [reviewComment, setReviewComment] = useState('');
 
-  const { data, isLoading, refetch } = useGetTransactionsQuery(undefined);
+  const { data, isLoading, refetch } = useGetBuyerTransactionsQuery(undefined);
 
   const [completeTransaction, { isLoading: isCompleting }] =
     useCompleteTransactionMutation();

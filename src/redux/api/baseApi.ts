@@ -66,5 +66,7 @@ export const baseApi = createApi({
     'Credits',
     'Channel',
     'Message',
+    'WheelSpin',
+    'Wallet',
   ],
 });

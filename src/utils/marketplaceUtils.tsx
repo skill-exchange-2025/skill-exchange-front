@@ -1,4 +1,4 @@
-import {
+  import {
   ListingType,
   MarketplaceItem,
 } from '@/redux/features/marketplace/marketplaceApi';

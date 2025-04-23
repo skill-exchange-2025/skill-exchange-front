@@ -169,6 +169,29 @@ export type TagTypes =
   | 'Wallet'
   | 'Credits';
 
+export interface Purchase {
+  id: string;
+  purchaseDate: string;
+  listing: {
+    id: string;
+    title: string;
+    price: number;
+    description: string;
+    type: 'course' | 'onlineCourse';
+    skillName: string;
+    proficiencyLevel: string;
+    category: string;
+    status: string;
+  };
+  seller: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  status: 'completed' | 'pending' | 'cancelled';
+  meetingLink?: string;
+}
+
 export const marketplaceApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getMarketplaceItems: builder.query<
@@ -191,7 +214,29 @@ export const marketplaceApi = baseApi.injectEndpoints({
             ]
           : [{ type: 'MarketplaceItem', id: 'LIST' }],
     }),
-
+    getSellerTransactions: builder.query({
+      query: () => ({
+        url: '/marketplace/transactions/seller',
+        method: 'GET',
+      }),
+      providesTags: ['MarketplaceItem'],
+    }),
+    getBuyerTransactions: builder.query<PaginatedResponse<Purchase>, {
+      page?: number;
+      limit?: number;
+      status?: string;
+    }>({
+      query: (params) => ({
+        url: '/marketplace/my-purchases',
+        method: 'GET',
+        params: {
+          page: params?.page,
+          limit: params?.limit,
+          status: params?.status,
+        },
+      }),
+      providesTags: ['MarketplaceItem'],
+    }),
     // Get courses only
     getCourses: builder.query<
       PaginatedResponse<MarketplaceItem>,
@@ -290,6 +335,29 @@ export const marketplaceApi = baseApi.injectEndpoints({
       ],
     }),
 
+    getUserSpinStatus: builder.query<{ 
+      canSpin: boolean;
+      lastSpin: string | null;
+    }, void>({
+      query: () => ({
+        url: '/marketplace/wheel/status',
+        method: 'GET',
+      }),
+      providesTags: ['WheelSpin'],
+    }),
+  
+    // Spin the wheel
+    spinWheel: builder.mutation<{
+      reward: number;
+      newBalance: number;
+    }, void>({
+      query: () => ({
+        url: '/marketplace/wheel/spin',
+        method: 'POST',
+      }),
+      invalidatesTags: ['WheelSpin', 'Credits', 'Wallet'],
+    }),
+
     // Create an online course
     createOnlineCourse: builder.mutation<
       MarketplaceItem,
@@ -343,7 +411,6 @@ export const marketplaceApi = baseApi.injectEndpoints({
         { type: 'MarketplaceItem', id: 'ONLINE_COURSES' },
       ],
     }),
-
     purchaseMarketplaceItem: builder.mutation<Transaction, string>({
       query: (listingId) => ({
         url: '/marketplace/transactions',
@@ -358,13 +425,6 @@ export const marketplaceApi = baseApi.injectEndpoints({
       ],
     }),
 
-    // Transaction endpoints
-    getTransactions: builder.query<PaginatedResponse<Transaction>, void>({
-      query: () => ({
-        url: '/marketplace/transactions',
-        method: 'GET',
-      }),
-    }),
 
     completeTransaction: builder.mutation<Transaction, string>({
       query: (transactionId) => ({
@@ -419,6 +479,48 @@ export const marketplaceApi = baseApi.injectEndpoints({
         body: data,
       }),
     }),
+
+    bookMeeting: builder.mutation<{ 
+        _id: string;
+        buyer: string;
+        seller: string;
+        listing: string;
+        amount: number;
+        status: string;
+        createdAt: string;
+        updatedAt: string;
+        __v: number;
+        meetingLink?: string;
+        notificationStatus?: string;
+    }, {   
+        transactionId: string;   
+        meetingStartTime: string;
+        listingId: string;
+        meetingDuration: number;  
+    }>({  
+        query: ({ transactionId, meetingStartTime, listingId, meetingDuration }) => ({  
+            url: `/marketplace/meetings/book`,  
+            method: 'POST',  
+            body: { transactionId, meetingStartTime, listingId, meetingDuration },  
+        }),  
+        invalidatesTags: ['MarketplaceItem']  
+    }),  
+
+    acceptBooking: builder.mutation<Transaction, string>({
+      query: (transactionId) => ({
+        url: `/marketplace/transactions/${transactionId}/accept`,
+        method: 'PUT',
+      }),
+      invalidatesTags: ['MarketplaceItem'],
+    }),
+
+    declineBooking: builder.mutation<Transaction, string>({
+      query: (transactionId) => ({
+        url: `/marketplace/transactions/${transactionId}/decline`,
+        method: 'PUT',
+      }),
+      invalidatesTags: ['MarketplaceItem'],
+    }),
   }),
 });
 
@@ -432,11 +534,16 @@ export const {
   useUpdateMarketplaceItemMutation,
   useDeleteMarketplaceItemMutation,
   usePurchaseMarketplaceItemMutation,
-  useGetTransactionsQuery,
   useCompleteTransactionMutation,
   useCreateReviewMutation,
   useGetReviewsQuery,
   useGetWalletQuery,
   useCreatePaymentIntentMutation,
   useProcessPaymentMutation,
+  useGetBuyerTransactionsQuery,
+  useBookMeetingMutation,
+  useAcceptBookingMutation,
+  useDeclineBookingMutation,
+  useGetUserSpinStatusQuery,
+  useSpinWheelMutation,
 } = marketplaceApi;
