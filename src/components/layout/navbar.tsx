@@ -19,6 +19,7 @@ import { useGetUserCreditsQuery } from '@/redux/features/credits/creditsApi';
 import { useCurrentProfile } from '@/redux/features/profile/profileSlice';
 import { useFetchProfileQuery } from '@/redux/features/profile/profileApi';
 import { Badge } from '@/components/ui/badge';
+import { WheelFortuneDialog } from '../wheel/WheelFortuneDialog';
 
 export function Navbar() {
   const { theme, setTheme } = useTheme();
@@ -164,6 +165,10 @@ export function Navbar() {
 
           {/* Right Side Controls */}
           <div className="flex items-center space-x-4">
+
+
+            {/* Daily Spin Button */}
+
             {/* Theme Switcher */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -190,6 +195,8 @@ export function Navbar() {
 
             {currentUser ? (
               <div className="flex items-center space-x-4">
+                <WheelFortuneDialog />
+
                 {/* Credits Section */}
                 <div
                   className="flex items-center space-x-2 px-3 py-1 rounded-full bg-secondary cursor-pointer hover:bg-secondary/80 transition-colors"
