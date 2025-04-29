@@ -27,7 +27,13 @@ export const friendRequestApi = baseApi.injectEndpoints({
       }),
       providesTags: ['Friend'],
     }),
-
+    getSentFriendRequests: builder.query<FriendRequest[], void>({
+      query: () => ({
+        url: '/friend-requests/sent',
+        method: 'GET',
+      }),
+      providesTags: ['FriendRequest'],
+    }),
     sendFriendRequest: builder.mutation<FriendRequestResponse, CreateFriendRequestDto>({
       query: (createFriendDto) => ({
         url: '/friend-requests',
@@ -76,30 +82,36 @@ export const friendRequestApi = baseApi.injectEndpoints({
       }),
     }),
 
-    cancelFriendRequest: builder.mutation<void, string>({
-      query: (requestId) => ({
-        url: `/friend-requests/${requestId}`,
-        method: 'DELETE',
-      }),
-      async onQueryStarted(requestId, { dispatch, queryFulfilled }) {
-        // Optimistic update
-        const patchResult = dispatch(
-          friendRequestApi.util.updateQueryData('getFriendRequests', undefined, (draft) => {
-            return draft.filter(request => request._id !== requestId);
-          })
-        );
-        try {
-          await queryFulfilled;
-        } catch {
-          patchResult.undo();
-        }
-      },
-      invalidatesTags: ['FriendRequest'],
-    }),
+    // src/redux/features/friends/friendRequestApi.ts
+
+cancelFriendRequest: builder.mutation<void, string>({
+  query: (requestId) => ({
+    url: `/friend-requests/${requestId}`,
+    method: 'DELETE',
+  }),
+  async onQueryStarted(requestId, { dispatch, queryFulfilled }) {
+    // Optimistic update
+    const patchResult = dispatch(
+      friendRequestApi.util.updateQueryData('getFriendRequests', undefined, (draft) => {
+        return draft.filter(request => request._id !== requestId);
+      })
+    );
+    try {
+      await queryFulfilled;
+      // Invalidate the friend status query for the affected user
+      dispatch(
+        friendRequestApi.util.invalidateTags(['FriendRequest'])
+      );
+    } catch {
+      patchResult.undo();
+    }
+  },
+}),
   }),
 });
 
 export const {
+  useGetSentFriendRequestsQuery,
   useCheckFriendStatusQuery,
   useSearchUsersQuery,
   useGetFriendRequestsQuery,

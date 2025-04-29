@@ -208,23 +208,16 @@ const PrivateMessageChat: React.FC<PrivateMessageChatProps> = ({
             }`}
             style={{
               wordWrap: 'break-word',
-              width: 'fit-content'
+              width: 'fit-content',
+              paddingRight: '40px' // Add padding to the right to make space for the dots
             }}
           >
-             {msg.replyTo && (
+            {msg.replyTo && (
   <div className="text-sm text-gray-600 border-l-2 border-gray-400 pl-2 mb-1">
     <div className="italic">
- {msg.sender._id === currentUserId ? (
-  msg.replyTo?.sender._id === currentUserId
-    ? 'You replied to yourself'
-    : `You replied to ${msg.replyTo?.sender.name}`
-) : (
-  msg.replyTo?.sender._id === currentUserId
-    ? `${msg.sender.name} replied to you`
-    : `${msg.sender.name} replied to themself`
-)}
-
-
+      {msg.replyTo.sender._id === currentUserId 
+        ? `Reply to yourself`
+        : `Reply to ${msg.replyTo.sender.name}`}
     </div>
     <div className="truncate">{msg.replyTo.content}</div>
   </div>
@@ -256,17 +249,18 @@ const PrivateMessageChat: React.FC<PrivateMessageChatProps> = ({
                 <>
                   {msg.content}
                   <div className="absolute top-2 right-2">
-                    <button
-                      onClick={() =>
-                        setOpenMenuId((prev) => (prev === msg._id ? null : msg._id))
-                      }
-                      className="p-1 hover:bg-gray-200 rounded-full"
-                    >
-                      <MoreHorizontal size={18} />
-                    </button>
+                  <button
+  onClick={() =>
+    setOpenMenuId((prev) => (prev === msg._id ? null : msg._id))
+  }
+  className="p-1 hover:bg-gray-200 rounded-full ml-4" // Added ml-4 for margin-left
+  style={{ marginLeft: '8px' }} // Additional spacing if needed
+>
+  <MoreHorizontal size={18} />
+</button>
   
                     {openMenuId === msg._id && (
-                      <div className="absolute top-6 right-0 bg-white border rounded shadow-md flex flex-col z-10">
+                        <div className="absolute bottom-full right-0 mb-1 bg-white border rounded shadow-md flex flex-col z-10">
                         <button
                           onClick={() => {
                             handleReply(msg);
@@ -314,25 +308,25 @@ const PrivateMessageChat: React.FC<PrivateMessageChatProps> = ({
       </ScrollArea>
   
       <form onSubmit={handleSendMessage} className="p-4 border-t">
-        {replyTo && (
-          <div className="mb-2 p-2 bg-gray-100 rounded flex justify-between items-center">
-            <div>
-              <div className="text-sm text-gray-600">
-                {replyTo.sender._id === recipientId
-                  ? `Replying to ${recipientName}`
-                  : 'Replying to yourself'}
-              </div>
-              <div className="text-sm truncate">{replyTo.content}</div>
-            </div>
-            <button
-              type="button"
-              onClick={cancelReply}
-              className="text-gray-500 hover:text-red-500"
-            >
-              <X size={16} />
-            </button>
-          </div>
-        )}
+      {replyTo && (
+  <div className="mb-2 p-2 bg-gray-100 rounded flex justify-between items-center">
+    <div>
+      <div className="text-sm text-gray-600">
+        {replyTo.sender._id === currentUserId 
+          ? 'Replying to yourself'
+          : `Replying to ${replyTo.sender.name}`}
+      </div>
+      <div className="text-sm truncate">{replyTo.content}</div>
+    </div>
+    <button
+      type="button"
+      onClick={cancelReply}
+      className="text-gray-500 hover:text-red-500"
+    >
+      <X size={16} />
+    </button>
+  </div>
+)}
   
         <div className="flex gap-2">
           <input
