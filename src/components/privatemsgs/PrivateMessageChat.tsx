@@ -364,9 +364,13 @@ return (
               ) : (
                 <>
                   {msg.content}
+                  
                   {msg.sender._id === currentUserId && msg.isRead && (
+                    
           <span className="text-xs text-gray-500 ml-2">✓ Read</span>
+          
         )}
+        
 <div className="message-actions flex gap-2">
   <button
     onClick={() => handleOpenEmojiPicker(msg._id)}
@@ -378,6 +382,9 @@ return (
     message={msg}
     currentUserId={currentUserId || ''}
   />
+  <span className="text-xs text-gray-500">
+        {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+      </span>
 </div>
                   <div className="absolute top-2 right-2">
                     <button
@@ -423,13 +430,21 @@ return (
                               <Trash2 size={14} />
                               Delete
                             </button>
+                            
                           </>
+                          
                         )}
+                        
                       </div>
+                      
                     )}
+                    
                   </div>
+                  
                 </>
+                
               )}
+              
             </div>
             
           ))}
@@ -473,6 +488,7 @@ return (
                 onClick={() => setShowEmojiPicker(!showEmojiPicker)}
                 className="absolute right-2 text-gray-400 hover:text-gray-600 p-1 rounded-full transition-colors"
               >
+                
                 <Smile size={16} />
               </button>
             </div>
