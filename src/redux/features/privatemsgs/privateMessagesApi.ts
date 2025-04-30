@@ -1,4 +1,3 @@
-// src/redux/api/privateMessagesApi.ts
 import { baseApi } from '@/redux/api/baseApi';
 import { PrivateMessage } from '@/types/user';
 
@@ -10,6 +9,22 @@ export const privateMessagesApi = baseApi.injectEndpoints({
         url: '/private-messages',
         method: 'POST',
         body: messageData,
+      }),
+      invalidatesTags: ['PrivateMessage'],
+    }),
+
+    addReaction: builder.mutation<PrivateMessage, { messageId: string; type: string }>({
+      query: ({ messageId, type }) => ({
+        url: `/private-messages/${messageId}/reactions`,
+        method: 'POST',
+        body: { type },
+      }),
+      invalidatesTags: ['PrivateMessage'],
+    }),
+    removeReaction: builder.mutation<PrivateMessage, { messageId: string }>({
+      query: ({ messageId }) => ({
+        url: `/private-messages/${messageId}/reactions`,
+        method: 'DELETE',
       }),
       invalidatesTags: ['PrivateMessage'],
     }),
@@ -49,4 +64,6 @@ export const {
   useGetMessagesWithUserQuery,
   useDeletePrivateMessageMutation,
   useEditPrivateMessageMutation,
+  useAddReactionMutation,
+  useRemoveReactionMutation,
 } = privateMessagesApi;

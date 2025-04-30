@@ -43,6 +43,10 @@ export interface FriendRequest {
       _id: string;
       name: string;
     };
+    reactions: Array<{
+        user: string;
+        type: string;
+      }>;
     content: string;
     createdAt: string;
     updatedAt: string;
