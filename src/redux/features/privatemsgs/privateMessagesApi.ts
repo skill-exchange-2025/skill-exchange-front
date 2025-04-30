@@ -28,6 +28,13 @@ export const privateMessagesApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ['PrivateMessage'],
     }),
+    markMessagesAsRead: builder.mutation<{ message: string }, string>({
+      query: (otherUserId) => ({
+        url: `/private-messages/mark-as-read/${otherUserId}`,
+        method: 'PATCH',
+      }),
+    }),
+    
 
     // Get messages with a specific user
     getMessagesWithUser: builder.query<PrivateMessage[], string>({
@@ -60,6 +67,7 @@ export const privateMessagesApi = baseApi.injectEndpoints({
 });
 
 export const {
+  useMarkMessagesAsReadMutation,
   useSendPrivateMessageMutation,
   useGetMessagesWithUserQuery,
   useDeletePrivateMessageMutation,

@@ -4,7 +4,8 @@ import {
   useDeletePrivateMessageMutation,
   useEditPrivateMessageMutation ,
   useAddReactionMutation,
-  useRemoveReactionMutation
+  useRemoveReactionMutation,
+  useMarkMessagesAsReadMutation
 } from '@/redux/features/privatemsgs/privateMessagesApi';
 import { socketService } from '@/services/socketService';
 import React, { useState, useEffect, useRef } from 'react';
@@ -54,6 +55,8 @@ const PrivateMessageChat: React.FC<PrivateMessageChatProps> = ({
 }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [addReaction] = useAddReactionMutation();
+  const [markMessagesAsRead] = useMarkMessagesAsReadMutation();
+
 const [removeReaction] = useRemoveReactionMutation();
 const [showEmojiPicker, setShowEmojiPicker] = useState<boolean>(false);
 const [currentMessageId, setCurrentMessageId] = useState<string | null>(null);
@@ -77,48 +80,51 @@ const [currentMessageId, setCurrentMessageId] = useState<string | null>(null);
   const [localMessages, setLocalMessages] = useState<PrivateMessage[]>(messages || []);
   const [replyTo, setReplyTo] = useState<ReplyToMessage | null>(null);
   const currentUserId = useAppSelector((state) => state.auth.user?._id);
- 
-  const handleEmojiSelect = async (emojiObject: any) => {
-    try {
-      if (currentMessageId) {
-        const result = await addReaction({
-          messageId: currentMessageId,
-          type: emojiObject.emoji
-        }).unwrap();
-        
-        setLocalMessages((prev: PrivateMessage[]) => 
-          prev.map(msg => 
-            msg._id === currentMessageId 
-              ? {
-                  ...msg,
-                  reactions: [
-                    ...(msg.reactions || []),
-                    {
-                      type: emojiObject.emoji,
-                      user: currentUserId || '',
-                      _id: result._id 
-                    } as Reaction
-                  ]
-                }
-              : msg
-          )
-        );
   
-        socketService.socket?.emit('reactionAdded', {
-          messageId: currentMessageId,
-          type: emojiObject.emoji,
-          userId: currentUserId
-        });
-      } else {
-        setMessage(prev => prev + emojiObject.emoji);
-      }
+ 
+ // In PrivateMessageChat.tsx
+const handleEmojiSelect = async (emojiObject: any) => {
+  try {
+    if (currentMessageId) {
+      // Use the private messages reaction mutation instead
+      const result = await addReaction({
+        messageId: currentMessageId,
+        type: emojiObject.emoji  // Note: the private messages API uses 'type' instead of 'emoji'
+      }).unwrap();
       
-      setShowEmojiPicker(false);
-      setCurrentMessageId(null);
-    } catch (error) {
-      console.error('Failed to handle emoji:', error);
+      setLocalMessages((prev: PrivateMessage[]) => 
+        prev.map(msg => 
+          msg._id === currentMessageId 
+            ? {
+                ...msg,
+                reactions: [
+                  ...(msg.reactions || []),
+                  {
+                    type: emojiObject.emoji,
+                    user: currentUserId || '',
+                    _id: result._id 
+                  } as Reaction
+                ]
+              }
+            : msg
+        )
+      );
+
+      socketService.socket?.emit('reactionAdded', {
+        messageId: currentMessageId,
+        type: emojiObject.emoji,
+        userId: currentUserId
+      });
+    } else {
+      setMessage(prev => prev + emojiObject.emoji);
     }
-  };
+    
+    setShowEmojiPicker(false);
+    setCurrentMessageId(null);
+  } catch (error) {
+    console.error('Failed to handle emoji:', error);
+  }
+};
   const handleOpenEmojiPicker = (messageId: string) => {
   setCurrentMessageId(messageId);
   setShowEmojiPicker(true);
@@ -128,6 +134,16 @@ useEffect(() => {
     setLocalMessages(messages);
   }
 }, [messages]);
+
+useEffect(() => {
+  if (recipientId && currentUserId && messages?.length) {
+    markMessagesAsRead(recipientId).catch((err) =>
+      console.error('Failed to mark messages as read:', err)
+    );
+  }
+}, [recipientId, currentUserId, messages]);
+
+
 useEffect(() => {
   const handleReactionAdded = (updatedMessage: PrivateMessage) => {
     setLocalMessages(prev => 
@@ -310,6 +326,8 @@ return (
                 paddingRight: '40px'
               }}
             >
+              
+              
               {msg.replyTo && (
                 <div className="text-sm text-gray-600 border-l-2 border-gray-400 pl-2 mb-1">
                   <div className="italic">
@@ -346,6 +364,9 @@ return (
               ) : (
                 <>
                   {msg.content}
+                  {msg.sender._id === currentUserId && msg.isRead && (
+          <span className="text-xs text-gray-500 ml-2">✓ Read</span>
+        )}
 <div className="message-actions flex gap-2">
   <button
     onClick={() => handleOpenEmojiPicker(msg._id)}
@@ -410,6 +431,7 @@ return (
                 </>
               )}
             </div>
+            
           ))}
           <div ref={messagesEndRef} style={{ clear: 'both' }} />
         </div>

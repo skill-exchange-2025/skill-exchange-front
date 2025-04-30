@@ -47,6 +47,7 @@ export interface FriendRequest {
         user: string;
         type: string;
       }>;
+      isRead: boolean;
     content: string;
     createdAt: string;
     updatedAt: string;
