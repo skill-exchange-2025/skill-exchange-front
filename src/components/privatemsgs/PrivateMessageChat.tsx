@@ -62,24 +62,22 @@ const [recordingStartTime, setRecordingStartTime] = useState<number>(0);
 
   const convertToMp3 = (audioData: Float32Array): Blob => {
     try {
-      // Create encoder with explicit parameters
-      const channels = 1; // mono
-      const sampleRate = 44100;
-      const kbps = 128;
-      
+      const channels = 1; // Mono
+      const sampleRate = 44100; // Standard sample rate
+      const kbps = 128; // Bitrate
+  
       const mp3Encoder = new lamejs.Mp3Encoder(channels, sampleRate, kbps);
       const mp3Data: Int8Array[] = [];
   
       // Convert Float32Array to Int16Array
       const samples = new Int16Array(audioData.length);
       for (let i = 0; i < audioData.length; i++) {
-        // Scale Float32 to Int16
         const s = Math.max(-1, Math.min(1, audioData[i]));
         samples[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
       }
   
       // Process chunks
-      const chunkSize = 1152; // Must be multiple of 576
+      const chunkSize = 1152;
       for (let i = 0; i < samples.length; i += chunkSize) {
         const chunk = samples.slice(i, i + chunkSize);
         const mp3Buffer = mp3Encoder.encodeBuffer(chunk);
@@ -88,13 +86,11 @@ const [recordingStartTime, setRecordingStartTime] = useState<number>(0);
         }
       }
   
-      // Get the final buffer
       const end = mp3Encoder.flush();
       if (end.length > 0) {
         mp3Data.push(end);
       }
   
-      // Create blob from all chunks
       return new Blob(mp3Data, { type: 'audio/mpeg' });
     } catch (error) {
       console.error('MP3 conversion error:', error);
@@ -105,9 +101,8 @@ const [recordingStartTime, setRecordingStartTime] = useState<number>(0);
 
   const handleVoiceMessageSend = async (audioBlob: Blob, duration: number) => {
     try {
-      // Create a FormData object
       const formData = new FormData();
-      formData.append('audio', audioBlob, 'voice-message.mp3');
+      formData.append('audio', audioBlob, 'voice-message.webm');
   
       const response = await uploadVoiceMessage(formData).unwrap();
       const serverAudioUrl = typeof response === 'string' ? response : response.audioUrl;
@@ -128,45 +123,26 @@ const [recordingStartTime, setRecordingStartTime] = useState<number>(0);
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       setAudioStream(stream);
       
-      const audioContext = new AudioContext();
-      const source = audioContext.createMediaStreamSource(stream);
-      const processor = audioContext.createScriptProcessor(2048, 1, 1);
+      const recorder = new MediaRecorder(stream);
+      const chunks: Blob[] = [];
       
-      const audioChunks: Float32Array[] = [];
-      
-      processor.onaudioprocess = (e) => {
-        const inputData = e.inputBuffer.getChannelData(0);
-        audioChunks.push(new Float32Array(inputData));
+      recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) {
+          chunks.push(e.data);
+        }
       };
   
-      source.connect(processor);
-      processor.connect(audioContext.destination);
-      
-      setMediaRecorder({ 
-        stop: () => {
-          try {
-            source.disconnect();
-            processor.disconnect();
-            stream.getTracks().forEach(track => track.stop());
-            
-            // Combine chunks
-            const totalLength = audioChunks.reduce((acc, chunk) => acc + chunk.length, 0);
-            const combinedChunks = new Float32Array(totalLength);
-            let offset = 0;
-            
-            audioChunks.forEach(chunk => {
-              combinedChunks.set(chunk, offset);
-              offset += chunk.length;
-            });
-            
-            const mp3Blob = convertToMp3(combinedChunks);
-            handleVoiceMessageSend(mp3Blob, recordingDuration);
-          } catch (error) {
-            console.error('Error stopping recording:', error);
-          }
+      recorder.onstop = async () => {
+        const audioBlob = new Blob(chunks, { type: 'audio/webm' });
+        try {
+          await handleVoiceMessageSend(audioBlob, recordingDuration);
+        } catch (error) {
+          console.error('Error handling voice message:', error);
         }
-      } as MediaRecorder);
+      };
   
+      recorder.start();
+      setMediaRecorder(recorder);
       setRecordingStartTime(Date.now());
       setIsRecording(true);
       
@@ -180,24 +156,14 @@ const [recordingStartTime, setRecordingStartTime] = useState<number>(0);
   const stopRecording = () => {
     try {
       if (mediaRecorder && audioStream) {
-        // Stop the media recorder
         mediaRecorder.stop();
+        audioStream.getTracks().forEach(track => track.stop());
         
-        // Stop all audio tracks
-        audioStream.getTracks().forEach(track => {
-          try {
-            track.stop();
-          } catch (trackError) {
-            console.error('Error stopping audio track:', trackError);
-          }
-        });
-  
-        // Clear states
         setIsRecording(false);
         setMediaRecorder(null);
         setAudioStream(null);
         setRecordingDuration(0);
-  
+        
         if (recordingTimer.current) {
           clearInterval(recordingTimer.current);
           recordingTimer.current = undefined;
@@ -205,16 +171,11 @@ const [recordingStartTime, setRecordingStartTime] = useState<number>(0);
       }
     } catch (error) {
       console.error('Error stopping recording:', error);
-      // Reset states even if there's an error
+      // Reset states
       setIsRecording(false);
       setMediaRecorder(null);
       setAudioStream(null);
       setRecordingDuration(0);
-      
-      if (recordingTimer.current) {
-        clearInterval(recordingTimer.current);
-        recordingTimer.current = undefined;
-      }
     }
   };
 
