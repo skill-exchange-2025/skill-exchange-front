@@ -70,6 +70,7 @@ export const privateMessagesApi = baseApi.injectEndpoints({
         recipientId: string;
         audioUrl: string;
         duration: number;
+        isVoiceMessage: boolean;
       }
     >({
       query: (voiceMessageData) => ({

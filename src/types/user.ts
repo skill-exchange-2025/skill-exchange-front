@@ -52,6 +52,7 @@ export interface FriendRequest {
     createdAt: string;
     audioUrl?: string;
   duration?: number;
+  
   isVoiceMessage?: boolean;
     updatedAt: string;
     replyTo?: {

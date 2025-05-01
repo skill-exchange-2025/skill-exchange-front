@@ -101,20 +101,39 @@ const [recordingStartTime, setRecordingStartTime] = useState<number>(0);
 
   const handleVoiceMessageSend = async (audioBlob: Blob, duration: number) => {
     try {
+      // Convert blob to File or handle appropriately for your storage solution
       const formData = new FormData();
-      formData.append('audio', audioBlob, 'voice-message.webm');
-  
-      const response = await uploadVoiceMessage(formData).unwrap();
-      const serverAudioUrl = typeof response === 'string' ? response : response.audioUrl;
-  
+      const audioUrl = URL.createObjectURL(audioBlob);
+
+      formData.append('audio', audioBlob, 'recording.mp3');
+      formData.append('duration', duration.toString());
+      
+      // Send to your API
       await sendVoiceMessage({
         recipientId,
-        audioUrl: serverAudioUrl,
-        duration: Number(duration.toFixed(2))
-      }).unwrap();
-  
+        audioUrl:audioUrl,
+        duration,
+        isVoiceMessage: true
+      });
     } catch (error) {
       console.error('Error sending voice message:', error);
+    }
+  };
+  const handleStopRecording = async () => {
+    if (mediaRecorder && mediaRecorder.state === 'recording') {
+      mediaRecorder.stop();
+      mediaRecorder.ondataavailable = async (e) => {
+        const audioBlob = e.data;
+        const audioUrl = URL.createObjectURL(audioBlob);
+        
+        // Get audio duration
+        const audio = new Audio(audioUrl);
+        audio.addEventListener('loadedmetadata', () => {
+          const duration = audio.duration;
+          // Now send the message with the correct duration
+          handleVoiceMessageSend(audioBlob, duration);
+        });
+      };
     }
   };
   
@@ -133,9 +152,10 @@ const [recordingStartTime, setRecordingStartTime] = useState<number>(0);
       };
   
       recorder.onstop = async () => {
-        const audioBlob = new Blob(chunks, { type: 'audio/webm' });
+        const audioBlob = new Blob(chunks, { type: 'audio/mpeg' }); // Change to audio/mpeg
+        const duration = Math.round((Date.now() - recordingStartTime) / 1000);
         try {
-          await handleVoiceMessageSend(audioBlob, recordingDuration);
+          await handleVoiceMessageSend(audioBlob, duration);
         } catch (error) {
           console.error('Error handling voice message:', error);
         }
@@ -146,12 +166,16 @@ const [recordingStartTime, setRecordingStartTime] = useState<number>(0);
       setRecordingStartTime(Date.now());
       setIsRecording(true);
       
+      // Start duration timer
+      recordingTimer.current = setInterval(() => {
+        setRecordingDuration(prev => prev + 1);
+      }, 1000);
+      
     } catch (error) {
       console.error('Error starting recording:', error);
       setIsRecording(false);
     }
   };
-
 
   const stopRecording = () => {
     try {
@@ -159,24 +183,29 @@ const [recordingStartTime, setRecordingStartTime] = useState<number>(0);
         mediaRecorder.stop();
         audioStream.getTracks().forEach(track => track.stop());
         
+        // Don't reset the duration immediately
+        const finalDuration = recordingDuration;
+        
         setIsRecording(false);
         setMediaRecorder(null);
         setAudioStream(null);
-        setRecordingDuration(0);
         
         if (recordingTimer.current) {
           clearInterval(recordingTimer.current);
           recordingTimer.current = undefined;
         }
+  
+        // Only reset duration after it's been used
+        setTimeout(() => setRecordingDuration(0), 100);
       }
     } catch (error) {
       console.error('Error stopping recording:', error);
-      // Reset states
       setIsRecording(false);
       setMediaRecorder(null);
       setAudioStream(null);
       setRecordingDuration(0);
     }
+    
   };
 
 
@@ -314,11 +343,6 @@ useEffect(() => {
     recordingTimer.current = setInterval(() => {
       setRecordingDuration((prev) => prev + 1);
     }, 1000);
-  } else {
-    if (recordingTimer.current) {
-      clearInterval(recordingTimer.current);
-    }
-    setRecordingDuration(0);
   }
 
   return () => {
@@ -491,12 +515,18 @@ return (
                   <div className="truncate">{msg.replyTo.content}</div>
                 </div>
               )}
-           {msg.audioUrl && (
+        {msg.audioUrl && (
   <div className="audio-message mt-2">
-    <audio controls className="max-w-full">
-      <source src={msg.audioUrl} type="audio/mpeg" />
-      Your browser does not support the audio element.
-    </audio>
+ <audio 
+  controls
+  preload="metadata"
+  key={msg._id}
+>
+  <source src={msg.audioUrl} type="audio/mpeg" />
+  <source src={msg.audioUrl} type="audio/wav" />
+  <source src={msg.audioUrl} type="audio/webm" />
+  Your browser does not support the audio element.
+</audio>
     {msg.duration && msg.duration > 0 && (
       <span className="text-xs text-gray-500 ml-2">
         {Math.floor(msg.duration)}:
