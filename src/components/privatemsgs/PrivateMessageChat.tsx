@@ -19,6 +19,9 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { MoreHorizontal } from 'lucide-react'; 
 import MessageReacts from './MessageReacts';
 import EmojiPicker from 'emoji-picker-react';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { useNavigate } from 'react-router-dom';
+
 // import * as lamejs from 'lamejs';
 import lamejs from 'lamejs';
 
@@ -47,6 +50,10 @@ const PrivateMessageChat: React.FC<PrivateMessageChatProps> = ({
   recipientId, 
   recipientName 
 }) => {
+  const navigate = useNavigate();
+  const getInitials = (name: string) => name.split(' ').map(n => n[0]).join('').toUpperCase();
+
+ 
   const [isRecording, setIsRecording] = useState(false);
 const [audioStream, setAudioStream] = useState<MediaStream | null>(null);
 const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
@@ -58,7 +65,31 @@ const [recordingStartTime, setRecordingStartTime] = useState<number>(0);
   const [markMessagesAsRead] = useMarkMessagesAsReadMutation();
   const [recordingDuration, setRecordingDuration] = useState<number>(0);
   const recordingTimer = useRef<NodeJS.Timeout>();
+  const [removeReaction] = useRemoveReactionMutation();
+  const [showEmojiPicker, setShowEmojiPicker] = useState<boolean>(false);
+  const [currentMessageId, setCurrentMessageId] = useState<string | null>(null);
+  
+    const [message, setMessage] = useState('');
+    const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
+    const [editContent, setEditContent] = useState('');
+    const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+    const [sendMessage] = useSendPrivateMessageMutation();
+    const [deleteMessage] = useDeletePrivateMessageMutation();
+    const [editMessage] = useEditPrivateMessageMutation();
+    const { data: messages, isLoading } = useGetMessagesWithUserQuery(recipientId);
+    const [localMessages, setLocalMessages] = useState<PrivateMessage[]>(messages || []);
+    const [replyTo, setReplyTo] = useState<ReplyToMessage | null>(null);
+    const currentUserId = useAppSelector((state) => state.auth.user?._id);
 
+    const handleProfileClick = (senderId: string) => {
+      if (senderId === currentUserId) {
+        // If clicking own avatar, go to user profile
+        navigate('/user/profile');
+      } else {
+        // If clicking other user's avatar, go to their profile
+        navigate(`/profile/${senderId}`);
+      }
+    };
 
   const convertToMp3 = (audioData: Float32Array): Blob => {
     try {
@@ -208,10 +239,6 @@ const [recordingStartTime, setRecordingStartTime] = useState<number>(0);
     
   };
 
-
-const [removeReaction] = useRemoveReactionMutation();
-const [showEmojiPicker, setShowEmojiPicker] = useState<boolean>(false);
-const [currentMessageId, setCurrentMessageId] = useState<string | null>(null);
   const scrollToBottom = () => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ 
@@ -220,18 +247,11 @@ const [currentMessageId, setCurrentMessageId] = useState<string | null>(null);
       });
     }
   };
-  const [message, setMessage] = useState('');
-  const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
-  const [editContent, setEditContent] = useState('');
-  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
-  const { data: recipientData } = useGetUserByIdQuery(recipientId);
-  const [sendMessage] = useSendPrivateMessageMutation();
-  const [deleteMessage] = useDeletePrivateMessageMutation();
-  const [editMessage] = useEditPrivateMessageMutation();
-  const { data: messages, isLoading } = useGetMessagesWithUserQuery(recipientId);
-  const [localMessages, setLocalMessages] = useState<PrivateMessage[]>(messages || []);
-  const [replyTo, setReplyTo] = useState<ReplyToMessage | null>(null);
-  const currentUserId = useAppSelector((state) => state.auth.user?._id);
+
+  const { data: recipientData } = useGetUserByIdQuery(recipientId || '', {
+    skip: !recipientId // Skip if recipientId is not available
+  });
+
   const handleOpenEmojiPicker = (messageId: string) => {
     setCurrentMessageId(messageId);
     setShowEmojiPicker(true);
@@ -281,8 +301,90 @@ const handleEmojiSelect = async (emojiObject: any) => {
   }
 };
 
+const handleSendMessage = async (e: React.FormEvent) => {
+  e.preventDefault();
+  if (!message.trim()) return;
+
+  try {
+    await sendMessage({
+      recipientId,
+      content: message,
+      replyTo: replyTo?._id
+    }).unwrap();
+    
+    socketService.sendPrivateMessage(recipientId, message);
+    setMessage('');
+    setReplyTo(null);
+    
+    // Add scroll after sending
+    setTimeout(scrollToBottom, 100);
+  } catch (error) {
+    console.error('Failed to send message:', error);
+  }
+};
+
+const handleReply = (msg: PrivateMessage) => {
+  setReplyTo({
+    _id: msg._id,
+    content: msg.content,
+    sender: {
+      _id: msg.sender._id,
+      name: msg.sender.name
+    }
+  });
+};
+
+const cancelReply = () => {
+  setReplyTo(null);
+};
 
 
+const handleDeleteMessage = async (messageId: string) => {
+  try {
+    await deleteMessage(messageId).unwrap();
+    socketService.emitMessageDeleted(messageId);
+    setLocalMessages(prev => prev.filter(msg => msg._id !== messageId));
+  } catch (error) {
+    console.error('Failed to delete message:', error);
+  }
+};
+
+const handleStartEdit = (messageId: string, content: string) => {
+  setEditingMessageId(messageId);
+  setEditContent(content);
+};
+
+const handleCancelEdit = () => {
+  setEditingMessageId(null);
+  setEditContent('');
+};
+
+const { data: currentUserData } = useGetUserByIdQuery(currentUserId || '', {
+  skip: !currentUserId // Skip if currentUserId is not available
+});
+
+  const handleSaveEdit = async (messageId: string) => {
+    if (!editContent.trim()) return;
+
+    try {
+      const updatedMessage = await editMessage({ 
+        messageId, 
+        content: editContent 
+      }).unwrap();
+      
+      socketService.emitMessageEdited(updatedMessage);
+      setLocalMessages(prev => 
+        prev.map(msg => 
+          msg._id === messageId ? { ...msg, content: editContent } : msg
+        )
+      );
+      setEditingMessageId(null);
+      setEditContent('');
+    } catch (error) {
+      console.error('Failed to edit message:', error);
+    }
+  };
+  
 useEffect(() => {
   if (messages) {
     setLocalMessages(messages);
@@ -358,6 +460,7 @@ useEffect(() => {
   useEffect(() => {
     scrollToBottom();
   }, [localMessages]); 
+
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       scrollToBottom();
@@ -398,85 +501,8 @@ useEffect(() => {
 
   if (isLoading) return <div>Loading...</div>;
 
-  const handleSendMessage = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!message.trim()) return;
   
-    try {
-      await sendMessage({
-        recipientId,
-        content: message,
-        replyTo: replyTo?._id
-      }).unwrap();
-      
-      socketService.sendPrivateMessage(recipientId, message);
-      setMessage('');
-      setReplyTo(null);
-      
-      // Add scroll after sending
-      setTimeout(scrollToBottom, 100);
-    } catch (error) {
-      console.error('Failed to send message:', error);
-    }
-  };
 
-  const handleReply = (msg: PrivateMessage) => {
-    setReplyTo({
-      _id: msg._id,
-      content: msg.content,
-      sender: {
-        _id: msg.sender._id,
-        name: msg.sender.name
-      }
-    });
-  };
-  
-  const cancelReply = () => {
-    setReplyTo(null);
-  };
- 
-
-  const handleDeleteMessage = async (messageId: string) => {
-    try {
-      await deleteMessage(messageId).unwrap();
-      socketService.emitMessageDeleted(messageId);
-      setLocalMessages(prev => prev.filter(msg => msg._id !== messageId));
-    } catch (error) {
-      console.error('Failed to delete message:', error);
-    }
-  };
-
-  const handleStartEdit = (messageId: string, content: string) => {
-    setEditingMessageId(messageId);
-    setEditContent(content);
-  };
-
-  const handleCancelEdit = () => {
-    setEditingMessageId(null);
-    setEditContent('');
-  };
-
-  const handleSaveEdit = async (messageId: string) => {
-    if (!editContent.trim()) return;
-
-    try {
-      const updatedMessage = await editMessage({ 
-        messageId, 
-        content: editContent 
-      }).unwrap();
-      
-      socketService.emitMessageEdited(updatedMessage);
-      setLocalMessages(prev => 
-        prev.map(msg => 
-          msg._id === messageId ? { ...msg, content: editContent } : msg
-        )
-      );
-      setEditingMessageId(null);
-      setEditContent('');
-    } catch (error) {
-      console.error('Failed to edit message:', error);
-    }
-  };
 
 return (
   <div className="flex flex-col h-[calc(100vh-180px)]">
@@ -489,162 +515,153 @@ return (
 
       <ScrollArea className="flex-1 px-4">
         <div className="space-y-4 py-4 overflow-hidden">
-          {localMessages.map((msg) => (
-            <div
-              key={msg._id}
-              className={`group mb-2 p-2 rounded relative inline-block max-w-[70%] min-w-[100px] ${
-                msg.sender._id === recipientId 
-                  ? 'bg-pink-100 float-left clear-both' 
-                  : 'bg-green-100 float-right clear-both'
-              }`}
-              style={{
-                wordWrap: 'break-word',
-                width: 'fit-content',
-                paddingRight: '40px'
-              }}
-            >
-              
-              
-              {msg.replyTo && (
-                <div className="text-sm text-gray-600 border-l-2 border-gray-400 pl-2 mb-1">
-                  <div className="italic">
-                    {msg.replyTo.sender._id === currentUserId 
-                      ? `Reply to yourself`
-                      : `Reply to ${msg.replyTo.sender.name}`}
-                  </div>
-                  <div className="truncate">{msg.replyTo.content}</div>
-                </div>
-              )}
-        {msg.audioUrl && (
-  <div className="audio-message mt-2">
- <audio 
-  controls
-  preload="metadata"
-  key={msg._id}
->
-  <source src={msg.audioUrl} type="audio/mpeg" />
-  <source src={msg.audioUrl} type="audio/wav" />
-  <source src={msg.audioUrl} type="audio/webm" />
-  Your browser does not support the audio element.
-</audio>
-    {msg.duration && msg.duration > 0 && (
-      <span className="text-xs text-gray-500 ml-2">
-        {Math.floor(msg.duration)}:
-        {Math.floor((msg.duration % 1) * 60).toString().padStart(2, '0')}
-      </span>
-    )}
-  </div>
+        {localMessages.map((msg) => (
+  <div
+    key={msg._id}
+    className={`flex ${
+      msg.sender._id === recipientId ? 'justify-start' : 'justify-end'
+    } mb-4`}
+  >
+    <div className="flex items-start gap-2 max-w-[70%]">
+{msg.sender._id === recipientId && (
+  <Avatar 
+    className="h-8 w-8 cursor-pointer hover:ring-2 hover:ring-primary transition-all"
+    onClick={() => handleProfileClick(msg.sender._id)}
+  >
+    {/* Avatar content */}
+  </Avatar>
 )}
 
-              {editingMessageId === msg._id ? (
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={editContent}
-                    onChange={(e) => setEditContent(e.target.value)}
-                    className="flex-1 p-1 rounded border"
-                    autoFocus
-                  />
-                  <button
-                    onClick={() => handleSaveEdit(msg._id)}
-                    className="p-1 text-green-600 hover:text-green-800"
-                  >
-                    <Check size={16} />
-                  </button>
-                   <button
-                    onClick={handleCancelEdit}
-                    className="p-1 text-red-600 hover:text-red-800"
-                  >
-                    <X size={16} />
-                  </button>
-                </div>
-              ) : (
-                <>
-                  {msg.content}
-                  
-                  {msg.sender._id === currentUserId && msg.isRead && (
-                    
-          <span className="text-xs text-gray-500 ml-2">✓ Read</span>
-          
-        )}
-        
-<div className="message-actions flex gap-2">
-  <button
-    onClick={() => handleOpenEmojiPicker(msg._id)}
-    className="reaction-button p-1 text-gray-400 hover:text-gray-600"
+{msg.sender._id !== recipientId && (
+  <Avatar 
+    className="h-8 w-8 cursor-pointer hover:ring-2 hover:ring-primary transition-all"
+    onClick={() => handleProfileClick(msg.sender._id)}
   >
-    <Smile size={16} />
-  </button>
-  <MessageReacts 
-    message={msg}
-    currentUserId={currentUserId || ''}
-  />
-  <span className="text-xs text-gray-500">
-        {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-      </span>
-</div>
-                  <div className="absolute top-2 right-2">
-                    <button
-                      onClick={() => setOpenMenuId((prev) => (prev === msg._id ? null : msg._id))}
-                      className="p-1 hover:bg-gray-200 rounded-full ml-4"
-                      style={{ marginLeft: '8px' }}
-                    >
-                      <MoreHorizontal size={18} />
-                    </button>
+    {/* Avatar content */}
+  </Avatar>
+)}
 
-                    {openMenuId === msg._id && (
-                      <div className="absolute bottom-full right-0 mb-1 bg-white border rounded shadow-md flex flex-col z-10">
-                        <button
-                          onClick={() => {
-                            handleReply(msg);
-                            setOpenMenuId(null);
-                          }}
-                          className="px-4 py-2 hover:bg-gray-100 text-sm flex items-center gap-2"
-                        >
-                          <MessageSquare size={14} />
-                          Reply
-                        </button>
-
-                        {msg.sender._id !== recipientId && (
-                          <>
-                            <button
-                              onClick={() => {
-                                handleStartEdit(msg._id, msg.content);
-                                setOpenMenuId(null);
-                              }}
-                              className="px-4 py-2 hover:bg-gray-100 text-sm flex items-center gap-2"
-                            >
-                              <Edit2 size={14} />
-                              Edit
-                            </button>
-                            <button
-                              onClick={() => {
-                                handleDeleteMessage(msg._id);
-                                setOpenMenuId(null);
-                              }}
-                              className="px-4 py-2 hover:bg-gray-100 text-sm text-red-600 flex items-center gap-2"
-                            >
-                              <Trash2 size={14} />
-                              Delete
-                            </button>
-                            
-                          </>
-                          
-                        )}
-                        
-                      </div>
-                      
-                    )}
-                    
-                  </div>
-                  
-                </>
-                
-              )}
-              
+      {/* Message bubble */}
+      <div
+        className={`relative p-3 rounded-lg ${
+          msg.sender._id === recipientId
+            ? 'bg-gray-100 dark:bg-gray-800 rounded-tl-none'
+            : 'bg-blue-500 text-white rounded-tr-none'
+        }`}
+      >
+        {/* Reply content if exists */}
+        {msg.replyTo && (
+          <div className="text-sm opacity-75 border-l-2 border-current pl-2 mb-1">
+            <div className="italic">
+              {msg.replyTo.sender._id === currentUserId 
+                ? `Reply to yourself`
+                : `Reply to ${msg.replyTo.sender.name}`}
             </div>
-            
-          ))}
+            <div className="truncate">{msg.replyTo.content}</div>
+          </div>
+        )}
+
+        {/* Message content */}
+        {editingMessageId === msg._id ? (
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={editContent}
+              onChange={(e) => setEditContent(e.target.value)}
+              className="flex-1 p-1 rounded border text-gray-900"
+              autoFocus
+            />
+            <button
+              onClick={() => handleSaveEdit(msg._id)}
+              className="p-1 text-green-600 hover:text-green-800"
+            >
+              <Check size={16} />
+            </button>
+            <button
+              onClick={handleCancelEdit}
+              className="p-1 text-red-600 hover:text-red-800"
+            >
+              <X size={16} />
+            </button>
+          </div>
+        ) : (
+          <>
+            <div className="break-words">{msg.content}</div>
+
+            {/* Audio message if exists */}
+            {msg.audioUrl && (
+              <div className="mt-2">
+                <audio controls preload="metadata" key={msg._id}>
+                  <source src={msg.audioUrl} type="audio/mpeg" />
+                  <source src={msg.audioUrl} type="audio/wav" />
+                  <source src={msg.audioUrl} type="audio/webm" />
+                  Your browser does not support the audio element.
+                </audio>
+                {msg.duration && msg.duration > 0 && (
+                  <span className="text-xs opacity-75 ml-2">
+                    {Math.floor(msg.duration)}:
+                    {Math.floor((msg.duration % 1) * 60).toString().padStart(2, '0')}
+                  </span>
+                )}
+              </div>
+            )}
+
+            {/* Message footer */}
+            <div className="flex items-center gap-2 mt-1 text-xs opacity-75">
+              <span>
+                {new Date(msg.createdAt).toLocaleTimeString([], { 
+                  hour: '2-digit', 
+                  minute: '2-digit' 
+                })}
+              </span>
+              {msg.sender._id === currentUserId && msg.isRead && (
+                <span>✓ Read</span>
+              )}
+            </div>
+
+            {/* Message actions */}
+            <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+              <button
+                onClick={() => handleOpenEmojiPicker(msg._id)}
+                className="p-1 rounded-full hover:bg-black/10"
+              >
+                <Smile size={16} />
+              </button>
+              <button
+                onClick={() => setOpenMenuId(prev => prev === msg._id ? null : msg._id)}
+                className="p-1 rounded-full hover:bg-black/10"
+              >
+                <MoreHorizontal size={16} />
+              </button>
+            </div>
+          </>
+        )}
+
+        {/* Reactions */}
+        <MessageReacts 
+          message={msg}
+          currentUserId={currentUserId || ''}
+        />
+      </div>
+
+      {/* Avatar - Show only for sender's messages on the right */}
+      {msg.sender._id !== recipientId && (
+        <Avatar 
+          className="h-8 w-8 cursor-pointer hover:ring-2 hover:ring-primary transition-all"
+          onClick={() => handleProfileClick(msg.sender._id)}
+        >
+          <AvatarImage 
+            src={msg.sender.avatarUrl 
+              ? `http://localhost:5000${msg.sender.avatarUrl}`
+              : undefined}
+            alt={msg.sender.name} 
+          />
+          <AvatarFallback>{getInitials(msg.sender.name)}</AvatarFallback>
+        </Avatar>
+      )}
+    </div>
+  </div>
+))}
           <div ref={messagesEndRef} style={{ clear: 'both' }} />
         </div>
       </ScrollArea>
@@ -783,6 +800,7 @@ return (
       </form>
     </div>
   );
+ 
   
 };
 

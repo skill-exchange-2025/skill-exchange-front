@@ -30,6 +30,7 @@ import { EditLesson } from '@/pages/marketplace/edit-lesson';
 import { LessonDetail } from '@/pages/marketplace/lesson-detail';
 import ManageLessons from "@/pages/marketplace/manage-lessons.tsx";
 import FriendsPage from '@/pages/friends';
+import ProfilePage from '@/pages/user/profile/ProfilePage';
 
 const router = createBrowserRouter([
   {
@@ -167,7 +168,23 @@ const router = createBrowserRouter([
                   <FriendsPage />
                 </ProtectedRoute>
               )},
-
+              {
+                path: 'profile/:userId',
+                element: (
+                  <ProtectedRoute>
+                    <ProfilePage />
+                  </ProtectedRoute>
+                ),
+              },
+              {
+                path: 'profile',
+                element: (
+                  <ProtectedRoute>
+                    <ProfilePage />
+                  </ProtectedRoute>
+                ),
+              },
+              
 
 
 

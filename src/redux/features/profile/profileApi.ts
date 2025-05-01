@@ -5,12 +5,13 @@ import {CompletionStatus} from "@/types/status.ts";
 
 export const profileApi = baseApi.injectEndpoints({
     endpoints: (builder) => ({
-        fetchProfile: builder.query<Profile, void>({
-            query: () => ({
-                url: "/profile",
+        fetchProfile: builder.query<Profile,  string | undefined>({
+            query: (userId) => ({
+                url: userId ? `/profile/${userId}` : '/profile',
                 method: "GET",
             }),
         }),
+        
 
         createProfile: builder.mutation<Profile, Profile>({
             query: (profileData) => ({

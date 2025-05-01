@@ -12,6 +12,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useCurrentProfile } from '@/redux/features/profile/profileSlice.ts';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useParams } from 'react-router-dom';
 
 // Profile skeleton component
 const ProfileSkeleton = () => {
@@ -73,7 +74,12 @@ const ProfilePage = () => {
   const [activeTab, setActiveTab] = useState<string>('view');
   const status = useAppSelector(useProfileStatus);
   const error = useAppSelector(useProfileError);
+  const { userId } = useParams<{ userId: string }>();
+
   const profile = useAppSelector(useCurrentProfile);
+  const currentUser = useAppSelector((state) => state.auth.user);
+
+  const isOwnProfile = !userId || userId === currentUser?._id;
 
   // Set tab to view when profile loads
   useEffect(() => {
@@ -129,6 +135,7 @@ const ProfilePage = () => {
           </p>
         </div>
 
+        {isOwnProfile ? (
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <div className="flex justify-center mb-6">
             <TabsList className="grid w-full max-w-md grid-cols-2">
@@ -145,6 +152,10 @@ const ProfilePage = () => {
             <ProfileForm />
           </TabsContent>
         </Tabs>
+        ) : (
+          <ProfileView userId={userId} />
+
+        )}
       </div>
     </div>
   );

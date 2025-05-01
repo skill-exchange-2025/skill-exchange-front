@@ -35,14 +35,16 @@ export interface FriendRequest {
   }
   export interface PrivateMessage {
     _id: string;
-    sender: {
-      _id: string;
-      name: string;
-    };
-    recipient: {
-      _id: string;
-      name: string;
-    };
+    // sender: {
+    //   _id: string;
+    //   name: string;
+    // };
+    sender: User;
+    // recipient: {
+    //   _id: string;
+    //   name: string;
+    // };
+    recipient: User;
     reactions: Array<{
         user: string;
         type: string;

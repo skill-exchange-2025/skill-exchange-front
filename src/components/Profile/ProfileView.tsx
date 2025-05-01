@@ -43,18 +43,23 @@ import {
   Instagram,
   Globe,
 } from 'lucide-react';
-
-export const ProfileView: React.FC = () => {
+interface ProfileViewProps {
+  userId?: string;
+}
+export const ProfileView: React.FC<ProfileViewProps> = ({ userId }) => {
   const dispatch = useAppDispatch();
   const { profile, status, error } = useAppSelector(
     (state: RootState) => state.profile
   );
-  const { data: fetchedProfile } = useFetchProfileQuery(undefined, {
-    skip: !!profile,
-  });
+ 
   const { data: completionStatus } = useGetProfileCompletionStatusQuery();
   // Get current user from auth state
   const currentUser = useAppSelector((state: RootState) => state.auth.user);
+
+   const { data: fetchedProfile } = useFetchProfileQuery(userId, {
+    skip: !!profile && !userId,
+  });
+
 
   useEffect(() => {
     if (fetchedProfile) {
