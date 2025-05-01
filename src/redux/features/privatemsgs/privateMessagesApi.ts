@@ -54,6 +54,34 @@ export const privateMessagesApi = baseApi.injectEndpoints({
       invalidatesTags: ['PrivateMessage'],
     }),
 
+
+
+    uploadVoiceMessage: builder.mutation<{ audioUrl: string }, FormData>({
+      query: (formData) => ({
+        url: '/private-messages/upload-voice',
+        method: 'POST',
+        body: formData,
+      }),
+    }),
+    
+    sendVoiceMessage: builder.mutation<
+      PrivateMessage,
+      {
+        recipientId: string;
+        audioUrl: string;
+        duration: number;
+      }
+    >({
+      query: (voiceMessageData) => ({
+        url: '/private-messages/voice',
+        method: 'POST',
+        body: voiceMessageData,
+      }),
+      invalidatesTags: ['PrivateMessage'],
+    }),
+
+
+
     // Edit a message
     editPrivateMessage: builder.mutation<PrivateMessage, { messageId: string; content: string }>({
       query: ({ messageId, content }) => ({
@@ -67,6 +95,8 @@ export const privateMessagesApi = baseApi.injectEndpoints({
 });
 
 export const {
+  useUploadVoiceMessageMutation,
+  useSendVoiceMessageMutation,
   useMarkMessagesAsReadMutation,
   useSendPrivateMessageMutation,
   useGetMessagesWithUserQuery,

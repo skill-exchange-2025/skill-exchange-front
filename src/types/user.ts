@@ -50,6 +50,9 @@ export interface FriendRequest {
       isRead: boolean;
     content: string;
     createdAt: string;
+    audioUrl?: string;
+  duration?: number;
+  isVoiceMessage?: boolean;
     updatedAt: string;
     replyTo?: {
       _id: string;

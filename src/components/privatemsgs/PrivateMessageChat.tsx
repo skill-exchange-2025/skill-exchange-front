@@ -5,11 +5,13 @@ import {
   useEditPrivateMessageMutation ,
   useAddReactionMutation,
   useRemoveReactionMutation,
-  useMarkMessagesAsReadMutation
+  useMarkMessagesAsReadMutation,
+  useUploadVoiceMessageMutation,
+  useSendVoiceMessageMutation
 } from '@/redux/features/privatemsgs/privateMessagesApi';
 import { socketService } from '@/services/socketService';
 import React, { useState, useEffect, useRef } from 'react';
-import { Trash2, Edit2, X, Check, MessageSquare, Smile, Send } from 'lucide-react';
+import { Mic, Square,Trash2, Edit2, X, Check, MessageSquare, Smile, Send } from 'lucide-react';
 import { useAppSelector } from '@/redux/hooks';
 import { PrivateMessage, User } from '@/types/user';
 import { useGetUserByIdQuery, useGetUsersQuery } from '@/redux/features/users/usersApi';
@@ -17,10 +19,9 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { MoreHorizontal } from 'lucide-react'; 
 import MessageReacts from './MessageReacts';
 import EmojiPicker from 'emoji-picker-react';
-interface PrivateMessageChatProps {
-  recipientId: string;
-  recipientName: string;
-}
+// import * as lamejs from 'lamejs';
+import lamejs from 'lamejs';
+
 interface Reaction {
   type: string;
   user: string;
@@ -32,14 +33,7 @@ interface PrivateMessageChatProps {
   recipientName: string;
 }
 
-interface ReplyToMessage {
-  _id: string;
-  content: string;
-  sender: {
-    _id: string;
-    name: string;
-  };
-}
+
 interface ReplyToMessage {
   _id: string;
   content: string;
@@ -53,9 +47,177 @@ const PrivateMessageChat: React.FC<PrivateMessageChatProps> = ({
   recipientId, 
   recipientName 
 }) => {
+  const [isRecording, setIsRecording] = useState(false);
+const [audioStream, setAudioStream] = useState<MediaStream | null>(null);
+const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
+const [recordingStartTime, setRecordingStartTime] = useState<number>(0);
+  const [uploadVoiceMessage] = useUploadVoiceMessageMutation();
+  const [sendVoiceMessage] = useSendVoiceMessageMutation();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [addReaction] = useAddReactionMutation();
   const [markMessagesAsRead] = useMarkMessagesAsReadMutation();
+  const [recordingDuration, setRecordingDuration] = useState<number>(0);
+  const recordingTimer = useRef<NodeJS.Timeout>();
+
+
+  const convertToMp3 = (audioData: Float32Array): Blob => {
+    try {
+      // Create encoder with explicit parameters
+      const channels = 1; // mono
+      const sampleRate = 44100;
+      const kbps = 128;
+      
+      const mp3Encoder = new lamejs.Mp3Encoder(channels, sampleRate, kbps);
+      const mp3Data: Int8Array[] = [];
+  
+      // Convert Float32Array to Int16Array
+      const samples = new Int16Array(audioData.length);
+      for (let i = 0; i < audioData.length; i++) {
+        // Scale Float32 to Int16
+        const s = Math.max(-1, Math.min(1, audioData[i]));
+        samples[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
+      }
+  
+      // Process chunks
+      const chunkSize = 1152; // Must be multiple of 576
+      for (let i = 0; i < samples.length; i += chunkSize) {
+        const chunk = samples.slice(i, i + chunkSize);
+        const mp3Buffer = mp3Encoder.encodeBuffer(chunk);
+        if (mp3Buffer.length > 0) {
+          mp3Data.push(mp3Buffer);
+        }
+      }
+  
+      // Get the final buffer
+      const end = mp3Encoder.flush();
+      if (end.length > 0) {
+        mp3Data.push(end);
+      }
+  
+      // Create blob from all chunks
+      return new Blob(mp3Data, { type: 'audio/mpeg' });
+    } catch (error) {
+      console.error('MP3 conversion error:', error);
+      throw new Error('Failed to convert audio to MP3');
+    }
+  };
+
+
+  const handleVoiceMessageSend = async (audioBlob: Blob, duration: number) => {
+    try {
+      // Create a FormData object
+      const formData = new FormData();
+      formData.append('audio', audioBlob, 'voice-message.mp3');
+  
+      const response = await uploadVoiceMessage(formData).unwrap();
+      const serverAudioUrl = typeof response === 'string' ? response : response.audioUrl;
+  
+      await sendVoiceMessage({
+        recipientId,
+        audioUrl: serverAudioUrl,
+        duration: Number(duration.toFixed(2))
+      }).unwrap();
+  
+    } catch (error) {
+      console.error('Error sending voice message:', error);
+    }
+  };
+  
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      setAudioStream(stream);
+      
+      const audioContext = new AudioContext();
+      const source = audioContext.createMediaStreamSource(stream);
+      const processor = audioContext.createScriptProcessor(2048, 1, 1);
+      
+      const audioChunks: Float32Array[] = [];
+      
+      processor.onaudioprocess = (e) => {
+        const inputData = e.inputBuffer.getChannelData(0);
+        audioChunks.push(new Float32Array(inputData));
+      };
+  
+      source.connect(processor);
+      processor.connect(audioContext.destination);
+      
+      setMediaRecorder({ 
+        stop: () => {
+          try {
+            source.disconnect();
+            processor.disconnect();
+            stream.getTracks().forEach(track => track.stop());
+            
+            // Combine chunks
+            const totalLength = audioChunks.reduce((acc, chunk) => acc + chunk.length, 0);
+            const combinedChunks = new Float32Array(totalLength);
+            let offset = 0;
+            
+            audioChunks.forEach(chunk => {
+              combinedChunks.set(chunk, offset);
+              offset += chunk.length;
+            });
+            
+            const mp3Blob = convertToMp3(combinedChunks);
+            handleVoiceMessageSend(mp3Blob, recordingDuration);
+          } catch (error) {
+            console.error('Error stopping recording:', error);
+          }
+        }
+      } as MediaRecorder);
+  
+      setRecordingStartTime(Date.now());
+      setIsRecording(true);
+      
+    } catch (error) {
+      console.error('Error starting recording:', error);
+      setIsRecording(false);
+    }
+  };
+
+
+  const stopRecording = () => {
+    try {
+      if (mediaRecorder && audioStream) {
+        // Stop the media recorder
+        mediaRecorder.stop();
+        
+        // Stop all audio tracks
+        audioStream.getTracks().forEach(track => {
+          try {
+            track.stop();
+          } catch (trackError) {
+            console.error('Error stopping audio track:', trackError);
+          }
+        });
+  
+        // Clear states
+        setIsRecording(false);
+        setMediaRecorder(null);
+        setAudioStream(null);
+        setRecordingDuration(0);
+  
+        if (recordingTimer.current) {
+          clearInterval(recordingTimer.current);
+          recordingTimer.current = undefined;
+        }
+      }
+    } catch (error) {
+      console.error('Error stopping recording:', error);
+      // Reset states even if there's an error
+      setIsRecording(false);
+      setMediaRecorder(null);
+      setAudioStream(null);
+      setRecordingDuration(0);
+      
+      if (recordingTimer.current) {
+        clearInterval(recordingTimer.current);
+        recordingTimer.current = undefined;
+      }
+    }
+  };
+
 
 const [removeReaction] = useRemoveReactionMutation();
 const [showEmojiPicker, setShowEmojiPicker] = useState<boolean>(false);
@@ -80,7 +242,10 @@ const [currentMessageId, setCurrentMessageId] = useState<string | null>(null);
   const [localMessages, setLocalMessages] = useState<PrivateMessage[]>(messages || []);
   const [replyTo, setReplyTo] = useState<ReplyToMessage | null>(null);
   const currentUserId = useAppSelector((state) => state.auth.user?._id);
-  
+  const handleOpenEmojiPicker = (messageId: string) => {
+    setCurrentMessageId(messageId);
+    setShowEmojiPicker(true);
+  };
  
  // In PrivateMessageChat.tsx
 const handleEmojiSelect = async (emojiObject: any) => {
@@ -125,10 +290,9 @@ const handleEmojiSelect = async (emojiObject: any) => {
     console.error('Failed to handle emoji:', error);
   }
 };
-  const handleOpenEmojiPicker = (messageId: string) => {
-  setCurrentMessageId(messageId);
-  setShowEmojiPicker(true);
-};
+
+
+
 useEffect(() => {
   if (messages) {
     setLocalMessages(messages);
@@ -170,9 +334,38 @@ useEffect(() => {
 }, []);
 
 
+useEffect(() => {
+  return () => {
+    if (mediaRecorder) {
+      mediaRecorder.stop();
+    }
+    if (audioStream) {
+      audioStream.getTracks().forEach(track => track.stop());
+    }
+    if (recordingTimer.current) {
+      clearInterval(recordingTimer.current);
+    }
+  };
+}, [mediaRecorder, audioStream]);
 
+useEffect(() => {
+  if (isRecording) {
+    recordingTimer.current = setInterval(() => {
+      setRecordingDuration((prev) => prev + 1);
+    }, 1000);
+  } else {
+    if (recordingTimer.current) {
+      clearInterval(recordingTimer.current);
+    }
+    setRecordingDuration(0);
+  }
 
-
+  return () => {
+    if (recordingTimer.current) {
+      clearInterval(recordingTimer.current);
+    }
+  };
+}, [isRecording]);
 
 
 
@@ -181,14 +374,13 @@ useEffect(() => {
     scrollToBottom();
   }, [localMessages]); 
   useEffect(() => {
-    // Small delay to ensure DOM is ready
     const timeoutId = setTimeout(() => {
       scrollToBottom();
     }, 100);
     
     return () => clearTimeout(timeoutId);
   }, []); // Run once on mount
-
+  
   useEffect(() => {
     const handleNewMessage = (message: PrivateMessage) => {
       if ((message.sender._id === recipientId || message.recipient._id === recipientId) && message.content) {
@@ -338,6 +530,20 @@ return (
                   <div className="truncate">{msg.replyTo.content}</div>
                 </div>
               )}
+           {msg.audioUrl && (
+  <div className="audio-message mt-2">
+    <audio controls className="max-w-full">
+      <source src={msg.audioUrl} type="audio/mpeg" />
+      Your browser does not support the audio element.
+    </audio>
+    {msg.duration && msg.duration > 0 && (
+      <span className="text-xs text-gray-500 ml-2">
+        {Math.floor(msg.duration)}:
+        {Math.floor((msg.duration % 1) * 60).toString().padStart(2, '0')}
+      </span>
+    )}
+  </div>
+)}
 
               {editingMessageId === msg._id ? (
                 <div className="flex gap-2">
@@ -354,7 +560,7 @@ return (
                   >
                     <Check size={16} />
                   </button>
-                  <button
+                   <button
                     onClick={handleCancelEdit}
                     className="p-1 text-red-600 hover:text-red-800"
                   >
@@ -473,7 +679,7 @@ return (
           </div>
         )}
 
-        <div className="flex gap-2">
+        {/* <div className="flex gap-2">
           <div className="relative flex-1">
             <div className="flex items-center w-full">
               <input
@@ -484,6 +690,17 @@ return (
                 placeholder={replyTo ? 'Type your reply...' : 'Type a message...'}
               />
               <button
+  type="button"
+  onClick={isRecording ? stopRecording : startRecording}
+  className={`px-4 py-2 rounded ${
+    isRecording 
+      ? 'bg-red-500 hover:bg-red-600' 
+      : 'bg-blue-500 hover:bg-blue-600'
+  } text-white`}
+>
+  {isRecording ? <Square size={20} /> : <Mic size={20} />}
+</button>
+              <button
                 type="button"
                 onClick={() => setShowEmojiPicker(!showEmojiPicker)}
                 className="absolute right-2 text-gray-400 hover:text-gray-600 p-1 rounded-full transition-colors"
@@ -491,16 +708,23 @@ return (
                 
                 <Smile size={16} />
               </button>
+              
             </div>
+            
             {showEmojiPicker && (
+              
   <div className="absolute bottom-full right-0 mb-2 z-50">
     <EmojiPicker
       onEmojiClick={handleEmojiSelect}
       width={300}
       height={400}
+      
     />
+    
   </div>
+  
 )}
+
           </div>
           <button
             type="submit"
@@ -509,7 +733,62 @@ return (
             <Send className="w-5 h-5 text-darkblack-400 hover:text-white-600 cursor-pointer" />
 
           </button>
-        </div>
+        </div> */}
+        <div className="flex gap-2">
+  <div className="relative flex-1">
+    <div className="flex items-center w-full">
+      <input
+        type="text"
+        value={message}
+        onChange={(e) => setMessage(e.target.value)}
+        className="w-full p-2 border rounded"
+        placeholder={replyTo ? 'Type your reply...' : 'Type a message...'}
+      />
+      <div className="absolute right-2 flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+          className="text-gray-400 hover:text-gray-600 p-1 rounded-full transition-colors"
+        >
+          <Smile size={16} />
+        </button>
+      </div>
+    </div>
+    {showEmojiPicker && (
+      <div className="absolute bottom-full right-0 mb-2 z-50">
+        <EmojiPicker
+          onEmojiClick={handleEmojiSelect}
+          width={300}
+          height={400}
+        />
+      </div>
+    )}
+  </div>
+  <button
+  type="button"
+  onClick={isRecording ? stopRecording : startRecording}
+  className={`px-4 py-2 rounded flex items-center gap-2 ${
+    isRecording 
+      ? 'bg-red-500 hover:bg-red-600' 
+      : 'bg-blue-500 hover:bg-blue-600'
+  } text-white`}
+>
+  {isRecording ? (
+    <>
+      <Square size={20} />
+      <span>{recordingDuration}s</span>
+    </>
+  ) : (
+    <Mic size={20} />
+  )}
+</button>
+  <button
+    type="submit"
+    className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+  >
+    <Send className="w-5 h-5 text-darkblack-400 hover:text-white-600 cursor-pointer" />
+  </button>
+</div>
       </form>
     </div>
   );
