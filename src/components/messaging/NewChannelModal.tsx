@@ -1,23 +1,10 @@
 import React from 'react';
-import { UseFormReturn } from 'react-hook-form';
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '../ui/dialog';
-import { Button } from '../ui/button';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '../ui/form';
-import { Input } from '../ui/input';
-import { Textarea } from '../ui/textarea';
+import {UseFormReturn} from 'react-hook-form';
+import {Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle,} from '../ui/dialog';
+import {Button} from '../ui/button';
+import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage,} from '../ui/form';
+import {Input} from '../ui/input';
+import {Textarea} from '../ui/textarea';
 
 interface NewChannelModalProps {
   open: boolean;

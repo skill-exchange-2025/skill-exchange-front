@@ -1,9 +1,9 @@
 // features/profile/profileSlice.ts
 import {createSlice, PayloadAction} from "@reduxjs/toolkit";
-import { RootState } from "@/redux/store";
-import { Profile } from "@/types/profile";
+import {RootState} from "@/redux/store";
+import {Profile} from "@/types/profile";
 import {profileApi} from "@/redux/features/profile/profileApi.ts";
-import { CompletionStatus } from "@/types/status";
+import {CompletionStatus} from "@/types/status";
 
 export type ProfileState = {
     profile: Profile | null;

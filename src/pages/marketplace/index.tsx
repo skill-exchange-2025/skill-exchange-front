@@ -1,41 +1,36 @@
-import { useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
+import {useEffect} from 'react';
+import {useNavigate, useSearchParams} from 'react-router-dom';
+import {Button} from '@/components/ui/button';
 import {
-  useGetMarketplaceItemsQuery,
-  useGetCoursesQuery,
-  useGetOnlineCoursesQuery,
-  ListingType,
+    ListingType,
+    useGetCoursesQuery,
+    useGetMarketplaceItemsQuery,
+    useGetOnlineCoursesQuery,
 } from '@/redux/features/marketplace/marketplaceApi';
 import {
-  selectFilters,
-  selectPagination,
-  selectUserPreferences,
-  setSearchTerm,
-  setCategoryFilter,
-  setSkillNameFilter,
-  setProficiencyLevelFilter,
-  setSortBy,
-  setSortOrder,
-  setCurrentPage,
-  setTotalItems,
-  setPriceRange,
-  setViewMode,
-  setTypeFilter,
-  clearAllFilters,
+    clearAllFilters,
+    selectFilters,
+    selectPagination,
+    selectUserPreferences,
+    setCategoryFilter,
+    setCurrentPage,
+    setPriceRange,
+    setProficiencyLevelFilter,
+    setSearchTerm,
+    setSkillNameFilter,
+    setSortBy,
+    setSortOrder,
+    setTotalItems,
+    setTypeFilter,
+    setViewMode,
 } from '@/redux/features/marketplace/marketplaceSlice';
-import { useDispatch, useSelector } from 'react-redux';
-import { Plus, ArrowLeft } from 'lucide-react';
-import { MarketplaceItemCard } from '@/pages/marketplace/marketplace-item-card';
-import { MarketplaceFilterBar } from '@/pages/marketplace/marketplace-filters';
-import { MarketplaceFilters } from '@/types/marketplace';
-import { Skeleton } from '@/components/ui/skeleton';
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-} from '@/components/ui/card';
+import {useDispatch, useSelector} from 'react-redux';
+import {ArrowLeft, Plus} from 'lucide-react';
+import {MarketplaceItemCard} from '@/pages/marketplace/marketplace-item-card';
+import {MarketplaceFilterBar} from '@/pages/marketplace/marketplace-filters';
+import {MarketplaceFilters} from '@/types/marketplace';
+import {Skeleton} from '@/components/ui/skeleton';
+import {Card, CardContent, CardFooter, CardHeader,} from '@/components/ui/card';
 
 // Skeleton component for marketplace items
 const MarketplaceItemSkeleton = ({

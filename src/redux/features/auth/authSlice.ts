@@ -1,5 +1,5 @@
-import { createSlice } from '@reduxjs/toolkit';
-import { RootState } from '../../store';
+import {createSlice} from '@reduxjs/toolkit';
+import {RootState} from '../../store';
 
 export type TSkill = {
   name: string;

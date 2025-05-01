@@ -1,19 +1,32 @@
-import { useParams } from 'react-router-dom';
-import { useEffect, useState, useRef } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { FileText, Clock, Calendar, ChevronLeft, Check, Download, Bookmark, BookmarkCheck, Share2, ThumbsUp, Volume2, VolumeX, Pause } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { toast } from 'sonner';
-import { useGetLessonByIdQuery } from '@/redux/features/lessons/lessonApi';
+import {useNavigate, useParams} from 'react-router-dom';
+import {useEffect, useRef, useState} from 'react';
+import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from '@/components/ui/card';
+import {Button} from '@/components/ui/button';
+import {
+    Bookmark,
+    BookmarkCheck,
+    Calendar,
+    Check,
+    ChevronLeft,
+    Clock,
+    Download,
+    FileText,
+    Pause,
+    Share2,
+    ThumbsUp,
+    Volume2,
+    VolumeX
+} from 'lucide-react';
+import {toast} from 'sonner';
+import {useGetLessonByIdQuery} from '@/redux/features/lessons/lessonApi';
+import type {Components} from 'react-markdown';
 import ReactMarkdown from 'react-markdown';
-import type { Components } from 'react-markdown';
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Badge } from "@/components/ui/badge";
-import { format } from 'date-fns';
-import { Progress } from "@/components/ui/progress";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {ScrollArea} from "@/components/ui/scroll-area";
+import {Badge} from "@/components/ui/badge";
+import {format} from 'date-fns';
+import {Progress} from "@/components/ui/progress";
+import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from "@/components/ui/tooltip";
+import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 import AISlider from '@/components/AISlider';
 
 // Custom Markdown Preview component

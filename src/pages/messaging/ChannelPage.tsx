@@ -1,45 +1,39 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { useAppSelector, useAppDispatch } from '../../redux/hooks';
-import {
-  setCurrentChannel,
-  setMessages,
-} from '../../redux/features/messaging/channelsSlice';
+import React, {useEffect, useRef, useState} from 'react';
+import {useNavigate, useParams} from 'react-router-dom';
+import {useAppDispatch, useAppSelector} from '../../redux/hooks';
+import {setCurrentChannel, setMessages,} from '../../redux/features/messaging/channelsSlice';
 import ChannelSidebar from '../../components/messaging/ChannelSidebar';
 import MessageList from '../../components/messaging/MessageList';
 import MessageInput from '../../components/messaging/MessageInput';
 import socketService from '../../services/socket.service';
 import {
-  Hash,
-  Archive,
-  InfoIcon,
-  Loader2,
-  Users,
-  CalendarIcon,
-  LogIn,
-  Menu,
-  ChevronLeft,
-  LogOut,
-  Search,
-  X,
+    Archive,
+    CalendarIcon,
+    ChevronLeft,
+    Hash,
+    InfoIcon,
+    Loader2,
+    LogIn,
+    LogOut,
+    Menu,
+    Search,
+    Users,
+    X,
 } from 'lucide-react';
-import { Badge } from '../../components/ui/badge';
+import {Badge} from '../../components/ui/badge';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogClose,
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
 } from '../../components/ui/dialog';
-import { Button } from '../../components/ui/button';
-import { format } from 'date-fns';
-import { Avatar, AvatarFallback } from '../../components/ui/avatar';
-import {
-  useJoinChannelMutation,
-  useLeaveChannelMutation,
-} from '../../redux/api/messagingApi';
-import { useToast } from '../../hooks/use-toast';
+import {Button} from '../../components/ui/button';
+import {format} from 'date-fns';
+import {Avatar, AvatarFallback} from '../../components/ui/avatar';
+import {useJoinChannelMutation, useLeaveChannelMutation,} from '../../redux/api/messagingApi';
+import {useToast} from '../../hooks/use-toast';
 
 const ChannelPage: React.FC = () => {
   const { channelId } = useParams<{ channelId: string }>();

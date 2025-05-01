@@ -6,8 +6,8 @@ import {
   FetchArgs,
   fetchBaseQuery,
 } from '@reduxjs/toolkit/query/react';
-import { logout, setUser } from '../features/auth/authSlice';
-import { RootState } from '../store';
+import {logout, setUser} from '../features/auth/authSlice';
+import {RootState} from '../store';
 
 const baseQuery = fetchBaseQuery({
   baseUrl: 'http://localhost:5000/api',
@@ -66,6 +66,7 @@ export const baseApi = createApi({
     'Credits',
     'Channel',
     'Message',
-    'Lessons'
+    'Lessons',
+    'Feedback'
   ],
 });

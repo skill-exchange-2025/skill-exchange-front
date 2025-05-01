@@ -1,5 +1,5 @@
-import { baseApi } from '@/redux/api/baseApi';
-import { PaginatedResponse } from '@/types/user';
+import {baseApi} from '@/redux/api/baseApi';
+import {PaginatedResponse} from '@/types/user';
 
 // Define listing types enum
 export enum ListingType {

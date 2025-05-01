@@ -1,20 +1,20 @@
-import { motion } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { Link } from 'react-router-dom';
+import {motion} from 'framer-motion';
+import {Button} from '@/components/ui/button';
+import {Link} from 'react-router-dom';
 import {
-  ArrowRight,
-  CheckCircle2,
-  Shield,
-  ShoppingBag,
-  Zap,
-  Users,
-  GraduationCap,
-  Star,
-  MessageSquare,
-  ChevronLeft,
-  ChevronRight,
+    ArrowRight,
+    CheckCircle2,
+    ChevronLeft,
+    ChevronRight,
+    GraduationCap,
+    MessageSquare,
+    Shield,
+    ShoppingBag,
+    Star,
+    Users,
+    Zap,
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import {useEffect, useState} from 'react';
 
 export function LandingPage() {
   return (

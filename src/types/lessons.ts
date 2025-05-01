@@ -10,7 +10,7 @@ export interface Lesson {
     title: string;
     description: string;
     duration: number;
-    textContent: string; // Added this field
+    textContent: string;
     order: number;
     status: 'draft' | 'published' | 'archived';
     videoUrl?: string;
@@ -21,7 +21,7 @@ export interface Lesson {
     updatedAt?: string;
 }
 
-interface PaginationState {
+export interface PaginationState {
     currentPage: number;
     itemsPerPage: number;
     totalItems: number;
@@ -30,7 +30,12 @@ interface PaginationState {
 export interface LessonsState {
     lessons: Lesson[];
     selectedLesson: Lesson | null;
+    filters: {
+        search: string;
+        status: string;
+        instructor: string;
+    };
+    pagination: PaginationState;
     error: string | null;
     loading: boolean;
-    pagination: PaginationState;
 }

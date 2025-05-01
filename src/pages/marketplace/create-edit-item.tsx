@@ -1,37 +1,25 @@
-import { useEffect, useState, useRef } from 'react';
-import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
+import {useEffect, useRef, useState} from 'react';
+import {useNavigate, useParams, useSearchParams} from 'react-router-dom';
+import {Button} from '@/components/ui/button';
+import {Card, CardContent, CardFooter, CardHeader, CardTitle,} from '@/components/ui/card';
+import {Input} from '@/components/ui/input';
+import {Textarea} from '@/components/ui/textarea';
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue,} from '@/components/ui/select';
 import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
-  useGetMarketplaceItemByIdQuery,
-  useCreateCourseMutation,
-  useCreateOnlineCourseMutation,
-  useUpdateMarketplaceItemMutation,
-  CreateCourseRequest,
-  CreateOnlineCourseRequest,
-  ListingType,
+    CreateCourseRequest,
+    CreateOnlineCourseRequest,
+    ListingType,
+    useCreateCourseMutation,
+    useCreateOnlineCourseMutation,
+    useGetMarketplaceItemByIdQuery,
+    useUpdateMarketplaceItemMutation,
 } from '@/redux/features/marketplace/marketplaceApi';
-import { ArrowLeft, Save, X, Upload } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { useSelector } from 'react-redux';
-import { toast } from 'sonner';
+import {ArrowLeft, Save, Upload, X} from 'lucide-react';
+import {Badge} from '@/components/ui/badge';
+import {useSelector} from 'react-redux';
+import {toast} from 'sonner';
 import cryptoIcon from '@/assets/icons/crypto.png';
-import { useImageUpload } from '@/hooks/useImageUpload';
+import {useImageUpload} from '@/hooks/useImageUpload';
 
 // Add image compression utility function
 const compressImage = async (file: File): Promise<File> => {

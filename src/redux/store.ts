@@ -1,16 +1,8 @@
-import { configureStore } from '@reduxjs/toolkit';
-import {
-  FLUSH,
-  PAUSE,
-  PERSIST,
-  persistReducer,
-  PURGE,
-  REGISTER,
-  REHYDRATE,
-} from 'redux-persist';
+import {configureStore} from '@reduxjs/toolkit';
+import {FLUSH, PAUSE, PERSIST, persistReducer, PURGE, REGISTER, REHYDRATE,} from 'redux-persist';
 import persistStore from 'redux-persist/es/persistStore';
 import storage from 'redux-persist/lib/storage';
-import { baseApi } from './api/baseApi';
+import {baseApi} from './api/baseApi';
 import authReducer from './features/auth/authSlice';
 import profileReducer from './features/profile/profileSlice';
 import usersReducer from './features/users/usersSlice.ts';
@@ -18,6 +10,7 @@ import marketplaceReducer from './features/marketplace/marketplaceSlice';
 import creditsReducer from './features/credits/creditsSlice';
 import channelsReducer from './features/messaging/channelsSlice';
 import lessonsReducer from './features/lessons/lessonsSlice';
+import feedbackReducer from './features/feedback/feedbackSlice';
 
 const persistConfig = {
   key: 'auth',
@@ -36,6 +29,7 @@ export const store = configureStore({
     credits: creditsReducer,
     channels: channelsReducer,
     lessons: lessonsReducer,
+    feedback: feedbackReducer,
 
   },
   middleware: (getDefaultMiddlewares) =>

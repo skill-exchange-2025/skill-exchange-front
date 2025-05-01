@@ -1,16 +1,16 @@
-import { useCreateUserMutation, useGetUsersQuery, useUpdateUserMutation } from "@/redux/features/users/usersApi";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Button } from '@/components/ui/button';
-import { User } from "@/types/user";
-import { Label } from "@radix-ui/react-label";
-import { useForm } from "react-hook-form";
-import { useState } from "react";
-import { useSelector } from "react-redux";
-import { selectFilters, selectPagination } from "@/redux/features/users/usersSlice";
-import { Pencil } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { SelectedSkill } from "@/components/ui/badge-selector";
+import {useCreateUserMutation, useGetUsersQuery, useUpdateUserMutation} from "@/redux/features/users/usersApi";
+import {Dialog, DialogContent, DialogHeader, DialogTitle} from "@/components/ui/dialog";
+import {Input} from "@/components/ui/input";
+import {Button} from '@/components/ui/button';
+import {User} from "@/types/user";
+import {Label} from "@radix-ui/react-label";
+import {useForm} from "react-hook-form";
+import {useState} from "react";
+import {useSelector} from "react-redux";
+import {selectFilters, selectPagination} from "@/redux/features/users/usersSlice";
+import {Pencil} from "lucide-react";
+import {Badge} from "@/components/ui/badge";
+import {SelectedSkill} from "@/components/ui/badge-selector";
 import {SkillsEditDialog} from "../Profile/SkillsEditDialog.tsx";
 
 interface UserFormData {

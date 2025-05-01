@@ -1,15 +1,12 @@
 // src/pages/marketplace/edit-lesson.tsx
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { toast } from 'sonner';
-import {
-    useGetLessonByIdQuery,
-    useUpdateLessonMutation
-} from '@/redux/features/lessons/lessonApi';
+import React, {useEffect, useState} from 'react';
+import {useNavigate, useParams} from 'react-router-dom';
+import {Button} from '@/components/ui/button';
+import {Card, CardContent, CardHeader, CardTitle} from '@/components/ui/card';
+import {Input} from '@/components/ui/input';
+import {Textarea} from '@/components/ui/textarea';
+import {toast} from 'sonner';
+import {useGetLessonByIdQuery, useUpdateLessonMutation} from '@/redux/features/lessons/lessonApi';
 
 export function EditLesson() {
     const { lessonId } = useParams<{ lessonId: string }>();
@@ -22,7 +19,7 @@ export function EditLesson() {
         title: '',
         description: '',
         duration: 0,
-        content: '',
+        TextContent: '',
         materials: '',
         videoUrl: ''
     });
@@ -33,7 +30,7 @@ export function EditLesson() {
                 title: lessonData.title,
                 description: lessonData.description,
                 duration: lessonData.duration,
-                content: lessonData.content,
+                content: lessonData.TextContent,
                 materials: lessonData.materials?.join(', ') || '',
                 videoUrl: lessonData.videoUrl || ''
             });

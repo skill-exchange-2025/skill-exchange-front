@@ -1,13 +1,10 @@
-import { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { useSearchParams, useNavigate, useLocation } from 'react-router-dom';
-import { ListingType } from '@/redux/features/marketplace/marketplaceApi';
-import {
-  selectFilters,
-  setTypeFilter,
-} from '@/redux/features/marketplace/marketplaceSlice';
-import { Button } from '@/components/ui/button';
-import { GraduationCap, BookOpen, FileText } from 'lucide-react';
+import {useEffect} from 'react';
+import {useDispatch, useSelector} from 'react-redux';
+import {useLocation, useNavigate, useSearchParams} from 'react-router-dom';
+import {ListingType} from '@/redux/features/marketplace/marketplaceApi';
+import {selectFilters, setTypeFilter,} from '@/redux/features/marketplace/marketplaceSlice';
+import {Button} from '@/components/ui/button';
+import {BookOpen, FileText, GraduationCap} from 'lucide-react';
 
 export function ListingTypeFilter() {
   const dispatch = useDispatch();

@@ -1,5 +1,5 @@
 // src/components/Redirector.tsx
-import { useAuthRedirect } from '@/utils/auth';
+import {useAuthRedirect} from '@/utils/auth';
 
 const Redirector = () => {
     useAuthRedirect();

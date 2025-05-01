@@ -1,45 +1,17 @@
-import React, { useState, useRef, ChangeEvent, useEffect } from 'react';
-import { useAppSelector } from '../../redux/hooks';
-import {
-  useCreateMessageMutation,
-  useUploadFileWithMessageMutation,
-} from '../../redux/api/messagingApi';
-import { Button } from '../ui/button';
-import { Textarea } from '../ui/textarea';
-import {
-  Send,
-  Paperclip,
-  X,
-  FileText,
-  ImageIcon,
-  File,
-  Smile,
-  AlertCircle,
-  Info,
-  Plus,
-  Mic,
-  Camera,
-} from 'lucide-react';
-import { CreateMessageDto } from '../../types/channel';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '../ui/dialog';
-import { useToast } from '../../hooks/use-toast';
-import { Badge } from '../ui/badge';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '../ui/tooltip';
-import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
+import React, {ChangeEvent, useEffect, useRef, useState} from 'react';
+import {useCreateMessageMutation, useUploadFileWithMessageMutation,} from '../../redux/api/messagingApi';
+import {Button} from '../ui/button';
+import {Textarea} from '../ui/textarea';
+import {Camera, File, FileText, ImageIcon, Mic, Paperclip, Plus, Send, Smile, X,} from 'lucide-react';
+import {CreateMessageDto} from '../../types/channel';
+import {Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle,} from '../ui/dialog';
+import {useToast} from '../../hooks/use-toast';
+import {Badge} from '../ui/badge';
+import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,} from '../ui/tooltip';
+import {Popover, PopoverContent, PopoverTrigger} from '../ui/popover';
 import data from '@emoji-mart/data';
 import Picker from '@emoji-mart/react';
-import { useTheme } from 'next-themes';
+import {useTheme} from 'next-themes';
 
 interface MessageInputProps {
   channelId: string;

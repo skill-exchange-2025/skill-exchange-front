@@ -1,10 +1,9 @@
-import { Navbar } from './navbar';
-import { Footer } from './footer';
-import { Outlet } from 'react-router-dom';
-import { FeatureNavbar } from './FeatureNavbar';
-import { useAppSelector } from '@/redux/hooks';
-import { useCurrentUser } from '@/redux/features/auth/authSlice';
-import { useLocation } from 'react-router-dom';
+import {Navbar} from './navbar';
+import {Footer} from './footer';
+import {Outlet, useLocation} from 'react-router-dom';
+import {FeatureNavbar} from './FeatureNavbar';
+import {useAppSelector} from '@/redux/hooks';
+import {useCurrentUser} from '@/redux/features/auth/authSlice';
 
 export function Layout() {
   const currentUser = useAppSelector(useCurrentUser);

@@ -1,36 +1,43 @@
-import { useParams, useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { useCreateLessonMutation } from '@/redux/features/lessons/lessonApi';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-    FileTextIcon,
-    Clock,
-    FileText,
-    Save,
-    ChevronLeft,
-    Eye,
     CheckCircle,
-    Upload,
-    X,
+    ChevronLeft,
+    Clock,
+    Eye,
+    FileText,
+    FileTextIcon,
     HelpCircle,
     Moon,
-    Sun
+    Save,
+    Sun,
+    Upload,
+    X
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import ReactMarkdown from 'react-markdown';
-import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { useState, useEffect, useCallback } from "react";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle
+} from "@/components/ui/alert-dialog";
+import React, { useCallback, useEffect, useState } from "react";
 import { filesToBase64 } from '@/utils/fileUpload';
 import dynamic from 'next/dynamic';
 import { useTheme } from 'next-themes';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import type { ReactNode } from 'react';
 
 // Dynamically import markdown editor with SSR disabled
 const MarkdownEditor = dynamic(
@@ -43,6 +50,17 @@ interface UploadedFile {
     size: number;
     type: string;
     url: string;
+}
+
+// Define a type for MarkdownEditor options
+interface MarkdownEditorOptions {
+    scrollbarStyle?: string;
+    lineWrapping?: boolean;
+    theme?: string;
+    mode?: string;
+    lineNumbers?: boolean;
+    styleActiveLine?: boolean;
+    [key: string]: any; // Allow additional properties for flexibility
 }
 
 interface MarkdownTextareaProps {
@@ -79,8 +97,8 @@ const MarkdownTextarea: React.FC<MarkdownTextareaProps> = ({
                     theme: 'light',
                     mode: 'markdown',
                     lineNumbers: true,
-                    styleActiveLine: true
-                }}
+                    styleActiveLine: true,
+                } as MarkdownEditorOptions}
                 enablePreview={true}
                 previewWidth="50%"
                 className="border rounded-md overflow-hidden"
@@ -107,35 +125,55 @@ const PreviewContent: React.FC<PreviewContentProps> = ({ content }) => {
         <div className="prose prose-slate max-w-none">
             <ReactMarkdown
                 components={{
-                    h1: ({ children, ...props }: { children: ReactNode } & React.HTMLAttributes<HTMLHeadingElement>) => (
-                        <h1 className="text-3xl font-bold mb-4" {...props}>{children}</h1>
+                    h1: ({ children, ...props }) => (
+                        <h1 className="text-3xl font-bold mb-4" {...props}>
+                            {children}
+                        </h1>
                     ),
-                    h2: ({ children, ...props }: { children: ReactNode } & React.HTMLAttributes<HTMLHeadingElement>) => (
-                        <h2 className="text-2xl font-semibold mb-3 mt-6" {...props}>{children}</h2>
+                    h2: ({ children, ...props }) => (
+                        <h2 className="text-2xl font-semibold mb-3 mt-6" {...props}>
+                            {children}
+                        </h2>
                     ),
-                    h3: ({ children, ...props }: { children: ReactNode } & React.HTMLAttributes<HTMLHeadingElement>) => (
-                        <h3 className="text-xl font-medium mb-2 mt-4" {...props}>{children}</h3>
+                    h3: ({ children, ...props }) => (
+                        <h3 className="text-xl font-medium mb-2 mt-4" {...props}>
+                            {children}
+                        </h3>
                     ),
-                    p: ({ children, ...props }: { children: ReactNode } & React.HTMLAttributes<HTMLParagraphElement>) => (
-                        <p className="mb-4 text-gray-700 leading-relaxed" {...props}>{children}</p>
+                    p: ({ children, ...props }) => (
+                        <p className="mb-4 text-gray-700 leading-relaxed" {...props}>
+                            {children}
+                        </p>
                     ),
-                    ul: ({ children, ...props }: { children: ReactNode } & React.HTMLAttributes<HTMLUListElement>) => (
-                        <ul className="list-disc pl-6 mb-4 space-y-2" {...props}>{children}</ul>
+                    ul: ({ children, ...props }) => (
+                        <ul className="list-disc pl-6 mb-4 space-y-2" {...props}>
+                            {children}
+                        </ul>
                     ),
-                    ol: ({ children, ...props }: { children: ReactNode } & React.HTMLAttributes<HTMLOListElement>) => (
-                        <ol className="list-decimal pl-6 mb-4 space-y-2" {...props}>{children}</ol>
+                    ol: ({ children, ...props }) => (
+                        <ol className="list-decimal pl-6 mb-4 space-y-2" {...props}>
+                            {children}
+                        </ol>
                     ),
-                    li: ({ children, ...props }: { children: ReactNode } & React.HTMLAttributes<HTMLLIElement>) => (
-                        <li className="text-gray-700" {...props}>{children}</li>
+                    li: ({ children, ...props }) => (
+                        <li className="text-gray-700" {...props}>
+                            {children}
+                        </li>
                     ),
-                    blockquote: ({ children, ...props }: { children: ReactNode } & React.HTMLAttributes<HTMLQuoteElement>) => (
-                        <blockquote className="border-l-4 border-primary pl-4 italic my-4" {...props}>{children}</blockquote>
+                    blockquote: ({ children, ...props }) => (
+                        <blockquote className="border-l-4 border-primary pl-4 italic my-4" {...props}>
+                            {children}
+                        </blockquote>
                     ),
-                    code: ({ children, ...props }: { children: ReactNode } & React.HTMLAttributes<HTMLElement>) => (
-                        <code className="bg-gray-100 rounded px-1.5 py-0.5 text-sm font-mono" {...props}>{children}</code>
+                    code: ({ children, ...props }) => (
+                        <code className="bg-gray-100 rounded px-1.5 py-0.5 text-sm font-mono" {...props}>
+                            {children}
+                        </code>
                     ),
-                    pre: ({ children, ...props }: { children: ReactNode } & React.HTMLAttributes<HTMLPreElement>) => (
-                        <pre className="bg-gray-900 text-white rounded-lg p-4 overflow-x-auto" {...props}>{children}</pre>
+                    pre: ({ children, ...props }) => (
+                        <pre className="bg-gray-900 text-white rounded-lg p-4 overflow-x-auto" {...props}>
+              {children}
+            </pre>
                     ),
                 }}
             >
@@ -760,12 +798,12 @@ console.log('Hello');
                                                                     <span className="text-xs text-primary">+20 points</span>
                                                                 </h4>
                                                                 <pre className="bg-gray-50 p-3 rounded-md text-sm">
-&lt;details&gt;
-                                                                    &lt;summary&gt;Expandable Section&lt;/summary&gt;
-                                                                    Hidden content here
-                                                                    &lt;/details&gt;
+<details>
+                                  <summary>Expandable Section</summary>
+                                  Hidden content here
+                                  </details>
 
-                                                                    - [x] Completed task
+                                  - [x] Completed task
 - [ ] Pending task</pre>
                                                             </div>
                                                         </div>
@@ -894,22 +932,20 @@ console.log('Hello');
                             Your lesson "{createdLesson?.title}" has been created successfully. What would you like to do next?
                         </AlertDialogDescription>
                     </AlertDialogHeader>
-                    <div className="bg-gray-50 p-4 rounded-md mb-4">
-                        <h3 className="text-sm font-medium mb-2">Lesson Content Preview</h3>
-                        <div className="max-h-40 overflow-y-auto prose prose-sm">
-                            {createdLesson?.textContent ? (
-                                <ReactMarkdown>
-                                    {createdLesson.textContent.substring(0, 300)}
-                                </ReactMarkdown>
-                            ) : (
-                                <p className="text-gray-500 italic">No content available.</p>
-                            )}
-                            {createdLesson?.textContent && createdLesson.textContent.length > 300 && (
-                                <div className="text-primary text-sm">
-                                    ... (content continues)
-                                </div>
-                            )}
-                        </div>
+                    <h3 className="text-sm font-medium mb-2">Lesson Content Preview</h3>
+                    <div className="max-h-40 overflow-y-auto prose prose-sm">
+                        {createdLesson?.textContent ? (
+                            <ReactMarkdown>
+                                {createdLesson.textContent.substring(0, 300)}
+                            </ReactMarkdown>
+                        ) : (
+                            <p className="text-gray-500 italic">No content available.</p>
+                        )}
+                        {createdLesson?.textContent && createdLesson.textContent.length > 300 && (
+                            <div className="text-primary text-sm">
+                                ... (content continues)
+                            </div>
+                        )}
                     </div>
                     <AlertDialogFooter>
                         <AlertDialogAction onClick={handleReturnToLessons}>
@@ -927,5 +963,3 @@ console.log('Hello');
 }
 
 export default CreateLesson;
-
-

@@ -1,24 +1,19 @@
-import { Link, useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Moon, Sun, Bell } from 'lucide-react';
+import {Link, useNavigate} from 'react-router-dom';
+import {Button} from '@/components/ui/button';
+import {Bell, Moon, Sun} from 'lucide-react';
 import cryptoIcon from '@/assets/icons/crypto.png';
 import logoImage from '@/assets/icons/logo.png';
-import { useTheme } from '@/components/theme-provider';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useAppDispatch, useAppSelector } from '@/redux/hooks';
-import { logout, useCurrentUser } from '@/redux/features/auth/authSlice';
-import { useEffect, useState } from 'react';
-import { CreditPurchaseDialog } from '../credits/CreditPurchaseDialog';
-import { useGetUserCreditsQuery } from '@/redux/features/credits/creditsApi';
-import { useCurrentProfile } from '@/redux/features/profile/profileSlice';
-import { useFetchProfileQuery } from '@/redux/features/profile/profileApi';
-import { Badge } from '@/components/ui/badge';
+import {useTheme} from '@/components/theme-provider';
+import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,} from '@/components/ui/dropdown-menu';
+import {Avatar, AvatarFallback, AvatarImage} from '@/components/ui/avatar';
+import {useAppDispatch, useAppSelector} from '@/redux/hooks';
+import {logout, useCurrentUser} from '@/redux/features/auth/authSlice';
+import {useEffect, useState} from 'react';
+import {CreditPurchaseDialog} from '../credits/CreditPurchaseDialog';
+import {useGetUserCreditsQuery} from '@/redux/features/credits/creditsApi';
+import {useCurrentProfile} from '@/redux/features/profile/profileSlice';
+import {useFetchProfileQuery} from '@/redux/features/profile/profileApi';
+import {Badge} from '@/components/ui/badge';
 
 export function Navbar() {
   const { theme, setTheme } = useTheme();

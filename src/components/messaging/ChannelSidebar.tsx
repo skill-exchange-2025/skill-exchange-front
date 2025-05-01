@@ -1,44 +1,20 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { useAppSelector, useAppDispatch } from '../../redux/hooks';
-import { useGetChannelsQuery } from '../../redux/api/messagingApi';
-import { Channel, ChannelMember } from '../../types/channel';
-import {
-  Hash,
-  Archive,
-  Plus,
-  User,
-  Users,
-  Search,
-  Settings,
-  Loader2,
-  LogIn,
-  MessageSquare,
-  MessageSquareOff,
-} from 'lucide-react';
-import { Button } from '../ui/button';
+import React, {useEffect, useRef, useState} from 'react';
+import {useNavigate, useParams} from 'react-router-dom';
+import {useAppSelector} from '../../redux/hooks';
+import {useCreateChannelMutation, useGetChannelsQuery, useJoinChannelMutation} from '../../redux/api/messagingApi';
+import {Channel} from '../../types/channel';
+import {Archive, Hash, Loader2, LogIn, MessageSquare, MessageSquareOff, Plus, Search,} from 'lucide-react';
+import {Button} from '../ui/button';
 import NewChannelModal from './NewChannelModal';
-import { Input } from '../ui/input';
-import { Badge } from '../ui/badge';
-import { z } from 'zod';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Form, FormControl, FormField, FormItem } from '../ui/form';
-import {
-  useCreateChannelMutation,
-  useJoinChannelMutation,
-} from '../../redux/api/messagingApi';
+import {Input} from '../ui/input';
+import {Badge} from '../ui/badge';
+import {z} from 'zod';
+import {useForm} from 'react-hook-form';
+import {zodResolver} from '@hookform/resolvers/zod';
 import socketService from '../../services/socket.service';
-import { useToast } from '../../hooks/use-toast';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '../ui/dialog';
-import { Switch } from '../ui/switch';
+import {useToast} from '../../hooks/use-toast';
+import {Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle,} from '../ui/dialog';
+import {Switch} from '../ui/switch';
 import ChannelDetails from './ChannelDetails';
 
 const channelSchema = z.object({

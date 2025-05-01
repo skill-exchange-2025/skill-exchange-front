@@ -1,12 +1,9 @@
 import React from 'react';
-import { useAppSelector } from '../../redux/hooks';
-import {
-  useAddReactionMutation,
-  useRemoveReactionMutation,
-} from '../../redux/api/messagingApi';
-import { EmojiClickData } from 'emoji-picker-react';
-import { X } from 'lucide-react';
-import { useToast } from '../use-toast';
+import {useAppSelector} from '../../redux/hooks';
+import {useRemoveReactionMutation,} from '../../redux/api/messagingApi';
+import {EmojiClickData} from 'emoji-picker-react';
+import {X} from 'lucide-react';
+import {useToast} from '../use-toast';
 import socketService from '../../services/socket.service';
 
 interface MessageReactionsProps {

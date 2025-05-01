@@ -1,34 +1,38 @@
-import { createBrowserRouter } from 'react-router-dom';
+import {createBrowserRouter} from 'react-router-dom';
 import App from '../App';
-import { LandingPage } from '@/pages/landing';
-import { About } from '@/pages/About';
-import { Contact } from '@/pages/Contact';
-import { Help } from '@/pages/help';
-import { Privacy } from '@/pages/privacy';
-import { Terms } from '@/pages/terms';
-import { SignUp } from '@/pages/auth/sign-up';
-import { ForgotPassword } from '@/pages/auth/forgot-password';
-import { Layout } from '@/components/layout/layout';
+import {LandingPage} from '@/pages/landing';
+import {About} from '@/pages/About';
+import {Contact} from '@/pages/Contact';
+import {Help} from '@/pages/help';
+import {Privacy} from '@/pages/privacy';
+import {Terms} from '@/pages/terms';
+import {SignUp} from '@/pages/auth/sign-up';
+import {ForgotPassword} from '@/pages/auth/forgot-password';
+import {Layout} from '@/components/layout/layout';
 import ProtectedRoute from '@/components/layout/ProtectedRoute';
 import AdminRoutes from './AdminRoutes';
 import UserRoutes from './UserRoutes';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import UserDashboard from '@/components/layout/UserDashboard';
 import LoginForm from '@/pages/auth/Login';
-import { VerifyEmail } from '@/pages/auth/verify-email';
-import { MarketplacePage } from '@/pages/marketplace';
-import { MarketplaceItemDetail } from '@/pages/marketplace/item-detail';
-import { CreateEditMarketplaceItem } from '@/pages/marketplace/create-edit-item';
-import { ListingTypeSelection } from '@/pages/marketplace/listing-type-selection';
-import { TransactionsPage } from '@/pages/marketplace/transactions';
+import {VerifyEmail} from '@/pages/auth/verify-email';
+import {MarketplacePage} from '@/pages/marketplace';
+import {MarketplaceItemDetail} from '@/pages/marketplace/item-detail';
+import {CreateEditMarketplaceItem} from '@/pages/marketplace/create-edit-item';
+import {ListingTypeSelection} from '@/pages/marketplace/listing-type-selection';
+import {TransactionsPage} from '@/pages/marketplace/transactions';
 import MessagingLayout from '../pages/messaging/MessagingLayout';
 import ChannelPage from '../pages/messaging/ChannelPage';
 import ChannelListPage from '../pages/messaging/ChannelListPage';
-import { CreateLesson } from '@/pages/marketplace/create-lesson';
+import {CreateLesson} from '@/pages/marketplace/create-lesson';
 // Import the EditLesson component (you'll need to create this)
-import { EditLesson } from '@/pages/marketplace/edit-lesson';
-import { LessonDetail } from '@/pages/marketplace/lesson-detail';
+import {EditLesson} from '@/pages/marketplace/edit-lesson';
+import {LessonDetail} from '@/pages/marketplace/lesson-detail';
 import ManageLessons from "@/pages/marketplace/manage-lessons.tsx";
+import {CreateFeedback} from "@/pages/user/feedback/CreateFeedback.tsx";
+import {FeedbackList} from "@/pages/user/feedback/FeedbackList.tsx";
+import {EditFeedback} from "@/pages/user/feedback/EditFeedback.tsx";
+import SummarizerPage from '@/pages/SummarizerPage';
 
 const router = createBrowserRouter([
   {
@@ -148,8 +152,24 @@ const router = createBrowserRouter([
                         <LessonDetail />
                     </ProtectedRoute>
                 ),
-            },
 
+
+            },
+            {
+                path: 'summarizer',
+                element:
+                    <ProtectedRoute>
+                        <SummarizerPage />
+                    </ProtectedRoute>
+            },
+            {
+
+              path:'summarize/:lessonId',
+                element:
+                    <ProtectedRoute>
+                        <SummarizerPage />
+                    </ProtectedRoute>
+                },
 
 
 
@@ -176,17 +196,32 @@ const router = createBrowserRouter([
         ),
         children: [{ path: '*', element: <AdminRoutes /> }],
       },
-      {
-        path: 'user',
-        element: (
-            <ProtectedRoute>
-              <UserDashboard />
-            </ProtectedRoute>
-        ),
-        children: [{ path: '*', element: <UserRoutes /> }],
-      },
+        {
+            path: 'user',
+            element: (
+                <ProtectedRoute>
+                    <UserDashboard />
+                </ProtectedRoute>
+            ),
+            children: [
+                { path: '*', element: <UserRoutes /> },
+                {
+                    path: 'feedback',
+                    children: [
+                        { index: true, element: <FeedbackList /> },
+                        { path: 'create', element: <CreateFeedback /> },
+                        {
+                            path: 'edit/:id',
+                            element: <EditFeedback />
+                        },
+
+                    ]
+                }
+            ],
+        },
     ],
   },
+
 ]);
 
 export default router;

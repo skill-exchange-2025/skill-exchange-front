@@ -1,47 +1,33 @@
-import React, { useEffect } from 'react';
-import { useAppDispatch, useAppSelector } from '@/redux/hooks';
+import React, {useEffect} from 'react';
+import {useAppDispatch, useAppSelector} from '@/redux/hooks';
+import {Card, CardContent, CardFooter, CardHeader, CardTitle,} from '@/components/ui/card';
+import {Alert, AlertDescription, AlertTitle} from '@/components/ui/alert';
+import {RootState} from '@/redux/store.ts';
+import {useFetchProfileQuery, useGetProfileCompletionStatusQuery,} from '@/redux/features/profile/profileApi.ts';
+import {setProfile} from '@/redux/features/profile/profileSlice.ts';
+import {Tabs, TabsContent, TabsList, TabsTrigger} from '@/components/ui/tabs';
+import {Button} from '@/components/ui/button';
+import {Progress} from '@/components/ui/progress';
+import {Badge} from '@/components/ui/badge';
+import {Avatar, AvatarFallback, AvatarImage} from '@/components/ui/avatar';
+import {ScrollArea} from '@/components/ui/scroll-area';
+import {Separator} from '@/components/ui/separator';
+import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,} from '@/components/ui/tooltip';
 import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardFooter,
-} from '@/components/ui/card';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { RootState } from '@/redux/store.ts';
-import {
-  useFetchProfileQuery,
-  useGetProfileCompletionStatusQuery,
-} from '@/redux/features/profile/profileApi.ts';
-import { setProfile } from '@/redux/features/profile/profileSlice.ts';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
-import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Separator } from '@/components/ui/separator';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
-import {
-  User,
-  MapPin,
-  Heart,
-  Link,
-  GraduationCap,
-  Book,
-  Edit,
-  AlertCircle,
-  Github,
-  Twitter,
-  Linkedin,
-  Facebook,
-  Instagram,
-  Globe,
+    AlertCircle,
+    Book,
+    Edit,
+    Facebook,
+    Github,
+    Globe,
+    GraduationCap,
+    Heart,
+    Instagram,
+    Link,
+    Linkedin,
+    MapPin,
+    Twitter,
+    User,
 } from 'lucide-react';
 
 export const ProfileView: React.FC = () => {

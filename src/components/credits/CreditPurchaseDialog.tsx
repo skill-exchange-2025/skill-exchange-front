@@ -1,34 +1,17 @@
-import { useState } from 'react';
-import { useAppSelector, useAppDispatch } from '@/redux/hooks';
-import {
-  useCurrentUser,
-  updateUserCredits,
-} from '@/redux/features/auth/authSlice';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter } from '@/components/ui/card';
-import { Check } from 'lucide-react';
+import {useState} from 'react';
+import {useAppDispatch, useAppSelector} from '@/redux/hooks';
+import {updateUserCredits, useCurrentUser,} from '@/redux/features/auth/authSlice';
+import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,} from '@/components/ui/dialog';
+import {Button} from '@/components/ui/button';
+import {Card, CardContent, CardFooter} from '@/components/ui/card';
+import {Check} from 'lucide-react';
 import cryptoIcon from '@/assets/icons/crypto.png';
 import coinIcon from '@/assets/icons/coin.png';
-import { toast } from 'sonner';
-import { StripeProvider } from './StripeProvider';
-import { StripePaymentForm } from './StripePaymentForm';
-import {
-  usePurchaseCreditsMutation,
-  useGetUserCreditsQuery,
-} from '@/redux/features/credits/creditsApi';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+import {toast} from 'sonner';
+import {StripeProvider} from './StripeProvider';
+import {StripePaymentForm} from './StripePaymentForm';
+import {useGetUserCreditsQuery, usePurchaseCreditsMutation,} from '@/redux/features/credits/creditsApi';
+import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,} from '@/components/ui/tooltip';
 
 // Credit package options
 const CREDIT_PACKAGES = [

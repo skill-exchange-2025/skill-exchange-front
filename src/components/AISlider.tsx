@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { Slider, Tooltip } from 'antd';
-import { InfoCircleOutlined } from '@ant-design/icons';
+import React, {useState} from 'react';
+import {Slider, Tooltip} from 'antd';
+import {InfoCircleOutlined} from '@ant-design/icons';
 
 interface AISliderProps {
     min?: number;

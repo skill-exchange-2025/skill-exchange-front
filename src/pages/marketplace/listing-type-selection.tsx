@@ -1,16 +1,10 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { ArrowLeft, BookOpen, GraduationCap, Plus, Search } from 'lucide-react';
-import { ListingType } from '@/redux/features/marketplace/marketplaceApi';
+import {useEffect, useState} from 'react';
+import {useNavigate, useSearchParams} from 'react-router-dom';
+import {motion} from 'framer-motion';
+import {Button} from '@/components/ui/button';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle,} from '@/components/ui/card';
+import {ArrowLeft, BookOpen, GraduationCap, Plus, Search} from 'lucide-react';
+import {ListingType} from '@/redux/features/marketplace/marketplaceApi';
 
 export function ListingTypeSelection() {
   const navigate = useNavigate();
