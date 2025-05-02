@@ -6,8 +6,14 @@ import {CompletionStatus} from "@/types/status.ts";
 export const profileApi = baseApi.injectEndpoints({
     endpoints: (builder) => ({
         fetchProfile: builder.query<Profile,  string | undefined>({
+            query: () => ({
+                url:  `/profile}`,
+                method: "GET",
+            }),
+        }),
+        getProfileByUserId: builder.query<Profile,  string>({
             query: (userId) => ({
-                url: userId ? `/profile/${userId}` : '/profile',
+                url:  `/profile/${userId}`,
                 method: "GET",
             }),
         }),
@@ -59,4 +65,5 @@ export const {
     useGetProfileCompletionStatusQuery,
     useUploadAvatarMutation,
     useUpdateProfileMutation,
+    useGetProfileByUserIdQuery,
 } = profileApi;

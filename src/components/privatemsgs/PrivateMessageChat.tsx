@@ -9,6 +9,7 @@ import {
   useUploadVoiceMessageMutation,
   useSendVoiceMessageMutation
 } from '@/redux/features/privatemsgs/privateMessagesApi';
+import { MoreVertical } from 'lucide-react';
 import { socketService } from '@/services/socketService';
 import React, { useState, useEffect, useRef } from 'react';
 import { Mic, Square,Trash2, Edit2, X, Check, MessageSquare, Smile, Send } from 'lucide-react';
@@ -21,9 +22,15 @@ import MessageReacts from './MessageReacts';
 import EmojiPicker from 'emoji-picker-react';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { useNavigate } from 'react-router-dom';
-
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger 
+} from '@/components/ui/dropdown-menu';
 // import * as lamejs from 'lamejs';
 import lamejs from 'lamejs';
+import { useGetProfileByUserIdQuery } from '@/redux/features/profile/profileApi';
 
 interface Reaction {
   type: string;
@@ -53,7 +60,7 @@ const PrivateMessageChat: React.FC<PrivateMessageChatProps> = ({
   const navigate = useNavigate();
   const getInitials = (name: string) => name.split(' ').map(n => n[0]).join('').toUpperCase();
 
- 
+  const { data: recipientProfile } = useGetProfileByUserIdQuery(recipientId);
   const [isRecording, setIsRecording] = useState(false);
 const [audioStream, setAudioStream] = useState<MediaStream | null>(null);
 const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
@@ -80,11 +87,11 @@ const [recordingStartTime, setRecordingStartTime] = useState<number>(0);
     const [localMessages, setLocalMessages] = useState<PrivateMessage[]>(messages || []);
     const [replyTo, setReplyTo] = useState<ReplyToMessage | null>(null);
     const currentUserId = useAppSelector((state) => state.auth.user?._id);
-
+  
     const handleProfileClick = (senderId: string) => {
       if (senderId === currentUserId) {
         // If clicking own avatar, go to user profile
-        navigate('/user/profile');
+        navigate('/profile');
       } else {
         // If clicking other user's avatar, go to their profile
         navigate(`/profile/${senderId}`);
@@ -523,12 +530,18 @@ return (
     } mb-4`}
   >
     <div className="flex items-start gap-2 max-w-[70%]">
-{msg.sender._id === recipientId && (
+    {msg.sender._id === recipientId && (
   <Avatar 
     className="h-8 w-8 cursor-pointer hover:ring-2 hover:ring-primary transition-all"
     onClick={() => handleProfileClick(msg.sender._id)}
   >
-    {/* Avatar content */}
+    <AvatarImage 
+      src={msg.sender.avatarUrl 
+        ? `http://localhost:5000${msg.sender.avatarUrl}`
+        : undefined}
+      alt={msg.sender.name} 
+    />
+    <AvatarFallback>{getInitials(msg.sender.name)}</AvatarFallback>
   </Avatar>
 )}
 
@@ -620,20 +633,55 @@ return (
             </div>
 
             {/* Message actions */}
-            <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
-              <button
-                onClick={() => handleOpenEmojiPicker(msg._id)}
-                className="p-1 rounded-full hover:bg-black/10"
-              >
-                <Smile size={16} />
-              </button>
-              <button
-                onClick={() => setOpenMenuId(prev => prev === msg._id ? null : msg._id)}
-                className="p-1 rounded-full hover:bg-black/10"
-              >
-                <MoreHorizontal size={16} />
-              </button>
-            </div>
+           {/* Message actions */}
+           <div className="absolute top-2 right-2 text-black-500 group-hover:text-green-700 transition-colors flex items-center gap-1">
+           <button
+    onClick={() => handleOpenEmojiPicker(msg._id)}
+    className="p-1 rounded-full hover:bg-black/10"
+  >
+    <Smile size={16} />
+  </button>
+  
+  <DropdownMenu>
+    <DropdownMenuTrigger asChild>
+      <button className="p-1 rounded-full hover:bg-black/10">
+        <MoreVertical size={16} />
+      </button>
+    </DropdownMenuTrigger>
+    
+    <DropdownMenuContent align="end">
+      {/* Reply option - available for all messages */}
+      <DropdownMenuItem 
+        onClick={() => handleReply(msg)}
+        className="flex items-center gap-2"
+      >
+        <MessageSquare size={14} />
+        Reply
+      </DropdownMenuItem>
+
+      {/* Edit and Delete options - only for user's own messages */}
+      {msg.sender._id === currentUserId && (
+        <>
+          <DropdownMenuItem 
+            onClick={() => handleStartEdit(msg._id, msg.content)}
+            className="flex items-center gap-2"
+          >
+            <Edit2 size={14} />
+            Edit
+          </DropdownMenuItem>
+          
+          <DropdownMenuItem 
+            onClick={() => handleDeleteMessage(msg._id)}
+            className="flex items-center gap-2 text-red-600"
+          >
+            <Trash2 size={14} />
+            Delete
+          </DropdownMenuItem>
+        </>
+      )}
+    </DropdownMenuContent>
+  </DropdownMenu>
+</div>
           </>
         )}
 
