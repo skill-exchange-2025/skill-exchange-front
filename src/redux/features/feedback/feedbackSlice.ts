@@ -46,10 +46,15 @@ const feedbackSlice = createSlice({
                 state.loading = false;
                 state.error = action.error.message || 'Failed to fetch feedbacks';
             })
+            .addMatcher(feedbackApi.endpoints.deleteFeedback.matchRejected,(state , action )=> {
+                state.loading = false;
+                state.error = action.error.message || 'Failed to delete feedbacks';
+            })
             // Handle getSingleFeedback
             .addMatcher(feedbackApi.endpoints.getSingleFeedback.matchFulfilled, (state, action) => {
                 state.selectedFeedback = action.payload;
             });
+
     },
     initialState,
     name: 'feedback',

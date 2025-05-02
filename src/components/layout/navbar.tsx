@@ -320,6 +320,9 @@ export function Navbar() {
                         <Link to="/user/profile">Manage Profile</Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild className="cursor-pointer">
+                        <Link to="/user/feedback">Manage My feedbacks</Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild className="cursor-pointer">
                         <Link to="/messaging">Messages</Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem

@@ -152,8 +152,6 @@ const router = createBrowserRouter([
                         <LessonDetail />
                     </ProtectedRoute>
                 ),
-
-
             },
             {
                 path: 'summarizer',
@@ -223,5 +221,6 @@ const router = createBrowserRouter([
   },
 
 ]);
+
 
 export default router;

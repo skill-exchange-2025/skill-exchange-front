@@ -214,6 +214,13 @@ export function LessonDetail() {
             navigate('/marketplace');
         }
     };
+    const handlesumurizeLessons = () => {
+        if (itemId) {
+            navigate(`/summarize/:lessonId`);
+        } else {
+            navigate('/summarize');
+        }
+    };
 
     const generatePDF = () => {
         toast.success("Generating PDF. Download will start shortly.");
@@ -335,6 +342,7 @@ export function LessonDetail() {
                                 <Button variant="outline" onClick={handleBackToLessons}>
                                     Return to Lessons
                                 </Button>
+
                             </div>
                         </div>
                     </CardContent>
@@ -368,6 +376,7 @@ export function LessonDetail() {
                 </Button>
 
                 <div className="flex items-center gap-4">
+
                     {typedLesson.duration && (
                         <TooltipProvider>
                             <Tooltip>
@@ -446,7 +455,13 @@ export function LessonDetail() {
                                         />
                                     </div>
                                 )}
-
+                                <Button
+                                    variant="secondary"
+                                    className="gap-2 hover:bg-background"
+                                    onClick={handlesumurizeLessons}
+                                >
+                                    <ChevronLeft className="h-4 w-4" /> sumurize your lesson
+                                </Button>
                                 <TooltipProvider>
                                     <Tooltip>
                                         <TooltipTrigger asChild>

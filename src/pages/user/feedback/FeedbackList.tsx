@@ -1,13 +1,74 @@
-import React from 'react';
-import {useNavigate} from 'react-router-dom';
-import {useGetUserFeedbacksQuery} from '@/redux/features/feedback/feedbackApi';
-import {Button} from '@/components/ui/button';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle} from '@/components/ui/card';
-import {Alert, AlertDescription} from '@/components/ui/alert';
-import {Skeleton} from '@/components/ui/skeleton';
-import {Edit, Plus} from 'lucide-react'; // Import icons if you're using lucide-react
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { feedbackApi, useGetUserFeedbacksQuery } from '@/redux/features/feedback/feedbackApi';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Edit, Plus } from 'lucide-react';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '@/redux/store.ts';
+import { selectFeedbackError, clearSelectedFeedback } from '@/redux/features/feedback/feedbackSlice';
+import {IFeedback} from "@/types/feedback.types.ts";
 
-// Create a loading skeleton
+// Move DeleteFeedbackButton outside the FeedbackList component
+interface DeleteFeedbackButtonProps {
+    feedbackId: string;
+    onSuccess?: () => void;
+}
+
+const DeleteFeedbackButton = ({ feedbackId, onSuccess }: DeleteFeedbackButtonProps) => {
+    const [confirmDelete, setConfirmDelete] = useState(false);
+    const [deleteFeedback, { isLoading }] = feedbackApi.useDeleteFeedbackMutation();
+    const error = useSelector((state: RootState) => selectFeedbackError(state));
+    const dispatch = useDispatch();
+
+    const handleDelete = async () => {
+        try {
+            await deleteFeedback(feedbackId).unwrap();
+            dispatch(clearSelectedFeedback());
+            onSuccess?.();
+        } catch (err) {
+            console.error('Failed to delete feedback:', err);
+        }
+    };
+
+    return (
+        <div className="delete-feedback-container ml-2">
+            {!confirmDelete ? (
+                <button
+                    onClick={() => setConfirmDelete(true)}
+                    className="delete-button bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+                    disabled={isLoading}
+                >
+                    {isLoading ? 'Deleting...' : 'Delete'}
+                </button>
+            ) : (
+                <div className="confirmation-dialog">
+                    <p className="confirmation-text text-sm mr-2">Are you sure?</p>
+                    <div className="button-group flex">
+                        <button
+                            onClick={handleDelete}
+                            className="confirm-button bg-red-600 text-white px-3 py-1 rounded mr-1 hover:bg-red-700 text-sm"
+                            disabled={isLoading}
+                        >
+                            Yes
+                        </button>
+                        <button
+                            onClick={() => setConfirmDelete(false)}
+                            className="cancel-button bg-gray-500 text-white px-3 py-1 rounded hover:bg-gray-600 text-sm"
+                        >
+                            No
+                        </button>
+                    </div>
+                    {error && <p className="error-message text-red-500 mt-2 text-sm">{error}</p>}
+                </div>
+            )}
+        </div>
+    );
+};
+
+// Loading skeleton component
 const FeedbackSkeleton = () => (
     <div className="space-y-4">
         {[1, 2, 3].map((i) => (
@@ -30,11 +91,15 @@ const FeedbackSkeleton = () => (
 
 export const FeedbackList = () => {
     const [page] = React.useState(1);
-    const { data, isLoading, error } = useGetUserFeedbacksQuery({
+    const { data, isLoading, error, refetch } = useGetUserFeedbacksQuery({
         page,
         limit: 10
     });
     const navigate = useNavigate();
+
+    const handleDeleteSuccess = () => {
+        refetch(); // Refresh the list after successful deletion
+    };
 
     if (isLoading) {
         return <FeedbackSkeleton />;
@@ -57,7 +122,7 @@ export const FeedbackList = () => {
         );
     }
 
-    const feedbacks = data?.data || data || [];
+    const feedbacks = data?.data || [];
 
     return (
         <div className="p-6 space-y-6">
@@ -83,7 +148,7 @@ export const FeedbackList = () => {
                 </Card>
             ) : (
                 <div className="grid gap-4">
-                    {feedbacks.map((feedback: { _id: React.Key | null | undefined; title: string | number | bigint | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<React.AwaitedReactNode> | null | undefined; description: string | number | bigint | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<React.AwaitedReactNode> | null | undefined; type: string | number | bigint | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<React.AwaitedReactNode> | null | undefined; priority: string | number | bigint | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<React.AwaitedReactNode> | null | undefined; status: string | number | bigint | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<React.AwaitedReactNode> | null | undefined; }) => (
+                    {feedbacks.map((feedback: IFeedback) => (
                         <Card key={feedback._id}>
                             <CardHeader>
                                 <CardTitle>{feedback.title}</CardTitle>
@@ -91,22 +156,28 @@ export const FeedbackList = () => {
                             </CardHeader>
                             <CardContent>
                                 <div className="flex gap-2 mb-4">
+                  <span className="px-2 py-1 rounded-full text-xs bg-primary/10">
+                    {feedback.type}
+                  </span>
                                     <span className="px-2 py-1 rounded-full text-xs bg-primary/10">
-                                        {feedback.type}
-                                    </span>
+                    {feedback.priority}
+                  </span>
                                     <span className="px-2 py-1 rounded-full text-xs bg-primary/10">
-                                        {feedback.priority}
-                                    </span>
-                                    <span className="px-2 py-1 rounded-full text-xs bg-primary/10">
-                                        {feedback.status}
-                                    </span>
+                    {feedback.status}
+                  </span>
                                 </div>
-                                <Button
-                                    variant="outline"
-                                    onClick={() => navigate(`/user/feedback/edit/${feedback._id}`)}
-                                >
-                                    <Edit className="mr-2 h-4 w-4" /> Edit
-                                </Button>
+                                <div className="flex gap-2">
+                                    <Button
+                                        variant="outline"
+                                        onClick={() => navigate(`/user/feedback/edit/${feedback._id}`)}
+                                    >
+                                        <Edit className="mr-2 h-4 w-4" /> Edit
+                                    </Button>
+                                    <DeleteFeedbackButton
+                                        feedbackId={feedback._id}
+                                        onSuccess={handleDeleteSuccess}
+                                    />
+                                </div>
                             </CardContent>
                         </Card>
                     ))}

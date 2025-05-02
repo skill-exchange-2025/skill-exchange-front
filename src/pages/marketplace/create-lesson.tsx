@@ -22,7 +22,6 @@ import {
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import ReactMarkdown from 'react-markdown';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -38,6 +37,7 @@ import dynamic from 'next/dynamic';
 import { useTheme } from 'next-themes';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import ReactMarkdown from "react-markdown";
 
 // Dynamically import markdown editor with SSR disabled
 const MarkdownEditor = dynamic(
@@ -53,20 +53,10 @@ interface UploadedFile {
 }
 
 // Define a type for MarkdownEditor options
-interface MarkdownEditorOptions {
-    scrollbarStyle?: string;
-    lineWrapping?: boolean;
-    theme?: string;
-    mode?: string;
-    lineNumbers?: boolean;
-    styleActiveLine?: boolean;
-    [key: string]: any; // Allow additional properties for flexibility
-}
-
 interface MarkdownTextareaProps {
     name?: string;
     value: string;
-    onChange: (e: { target: { name: string; value: string } }) => void;
+    onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
     initialRows?: number;
     className?: string;
     placeholder?: string;
@@ -86,19 +76,27 @@ const MarkdownTextarea: React.FC<MarkdownTextareaProps> = ({
             <MarkdownEditor
                 value={value}
                 onChange={(val) => {
-                    onChange({ target: { name, value: val } });
+                    // Fix 2: Use proper event structure
+                    onChange({
+                        target: {
+                            name,
+                            value: val,
+                            type: 'textarea',
+                        }
+                    } as React.ChangeEvent<HTMLTextAreaElement>);
                 }}
                 height={`${initialRows * 24}px`}
                 visible={true}
                 placeholder={placeholder}
-                options={{
-                    scrollbarStyle: 'overlay',
+                // Fix 3: Remove options prop and configure directly
+                style={{
+                    scrollbarWidth: 'thin',
                     lineWrapping: true,
                     theme: 'light',
                     mode: 'markdown',
                     lineNumbers: true,
                     styleActiveLine: true,
-                } as MarkdownEditorOptions}
+                }}
                 enablePreview={true}
                 previewWidth="50%"
                 className="border rounded-md overflow-hidden"
@@ -106,6 +104,7 @@ const MarkdownTextarea: React.FC<MarkdownTextareaProps> = ({
         </div>
     );
 };
+
 
 interface PreviewContentProps {
     content: string;
@@ -565,6 +564,7 @@ Continue organizing your lesson with additional sections.`;
                                 rows={3}
                             />
                         </div>
+
 
                         <Separator className="dark:border-gray-700" />
 
