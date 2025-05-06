@@ -61,8 +61,6 @@ interface MarkdownTextareaProps {
     className?: string;
     placeholder?: string;
 }
-
-// Custom MarkdownTextarea component
 const MarkdownTextarea: React.FC<MarkdownTextareaProps> = ({
                                                                name = 'textContent',
                                                                value,
@@ -73,38 +71,33 @@ const MarkdownTextarea: React.FC<MarkdownTextareaProps> = ({
                                                            }) => {
     return (
         <div className={`markdown-editor-container ${className}`}>
-            <MarkdownEditor
-                value={value}
-                onChange={(val) => {
-                    // Fix 2: Use proper event structure
-                    onChange({
-                        target: {
-                            name,
-                            value: val,
-                            type: 'textarea',
-                        }
-                    } as React.ChangeEvent<HTMLTextAreaElement>);
-                }}
-                height={`${initialRows * 24}px`}
-                visible={true}
-                placeholder={placeholder}
-                // Fix 3: Remove options prop and configure directly
-                style={{
-                    scrollbarWidth: 'thin',
-                    lineWrapping: true,
-                    theme: 'light',
-                    mode: 'markdown',
-                    lineNumbers: true,
-                    styleActiveLine: true,
-                }}
-                enablePreview={true}
-                previewWidth="50%"
-                className="border rounded-md overflow-hidden"
-            />
+            <MarkdownEditor value={value} onChange={(val) => {
+                onChange({
+                    target: {
+                        name,
+                        value: val,
+                        type: 'textarea',
+                    }
+                } as React.ChangeEvent<HTMLTextAreaElement>);
+            }} height={`${initialRows * 24}px`} visible={true} placeholder={placeholder} enablePreview={true} previewWidth="50%" className="border rounded-md overflow-hidden"/>
         </div>
     );
 };
 
+// Add type declarations for the editor props
+declare module '@uiw/react-markdown-editor' {
+    interface EditorProps {
+        editorProps?: {
+            options?: {
+                lineWrapping?: boolean;
+                lineNumbers?: boolean;
+                styleActiveLine?: boolean;
+                mode?: string;
+                theme?: string;
+            };
+        };
+    }
+}
 
 interface PreviewContentProps {
     content: string;

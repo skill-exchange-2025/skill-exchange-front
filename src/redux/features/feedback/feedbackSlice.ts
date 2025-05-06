@@ -38,10 +38,6 @@ const feedbackSlice = createSlice({
                 state.loading = true;
                 state.error = null;
             })
-            .addMatcher(feedbackApi.endpoints.getAllFeedbacks.matchFulfilled, (state, action) => {
-                state.loading = false;
-                state.feedbacks = action.payload;
-            })
             .addMatcher(feedbackApi.endpoints.getAllFeedbacks.matchRejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message || 'Failed to fetch feedbacks';

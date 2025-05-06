@@ -60,9 +60,7 @@ export const feedbackApi = baseApi.injectEndpoints({
             }),
             invalidatesTags: ['Feedback'],
         }),
-
-
-        // Update feedback status (admin only)
+// Update feedback status (admin only)
         updateFeedbackStatus: builder.mutation<
             IFeedback,
             { id: string; status: IFeedback['status'] }
@@ -74,6 +72,8 @@ export const feedbackApi = baseApi.injectEndpoints({
             }),
             invalidatesTags: ['Feedback'],
         }),
+
+
     }),
 });
 

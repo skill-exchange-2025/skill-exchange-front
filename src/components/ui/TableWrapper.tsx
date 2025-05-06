@@ -1,18 +1,19 @@
-import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow,} from "@/components/ui/table";
+import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
 import {Input} from "@/components/ui/input";
-import {flexRender, getCoreRowModel, getFilteredRowModel, useReactTable,} from "@tanstack/react-table";
+import {ColumnDef, flexRender, getCoreRowModel, getFilteredRowModel, useReactTable} from "@tanstack/react-table";
 import {useState} from "react";
 
-interface TableWrapperProps {
-    columns: never[];
-    data: never[];
-    searchKey?: string;
+interface TableWrapperProps<TData> {
+    columns: ColumnDef<TData>[],
+    data: TData[],
+    searchKey?: string,
+    className?: string
 }
 
-export function TableWrapper({ columns, data, searchKey }: TableWrapperProps) {
+export function TableWrapper<TData>({columns, data, searchKey}: TableWrapperProps<TData>) {
     const [globalFilter, setGlobalFilter] = useState("");
 
-    const table = useReactTable({
+    const table = useReactTable<TData>({
         data,
         columns,
         state: {
