@@ -74,7 +74,7 @@ export function LandingPage() {
                 Join Skilly <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
-            <Link to="/login">
+            <Link to="/marketplace">
               <Button size="lg" variant="outline">
                 Explore Skills
               </Button>

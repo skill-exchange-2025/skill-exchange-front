@@ -1,6 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Moon, Sun, Bell } from 'lucide-react';
+import { Moon, Sun, Bell, LogOut, User } from 'lucide-react';
 import cryptoIcon from '@/assets/icons/crypto.png';
 import logoImage from '@/assets/icons/logo.png';
 import { useTheme } from '@/components/theme-provider';
@@ -329,16 +329,16 @@ export function Navbar() {
                     {/* Menu Items */}
                     <div className="p-1">
                       <DropdownMenuItem asChild className="cursor-pointer">
-                        <Link to="/user/profile">Manage Profile</Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild className="cursor-pointer">
-                        <Link to="/messaging">Messages</Link>
+                        <Link to="/user/profile" className="flex items-center">
+                          <User className="mr-2 h-4 w-4" />
+                          Manage Profile
+                        </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         onClick={handleSignOut}
-                        
-                        className="cursor-pointer text-red-500"
+                        className="cursor-pointer text-red-500 flex items-center"
                       >
+                        <LogOut className="mr-2 h-4 w-4" />
                         Sign Out
                       </DropdownMenuItem>
                     </div>
