@@ -10,6 +10,7 @@ import { SignUp } from '@/pages/auth/sign-up';
 import { ForgotPassword } from '@/pages/auth/forgot-password';
 import { Layout } from '@/components/layout/layout';
 import ProtectedRoute from '@/components/layout/ProtectedRoute';
+import PublicRoute from '@/components/layout/PublicRoute';
 import AdminRoutes from './AdminRoutes';
 import UserRoutes from './UserRoutes';
 import DashboardLayout from '@/components/layout/DashboardLayout';
@@ -25,10 +26,10 @@ import MessagingLayout from '../pages/messaging/MessagingLayout';
 import ChannelPage from '../pages/messaging/ChannelPage';
 import ChannelListPage from '../pages/messaging/ChannelListPage';
 import { CreateLesson } from '@/pages/marketplace/create-lesson';
-// Import the EditLesson component (you'll need to create this)
 import { EditLesson } from '@/pages/marketplace/edit-lesson';
 import { LessonDetail } from '@/pages/marketplace/lesson-detail';
-import ManageLessons from "@/pages/marketplace/manage-lessons.tsx";
+import ManageLessons from '@/pages/marketplace/manage-lessons.tsx';
+import { DiscoverPage } from '@/pages/discover';
 
 const router = createBrowserRouter([
   {
@@ -42,7 +43,11 @@ const router = createBrowserRouter([
         children: [
           {
             path: 'login',
-            element: <LoginForm />,
+            element: (
+              <PublicRoute>
+                <LoginForm />
+              </PublicRoute>
+            ),
           },
           { index: true, element: <LandingPage /> },
           { path: 'about', element: <About /> },
@@ -50,115 +55,129 @@ const router = createBrowserRouter([
           { path: 'help', element: <Help /> },
           { path: 'privacy', element: <Privacy /> },
           { path: 'terms', element: <Terms /> },
-          { path: 'forgot-password', element: <ForgotPassword /> },
-          { path: 'signup', element: <SignUp /> },
+          {
+            path: 'forgot-password',
+            element: (
+              <PublicRoute>
+                <ForgotPassword />
+              </PublicRoute>
+            ),
+          },
+          {
+            path: 'signup',
+            element: (
+              <PublicRoute>
+                <SignUp />
+              </PublicRoute>
+            ),
+          },
           {
             path: 'marketplace',
             element: (
-                <ProtectedRoute>
-                  <ListingTypeSelection />
-                </ProtectedRoute>
+              <ProtectedRoute>
+                <ListingTypeSelection />
+              </ProtectedRoute>
             ),
           },
           {
             path: 'marketplace/all',
             element: (
-                <ProtectedRoute>
-                  <MarketplacePage />
-                </ProtectedRoute>
+              <ProtectedRoute>
+                <MarketplacePage />
+              </ProtectedRoute>
             ),
           },
           {
             path: 'marketplace/courses',
             element: (
-                <ProtectedRoute>
-                  <MarketplacePage type="course" />
-                </ProtectedRoute>
+              <ProtectedRoute>
+                <MarketplacePage type="course" />
+              </ProtectedRoute>
             ),
           },
           {
             path: 'marketplace/online-courses',
             element: (
-                <ProtectedRoute>
-                  <MarketplacePage type="onlineCourse" />
-                </ProtectedRoute>
+              <ProtectedRoute>
+                <MarketplacePage type="onlineCourse" />
+              </ProtectedRoute>
             ),
           },
           {
             path: 'marketplace/item/:id',
             element: (
-                <ProtectedRoute>
-                  <MarketplaceItemDetail />
-                </ProtectedRoute>
+              <ProtectedRoute>
+                <MarketplaceItemDetail />
+              </ProtectedRoute>
             ),
           },
           {
             path: 'marketplace/create',
             element: (
-                <ProtectedRoute>
-                  <CreateEditMarketplaceItem />
-                </ProtectedRoute>
+              <ProtectedRoute>
+                <CreateEditMarketplaceItem />
+              </ProtectedRoute>
             ),
           },
           {
             path: 'marketplace/edit/:id',
             element: (
-                <ProtectedRoute>
-                  <CreateEditMarketplaceItem />
-                </ProtectedRoute>
+              <ProtectedRoute>
+                <CreateEditMarketplaceItem />
+              </ProtectedRoute>
             ),
           },
           {
             path: 'marketplace/transactions',
             element: (
-                <ProtectedRoute>
-                  <TransactionsPage />
-                </ProtectedRoute>
+              <ProtectedRoute>
+                <TransactionsPage />
+              </ProtectedRoute>
             ),
           },
 
           {
             path: 'marketplace/item/:id/create-lesson',
             element: (
-                <ProtectedRoute>
-                  <CreateLesson />
-                </ProtectedRoute>
+              <ProtectedRoute>
+                <CreateLesson />
+              </ProtectedRoute>
             ),
           },
           {
             path: 'marketplace/lessons/:lessonId/edit',
             element: (
-                <ProtectedRoute>
-                  <EditLesson />
-                </ProtectedRoute>
+              <ProtectedRoute>
+                <EditLesson />
+              </ProtectedRoute>
             ),
           },
-            {
-                path: 'marketplace/item/:itemId/lessons',
-                element: (
-                    <ProtectedRoute>
-                        <ManageLessons />
-                    </ProtectedRoute>
-                ),
-            },
-            {
-                path: 'marketplace/item/:itemId/lessons/:lessonId',
-                element: (
-                    <ProtectedRoute>
-                        <LessonDetail />
-                    </ProtectedRoute>
-                ),
-            },
-
-
-
-
+          {
+            path: 'marketplace/item/:itemId/lessons',
+            element: (
+              <ProtectedRoute>
+                <ManageLessons />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: 'marketplace/item/:itemId/lessons/:lessonId',
+            element: (
+              <ProtectedRoute>
+                <LessonDetail />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: '/discover',
+            element: <DiscoverPage />,
+          },
           {
             path: 'messaging',
             element: (
-                <ProtectedRoute>
-                  <MessagingLayout />
-                </ProtectedRoute>
+              <ProtectedRoute>
+                <MessagingLayout />
+              </ProtectedRoute>
             ),
             children: [
               { index: true, element: <ChannelListPage /> },
@@ -170,18 +189,18 @@ const router = createBrowserRouter([
       {
         path: 'admin',
         element: (
-            <ProtectedRoute>
-              <DashboardLayout />
-            </ProtectedRoute>
+          <ProtectedRoute>
+            <DashboardLayout />
+          </ProtectedRoute>
         ),
         children: [{ path: '*', element: <AdminRoutes /> }],
       },
       {
         path: 'user',
         element: (
-            <ProtectedRoute>
-              <UserDashboard />
-            </ProtectedRoute>
+          <ProtectedRoute>
+            <UserDashboard />
+          </ProtectedRoute>
         ),
         children: [{ path: '*', element: <UserRoutes /> }],
       },

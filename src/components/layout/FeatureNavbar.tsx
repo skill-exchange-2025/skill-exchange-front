@@ -9,6 +9,7 @@ import {
   Book,
   MessageCircle,
   Search,
+  Telescope,
 } from 'lucide-react';
 import { motion, useScroll } from 'framer-motion';
 import { useEffect, useState } from 'react';
@@ -29,7 +30,7 @@ export function FeatureNavbar() {
 
   const navItems = [
     { name: 'Home', path: '/', icon: Home },
-    { name: 'Discover', path: '/discover', icon: Search },
+    { name: 'Discover', path: '/discover', icon: Telescope },
     { name: 'Channels', path: '/messaging', icon: MessageSquare },
     { name: 'Marketplace', path: '/marketplace', icon: Store },
     { name: 'Chat', path: '/chat', icon: MessageCircle },

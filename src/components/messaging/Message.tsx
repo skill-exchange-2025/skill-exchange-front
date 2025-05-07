@@ -225,9 +225,14 @@ const Message: React.FC<MessageProps> = ({ message }) => {
       return path;
     }
 
+    // Replace backslashes with forward slashes
+    const normalizedPath = path.replace(/\\/g, '/');
+
     // Otherwise, prepend base URL
     const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-    return path.startsWith('/') ? `${baseUrl}${path}` : `${baseUrl}/${path}`;
+    return normalizedPath.startsWith('/')
+      ? `${baseUrl}${normalizedPath}`
+      : `${baseUrl}/${normalizedPath}`;
   };
 
   return (
@@ -306,9 +311,10 @@ const Message: React.FC<MessageProps> = ({ message }) => {
                             e,
                             message.attachment
                           );
-                          e.currentTarget.src =
-                            'https://via.placeholder.com/300x200?text=Image+Not+Available';
-                          e.currentTarget.onerror = null;
+                          const imgElement = e.currentTarget;
+                          // Use a local fallback image instead of placeholder.com
+                          imgElement.src = '/images/image-not-found.png';
+                          imgElement.onerror = null; // Prevent infinite loop
                         }}
                       />
                       <div className="absolute top-2 left-2">
@@ -486,10 +492,10 @@ const Message: React.FC<MessageProps> = ({ message }) => {
                       e,
                       message.attachment
                     );
-                    // If image still fails to load, use placeholder
-                    e.currentTarget.src =
-                      'https://via.placeholder.com/400x300?text=Image+Not+Available';
-                    e.currentTarget.onerror = null; // Prevent infinite loop
+                    const imgElement = e.currentTarget;
+                    // Use a local fallback image instead of placeholder.com
+                    imgElement.src = '/images/image-not-found.png';
+                    imgElement.onerror = null; // Prevent infinite loop
                   }}
                 />
               ) : isPdfAttachment() ? (
