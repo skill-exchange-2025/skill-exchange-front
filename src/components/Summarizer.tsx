@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import axios from 'axios';
 import {Toast} from '@/components/ui/toast';
+import {useNavigate, useParams} from 'react-router-dom';
 
 const API_URL = 'http://localhost:5000/api/summarize';
 
@@ -9,6 +10,8 @@ const Summarizer: React.FC = () => {
     const [summary, setSummary] = useState<string>('');
     const [loading, setLoading] = useState<boolean>(false);
     const [modelReady, setModelReady] = useState<boolean>(false);
+    const navigate = useNavigate();
+    const { itemId } = useParams<{ itemId?: string }>();
 
     useEffect(() => {
         const checkModelStatus = async () => {
@@ -16,18 +19,26 @@ const Summarizer: React.FC = () => {
                 const response = await axios.post(API_URL, { text: 'Hello' });
 
                 if (response.data.status === 'loading') {
-                    setTimeout(checkModelStatus, 2000); // Retry in 2s
+                    setTimeout(checkModelStatus, 2000);
                 } else {
                     setModelReady(true);
                 }
             } catch (err) {
                 console.warn('Model status check failed, retrying...');
-                setTimeout(checkModelStatus, 5000); // Retry in 5s
+                setTimeout(checkModelStatus, 5000);
             }
         };
 
         checkModelStatus();
     }, []);
+
+    const handleBackToLessons = () => {
+        if (itemId) {
+            navigate(`/marketplace/item/${itemId}/lessons`);
+        } else {
+            navigate('/marketplace');
+        }
+    };
 
     const summarizeText = async (text: string): Promise<void> => {
         if (!text.trim()) {
@@ -40,7 +51,7 @@ const Summarizer: React.FC = () => {
 
         try {
             setLoading(true);
-            setSummary(''); // Clear old summary
+            setSummary('');
 
             const response = await axios.post<{ summary: string; status?: string }>(API_URL, { text });
 
@@ -83,10 +94,20 @@ const Summarizer: React.FC = () => {
     return (
         <div className="rounded-lg border bg-card text-card-foreground shadow-sm w-full max-w-4xl mx-auto">
             <div className="flex flex-col space-y-1.5 p-6">
-                <h3 className="text-2xl font-semibold leading-none tracking-tight">Text Summarizer</h3>
-                <p className="text-sm text-muted-foreground">
-                    Powered by T5-small model: Enter your text below to generate a concise summary.
-                </p>
+                <div className="flex justify-between items-start">
+                    <div>
+                        <h3 className="text-2xl font-semibold leading-none tracking-tight">Text Summarizer</h3>
+                        <p className="text-sm text-muted-foreground mt-2">
+                            Powered by T5-small model: Enter your text below to generate a concise summary.
+                        </p>
+                    </div>
+                    <button
+                        onClick={handleBackToLessons}
+                        className="inline-flex items-center justify-center rounded-md text-sm font-medium bg-secondary text-secondary-foreground hover:bg-secondary/80 h-10 px-4 py-2"
+                    >
+                        ← Back to Lessons
+                    </button>
+                </div>
             </div>
             <div className="p-6 pt-0">
                 <form onSubmit={handleSubmit} className="space-y-4">
@@ -134,18 +155,26 @@ const Summarizer: React.FC = () => {
                     <div className="mt-6 border rounded-md p-4 bg-muted/50">
                         <h4 className="font-medium mb-2">Summary</h4>
                         <div className="text-sm mb-4">{summary}</div>
-                        <button
-                            className="inline-flex h-8 items-center justify-center rounded-md bg-primary px-3 text-xs font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90"
-                            onClick={() => {
-                                navigator.clipboard.writeText(summary);
-                                Toast({
-                                    title: 'Copied!',
-                                    variant: 'default'
-                                });
-                            }}
-                        >
-                            Copy to Clipboard
-                        </button>
+                        <div className="flex gap-2">
+                            <button
+                                className="inline-flex h-8 items-center justify-center rounded-md bg-primary px-3 text-xs font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90"
+                                onClick={() => {
+                                    navigator.clipboard.writeText(summary);
+                                    Toast({
+                                        title: 'Copied!',
+                                        variant: 'default'
+                                    });
+                                }}
+                            >
+                                Copy to Clipboard
+                            </button>
+                            <button
+                                onClick={handleBackToLessons}
+                                className="inline-flex h-8 items-center justify-center rounded-md bg-secondary px-3 text-xs font-medium text-secondary-foreground shadow transition-colors hover:bg-secondary/80"
+                            >
+                                Back to Lessons
+                            </button>
+                        </div>
                     </div>
                 )}
             </div>

@@ -15,7 +15,7 @@ export const feedbackApi = baseApi.injectEndpoints({
         // Get user's feedbacks
         getUserFeedbacks: builder.query({
             query: (params) => ({
-                url: '/feedback/user',
+                url: '/feedback',
                 method: 'GET',
                 params: {
                     page: params.page,

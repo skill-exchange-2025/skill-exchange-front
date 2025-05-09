@@ -11,6 +11,7 @@ import creditsReducer from './features/credits/creditsSlice';
 import channelsReducer from './features/messaging/channelsSlice';
 import lessonsReducer from './features/lessons/lessonsSlice';
 import feedbackReducer from './features/feedback/feedbackSlice';
+import dashboardReducer from './features/dashboard/dashboardSlice';
 
 const persistConfig = {
   key: 'auth',
@@ -30,7 +31,7 @@ export const store = configureStore({
     channels: channelsReducer,
     lessons: lessonsReducer,
     feedback: feedbackReducer,
-
+    dashboard: dashboardReducer
   },
   middleware: (getDefaultMiddlewares) =>
     getDefaultMiddlewares({
@@ -42,5 +43,4 @@ export const store = configureStore({
 
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
-export type LessonsStateType = RootState['lessons'];
 export const persistor = persistStore(store);

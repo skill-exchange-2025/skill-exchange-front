@@ -1,5 +1,4 @@
 import {createSlice, PayloadAction} from '@reduxjs/toolkit';
-import {RootState} from '@/redux/store';
 import {feedbackApi} from './feedbackApi';
 
 // Update the interface with all required fields
@@ -16,7 +15,8 @@ export interface IFeedback {
     updatedAt: string
 }
 
-interface FeedbackState {
+// Export the FeedbackState interface
+export interface FeedbackState {
     feedbacks: IFeedback[];
     selectedFeedback: IFeedback | null;
     loading: boolean;
@@ -50,7 +50,6 @@ const feedbackSlice = createSlice({
             .addMatcher(feedbackApi.endpoints.getSingleFeedback.matchFulfilled, (state, action) => {
                 state.selectedFeedback = action.payload;
             });
-
     },
     initialState,
     name: 'feedback',
@@ -74,10 +73,10 @@ export const {
     setError,
 } = feedbackSlice.actions;
 
-// Export selectors
-export const selectFeedbacks = (state: RootState) => state.feedback.feedbacks;
-export const selectSelectedFeedback = (state: RootState) => state.feedback.selectedFeedback;
-export const selectFeedbackLoading = (state: RootState) => state.feedback.loading;
-export const selectFeedbackError = (state: RootState) => state.feedback.error;
+// Export selectors - using type alias instead of direct import
+export const selectFeedbacks = (state: { feedback: FeedbackState }) => state.feedback.feedbacks;
+export const selectSelectedFeedback = (state: { feedback: FeedbackState }) => state.feedback.selectedFeedback;
+export const selectFeedbackLoading = (state: { feedback: FeedbackState }) => state.feedback.loading;
+export const selectFeedbackError = (state: { feedback: FeedbackState }) => state.feedback.error;
 
 export default feedbackSlice.reducer;

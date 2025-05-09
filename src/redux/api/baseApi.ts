@@ -67,6 +67,7 @@ export const baseApi = createApi({
     'Channel',
     'Message',
     'Lessons',
-    'Feedback'
+    'Feedback',
+    'DashboardStats'
   ],
 });

@@ -5,6 +5,7 @@ import {GraduationCap, Home, MessageSquare, School, Users} from 'lucide-react';
 import ProfilePage from "@/pages/user/profile/ProfilePage.tsx";
 import {UsersView} from "@/pages/user/table/UsersView";
 import {FeedbackManagement} from "@/pages/admin/feedback/FeedbackManagement.tsx";
+import AdminStatistics from "@/pages/admin/AdminStatistics.tsx";
 
 // admin.routes.tsx
 export const adminPaths: TUserPath[] = [
@@ -40,6 +41,13 @@ export const adminPaths: TUserPath[] = [
         element: <FeedbackManagement />,
         icon: <MessageSquare size={16} />,
         permissions: ["view:metrics"]
+      },
+      {
+        name: "View Statistics",
+        path: "stats",
+        element: <AdminStatistics />,
+        icon: <School size={16} />,
+        permissions: ["view:metrics"],
       },
     ],
   },

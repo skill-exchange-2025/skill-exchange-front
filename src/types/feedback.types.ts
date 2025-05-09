@@ -10,6 +10,7 @@ export interface IFeedback {
     userId: string;
     createdAt: string;
     updatedAt: string;
+
 }
 
 export interface ICreateFeedback {

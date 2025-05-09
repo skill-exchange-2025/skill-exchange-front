@@ -36,7 +36,7 @@ const usersSlice = createSlice({
 
         setSearchTerm: (state, action: PayloadAction<string>) => {
             state.filters.search = action.payload;
-            state.pagination.currentPage = 1; // Reset to first page when search changes
+            state.pagination.currentPage = 1;
         },
 
         setRoleFilter: (state, action: PayloadAction<string | null>) => {

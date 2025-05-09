@@ -7,12 +7,18 @@ import { IFeedback } from "@/types/feedback.types.ts";
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { ExclamationTriangleIcon } from '@radix-ui/react-icons';
-import {Button} from "@/components/ui/button.tsx";
+import { Button } from "@/components/ui/button.tsx";
 
 export function FeedbackManagement() {
     const { data, isLoading, error } = useGetAllFeedbacksQuery();
-    const feedbacks = (data as unknown as IFeedback[]) || [];
 
+    console.log('API Response:', data);
+    console.log('Error:', error);
+
+    // Handle nested data structure
+    const feedbacks = data?.data ? data.data :
+        Array.isArray(data) ? data :
+            [];
 
     // Enhanced loading state
     if (isLoading) {
@@ -56,12 +62,18 @@ export function FeedbackManagement() {
                 </div>
             </CardHeader>
             <CardContent>
-                <TableWrapper<IFeedback>
-                    columns={columns}
-                    data={feedbacks}
-                    searchKey="title"
-                    className="rounded-md border"
-                />
+                {feedbacks.length > 0 ? (
+                    <TableWrapper<IFeedback>
+                        columns={columns}
+                        data={feedbacks}
+                        searchKey="title"
+                        className="rounded-md border"
+                    />
+                ) : (
+                    <div className="text-center py-6 text-muted-foreground">
+                        {data ? "No feedbacks found" : "Failed to load feedbacks"}
+                    </div>
+                )}
             </CardContent>
         </Card>
     );
