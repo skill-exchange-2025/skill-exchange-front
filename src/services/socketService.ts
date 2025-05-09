@@ -6,9 +6,7 @@ import { setFriendRequests, setFriends } from '@/redux/features/friends/friendRe
 class SocketService {
    socket: Socket | null = null;
 
-   isConnected(): boolean {
-    return this.socket?.connected ?? false;
-  }
+  
   connect(token: string) {
     this.socket = io('http://localhost:5000', {
       auth: {
@@ -21,9 +19,22 @@ class SocketService {
 
   listenForPrivateMessages(callback: (message: any) => void) {
     if (this.socket) {
-      this.socket.on('newPrivateMessage', callback);
+      // Remove previous listeners before adding new ones
+      this.socket.removeAllListeners('newPrivateMessage');
+      this.socket.removeAllListeners('messageSaved');
+  
+      this.socket.on('newPrivateMessage', (message) => {
+        console.log('Received new private message:', message);
+        callback(message);
+      });
+  
+      this.socket.on('messageSaved', (message) => {
+        console.log('Message saved:', message);
+        callback(message);
+      });
     }
   }
+  
 
   stopListeningForPrivateMessages() {
     if (this.socket) {
@@ -32,13 +43,17 @@ class SocketService {
   }
 
   sendPrivateMessage(recipientId: string, content: string) {
-    if (this.socket) {
-      this.socket.emit('privateMessage', {
-        recipientId,
-        content
-      });
+    if (this.socket && this.isConnected()) {
+      console.log('Sending private message:', { recipientId, content });
+      this.socket.emit('privateMessage', { recipientId, content });
+    } else {
+      console.error('Socket not connected');
     }
   }
+  isConnected(): boolean {
+    return this.socket?.connected ?? false;
+  }
+  
 
   setupListeners() {
     if (!this.socket) return;

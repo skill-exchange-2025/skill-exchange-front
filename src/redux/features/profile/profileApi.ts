@@ -7,7 +7,7 @@ export const profileApi = baseApi.injectEndpoints({
     endpoints: (builder) => ({
         fetchProfile: builder.query<Profile,  string | undefined>({
             query: () => ({
-                url:  `/profile}`,
+                url:  `/profile`,
                 method: "GET",
             }),
         }),

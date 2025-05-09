@@ -11,6 +11,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { RootState } from '@/redux/store.ts';
 import {
   useFetchProfileQuery,
+  useGetProfileByUserIdQuery,
   useGetProfileCompletionStatusQuery,
 } from '@/redux/features/profile/profileApi.ts';
 import { setProfile } from '@/redux/features/profile/profileSlice.ts';
@@ -49,23 +50,41 @@ interface ProfileViewProps {
 export const ProfileView: React.FC<ProfileViewProps> = ({ userId }) => {
   const dispatch = useAppDispatch();
   const { profile, status, error } = useAppSelector(
-    (state: RootState) => state.profile
+    (state: RootState) => state.profile,
   );
  
   const { data: completionStatus } = useGetProfileCompletionStatusQuery();
-  // Get current user from auth state
+
   const currentUser = useAppSelector((state: RootState) => state.auth.user);
+  const isOwnProfile = !userId || userId === currentUser?._id;
 
-   const { data: fetchedProfile } = useFetchProfileQuery(userId, {
-    skip: !!profile && !userId,
+  const { data: ownProfile } = useFetchProfileQuery(undefined, {
+    skip: !isOwnProfile,
   });
+  
 
+  const { data: otherProfile } = useGetProfileByUserIdQuery(userId || '', {
+    skip: isOwnProfile || !userId,
+  });
+  const Profile = isOwnProfile ? ownProfile : otherProfile;
 
+  
+  //  const { data: fetchedProfile } = useFetchProfileQuery(userId, {
+  //   // skip: !!profile && !userId,
+  //   skip: false,
+  // });
+  
   useEffect(() => {
-    if (fetchedProfile) {
-      dispatch(setProfile(fetchedProfile));
+    if (ownProfile && isOwnProfile) {
+      dispatch(setProfile(ownProfile));
     }
-  }, [fetchedProfile, dispatch]);
+  }, [ownProfile, dispatch, isOwnProfile]);
+
+  // useEffect(() => {
+  //   if (fetchedProfile) {
+  //     dispatch(setProfile(fetchedProfile));
+  //   }
+  // }, [fetchedProfile, dispatch]);
 
   const getSocialIcon = (url: string) => {
     if (url.includes('github')) return <Github size={18} />;
@@ -193,10 +212,9 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ userId }) => {
 
   return (
     <div className="w-full max-w-6xl mx-auto px-4 py-8 space-y-6 animate-in fade-in-50">
-      {/* Profile Header Card */}
-      <Card className="overflow-hidden border-none shadow-lg">
-        {/* Profile Cover */}
-        <div className="h-32 bg-gradient-to-r from-primary/90 via-primary/70 to-primary/50 relative">
+    <Card className="overflow-hidden border-none shadow-lg">
+      <div className="h-32 bg-gradient-to-r from-primary/90 via-primary/70 to-primary/50 relative">
+        {isOwnProfile && (
           <div className="absolute bottom-0 right-0 p-4">
             <Button
               variant="ghost"
@@ -206,7 +224,8 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ userId }) => {
               <Edit size={18} />
             </Button>
           </div>
-        </div>
+        )}
+      </div>
 
         <CardContent className="p-0">
           <div className="flex flex-col md:flex-row gap-6 relative p-6">
@@ -275,6 +294,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ userId }) => {
           </div>
         </CardContent>
       </Card>
+      
 
       {/* Main Content */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

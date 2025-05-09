@@ -9,10 +9,10 @@ import { ProfileForm } from '@/components/Profile/ProfileForm';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { useCurrentProfile } from '@/redux/features/profile/profileSlice.ts';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useParams } from 'react-router-dom';
+import { useFetchProfileQuery } from '@/redux/features/profile/profileApi';
 
 // Profile skeleton component
 const ProfileSkeleton = () => {
@@ -76,10 +76,14 @@ const ProfilePage = () => {
   const error = useAppSelector(useProfileError);
   const { userId } = useParams<{ userId: string }>();
 
-  const profile = useAppSelector(useCurrentProfile);
   const currentUser = useAppSelector((state) => state.auth.user);
-
   const isOwnProfile = !userId || userId === currentUser?._id;
+
+  const { data: profile } = useFetchProfileQuery(    
+    isOwnProfile ? undefined : userId
+  );
+
+
 
   // Set tab to view when profile loads
   useEffect(() => {
