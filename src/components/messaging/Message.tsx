@@ -24,6 +24,8 @@ import {
   Eye,
   MessageCircle,
   UserCircle,
+  Loader2,
+  CornerUpLeft,
 } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import EmojiPicker, { EmojiClickData } from 'emoji-picker-react';
@@ -44,12 +46,15 @@ import {
   DialogFooter,
 } from '../ui/dialog';
 import { Badge } from '../ui/badge';
+import MessageReplyButton from './MessageReplyButton';
+import MessageReplies from './MessageReplies';
 
 interface MessageProps {
   message: MessageType;
+  onReply?: (message: MessageType) => void;
 }
 
-const Message: React.FC<MessageProps> = ({ message }) => {
+const Message: React.FC<MessageProps> = ({ message, onReply }) => {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showAttachmentPreview, setShowAttachmentPreview] = useState(false);
   const { user } = useAppSelector((state) => state.auth);
@@ -117,13 +122,23 @@ const Message: React.FC<MessageProps> = ({ message }) => {
     if (!currentChannel) return;
 
     try {
-      await deleteMessage(message._id).unwrap();
-      // Also notify via socket for real-time updates
+      // First, try the socketService approach for real-time updates
       socketService.deleteMessage(message._id, currentChannel._id);
 
-      toast.success('Message deleted', {
-        description: 'Your message has been successfully deleted',
-      });
+      // Also make a direct API call (the socket approach already includes a fallback)
+      // This dual approach increases our chances of success
+      try {
+        await deleteMessage(message._id).unwrap();
+        toast.success('Message deleted', {
+          description: 'Your message has been successfully deleted',
+        });
+      } catch (error) {
+        console.log(
+          'REST API delete call failed, but socket may still succeed:',
+          error
+        );
+        // Don't show error toast yet as socket operation might succeed
+      }
     } catch (error) {
       console.error('Failed to delete message:', error);
       toast.error('Error', {
@@ -242,8 +257,27 @@ const Message: React.FC<MessageProps> = ({ message }) => {
           isCurrentUserMessage
             ? 'hover:bg-green-50 dark:hover:bg-green-900/20 border-l-4 border-green-400 dark:border-green-600'
             : 'hover:bg-gray-50 dark:hover:bg-gray-800'
+        } ${
+          message.isReply
+            ? 'ml-4 border-l-2 border-gray-200 dark:border-gray-700'
+            : ''
         }`}
       >
+        {/* Show reply preview if this is a reply */}
+        {message.isReply && message.replyPreview && (
+          <div className="flex items-center mb-2 text-xs text-gray-500 dark:text-gray-400">
+            <CornerUpLeft size={12} className="mr-1" />
+            <span>Reply to </span>
+            <span className="font-medium ml-1">
+              {message.replyPreview.senderName}
+            </span>
+            <span className="mx-1">:</span>
+            <span className="truncate max-w-[200px]">
+              {message.replyPreview.content}
+            </span>
+          </div>
+        )}
+
         <div className="flex gap-3">
           <Avatar
             className={`h-10 w-10 ring-2 ${
@@ -298,7 +332,28 @@ const Message: React.FC<MessageProps> = ({ message }) => {
                     : undefined
                 }
               >
-                {isImageAttachment() ? (
+                {/* Show loading state for pending attachments */}
+                {message.attachment.isPending ? (
+                  <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+                    <div className="flex items-center">
+                      <div className="p-3 rounded-full bg-gray-100 dark:bg-gray-700 mr-4">
+                        <Loader2
+                          size={24}
+                          className="animate-spin text-gray-500"
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-medium truncate text-gray-800 dark:text-gray-200">
+                          {message.attachment?.originalname ||
+                            'Uploading attachment...'}
+                        </div>
+                        <div className="text-xs text-gray-500 mt-1">
+                          Uploading...
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : isImageAttachment() ? (
                   <div className="rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 shadow-sm">
                     <div className="relative">
                       <img
@@ -434,6 +489,11 @@ const Message: React.FC<MessageProps> = ({ message }) => {
               </PopoverContent>
             </Popover>
 
+            {/* Reply button */}
+            {onReply && (
+              <MessageReplyButton message={message} onReply={onReply} />
+            )}
+
             {/* Message Options (Delete, etc.) - Only for user's own messages */}
             {isCurrentUserMessage && (
               <DropdownMenu>
@@ -464,6 +524,11 @@ const Message: React.FC<MessageProps> = ({ message }) => {
           </div>
         </div>
       </div>
+
+      {/* Show replies if this message has any */}
+      {!message.isReply && (message.replyCount || 0) > 0 && (
+        <MessageReplies message={message} />
+      )}
 
       {/* File Preview Dialog */}
       {message.attachment && (

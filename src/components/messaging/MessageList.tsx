@@ -17,10 +17,17 @@ import {
 import { Message as MessageType, Channel } from '../../types/channel';
 import Message from './Message';
 import SystemMessage from './SystemMessage';
-import { Loader2, MessageSquare, ArrowDown } from 'lucide-react';
+import {
+  Loader2,
+  MessageSquare,
+  ArrowDown,
+  CornerUpLeft,
+  X,
+} from 'lucide-react';
 import { Button } from '../ui/button';
 import { format } from 'date-fns';
 import socketService from '../../services/socket.service';
+import MessageInput from './MessageInput';
 
 interface MessageListProps {
   channelId: string;
@@ -47,6 +54,7 @@ const MessageList: React.FC<MessageListProps> = ({ channelId }) => {
   const [typingUsers, setTypingUsers] = useState<Set<string>>(new Set());
   const [scrollDebounceTimeout, setScrollDebounceTimeout] =
     useState<NodeJS.Timeout | null>(null);
+  const [replyingTo, setReplyingTo] = useState<MessageType | null>(null);
 
   // Reset pagination when channelId changes
   useEffect(() => {
@@ -223,6 +231,23 @@ const MessageList: React.FC<MessageListProps> = ({ channelId }) => {
     }
   };
 
+  // Handle replying to a message
+  const handleReply = (message: MessageType) => {
+    setReplyingTo(message);
+    // Scroll down to the message composer
+    setTimeout(() => {
+      const composer = document.getElementById('message-composer');
+      if (composer) {
+        composer.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 100);
+  };
+
+  // Cancel replying
+  const handleCancelReply = () => {
+    setReplyingTo(null);
+  };
+
   // Prepare messages with grouping by sender and date
   const messageElements = useMemo(() => {
     // Create a merged array of regular and system messages
@@ -298,7 +323,13 @@ const MessageList: React.FC<MessageListProps> = ({ channelId }) => {
           );
         } else {
           const msg = item.message as MessageType;
-          elements.push(<Message key={`msg-${msg._id}`} message={msg} />);
+          elements.push(
+            <Message
+              key={`msg-${msg._id}`}
+              message={msg}
+              onReply={handleReply}
+            />
+          );
         }
       });
     });
@@ -311,13 +342,10 @@ const MessageList: React.FC<MessageListProps> = ({ channelId }) => {
     );
   }, [messages, systemMessages]);
 
-  
-
- 
-
   // Listen for socket events and custom DOM events (join/leave)
   useEffect(() => {
-  
+    // Join the channel via socket service when component mounts
+    socketService.joinChannel(channelId);
 
     // Handle typing events
     const handleTyping = (event: CustomEvent) => {
@@ -342,11 +370,30 @@ const MessageList: React.FC<MessageListProps> = ({ channelId }) => {
       }
     };
 
+    // Handle message deleted by other user event
+    const handleMessageDeletedByOther = (event: CustomEvent) => {
+      const data = event.detail;
+      console.log('🗑️ MessageList received messageDeletedByOther event:', data);
+      // No need to handle here as the Redux store is already updated by the socket service
+      // Just scroll to maintain good UX if needed
+
+      // Force update scroll position after message is removed
+      setTimeout(() => {
+        if (isScrolledToBottom && messagesContainerRef.current) {
+          scrollToBottom();
+        }
+      }, 100);
+    };
+
     // Add event listeners for typing
     document.addEventListener('userTyping', handleTyping as EventListener);
     document.addEventListener(
       'userStoppedTyping',
       handleStopTyping as EventListener
+    );
+    document.addEventListener(
+      'messageDeletedByOther',
+      handleMessageDeletedByOther as EventListener
     );
 
     // Handle user join event
@@ -442,6 +489,10 @@ const MessageList: React.FC<MessageListProps> = ({ channelId }) => {
         handleStopTyping as EventListener
       );
       document.removeEventListener(
+        'messageDeletedByOther',
+        handleMessageDeletedByOther as EventListener
+      );
+      document.removeEventListener(
         'userJoinedChannel',
         handleUserJoined as EventListener
       );
@@ -496,7 +547,7 @@ const MessageList: React.FC<MessageListProps> = ({ channelId }) => {
           <div className="pb-4 space-y-4">
             {messageElements}
             {typingUsers.size > 0 && (
-              <div className="flex items-center gap-2 p-2 bg-muted/20 rounded-lg animate-pulse">
+              <div className="flex items-center gap-2 p-2 bg-muted/20 rounded-lg">
                 <div className="flex space-x-1">
                   <div
                     className="h-2 w-2 bg-primary rounded-full animate-bounce"
@@ -536,6 +587,15 @@ const MessageList: React.FC<MessageListProps> = ({ channelId }) => {
           </Button>
         </div>
       )}
+
+      {/* Pass the replyingTo message to MessageInput */}
+      <div id="message-composer">
+        <MessageInput
+          channelId={channelId}
+          replyingTo={replyingTo}
+          onCancelReply={handleCancelReply}
+        />
+      </div>
     </div>
   );
 };
