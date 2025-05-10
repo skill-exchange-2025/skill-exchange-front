@@ -63,21 +63,11 @@ const ChannelDetails: React.FC<ChannelDetailsProps> = ({
       toast.success('Joined channel', {
         description: `You've successfully joined #${channel.name}`,
       });
-      // Notify other members via socket
+      // Notify other members via socket - this will trigger the userJoinedChannel event from the server
       socketService.joinChannel(channel._id);
 
-      // Manually trigger the system message event
-      const joinEvent = new CustomEvent('userJoinedChannel', {
-        detail: {
-          channelId: channel._id,
-          user: {
-            _id: user?._id || '',
-            name: user?.name || 'Unknown User',
-          },
-        },
-      });
-
-      document.dispatchEvent(joinEvent);
+      // Remove manual triggering of system message as it causes duplication
+      // The server will emit userJoinedChannel event which will be handled automatically
     } catch (error) {
       console.error('Failed to join channel:', error);
       toast.error('Error', {
@@ -85,7 +75,6 @@ const ChannelDetails: React.FC<ChannelDetailsProps> = ({
       });
     }
   };
-
 
   const getMemberInitials = (name: string) => {
     return name
