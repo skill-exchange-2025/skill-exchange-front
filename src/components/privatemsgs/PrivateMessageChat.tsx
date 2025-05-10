@@ -7,9 +7,10 @@
     useRemoveReactionMutation,
     useMarkMessagesAsReadMutation,
     useUploadVoiceMessageMutation,
-    useSendVoiceMessageMutation
+    useSendVoiceMessageMutation,
+    useUploadFileWithMessageMutation
   } from '@/redux/features/privatemsgs/privateMessagesApi';
-  import { MoreVertical } from 'lucide-react';
+  import { MoreVertical, Paperclip } from 'lucide-react';
   import { socketService } from '@/services/socketService';
   import React, { useState, useEffect, useRef } from 'react';
   import { Mic, Square,Trash2, Edit2, X, Check, MessageSquare, Smile, Send } from 'lucide-react';
@@ -41,6 +42,7 @@
   import { useGetProfileByUserIdQuery } from '@/redux/features/profile/profileApi';
   import { Button } from 'antd';
   import { TooltipProvider } from '@radix-ui/react-tooltip';
+import { toast } from 'sonner';
 
   interface Reaction {
     type: string;
@@ -67,6 +69,9 @@
     recipientId, 
     recipientName 
   }) => {
+     const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploadFileWithMessage] = useUploadFileWithMessageMutation();
     const navigate = useNavigate();
     const getInitials = (name: string) => name.split(' ').map(n => n[0]).join('').toUpperCase();
     const [showProfilePreview, setShowProfilePreview] = useState(false);
@@ -118,6 +123,31 @@
           </Tooltip>
         );
       };
+const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0];
+  if (file) {
+    // Validate file size (10MB limit)
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('File too large', {
+        description: 'Maximum file size is 10MB'
+      });
+      return;
+    }
+
+    // Validate file type if needed
+    const allowedTypes = ['image/*', 'application/pdf', '.doc', '.docx', '.xls', '.xlsx'];
+    if (!allowedTypes.some(type => file.type.match(type))) {
+      toast.error('Invalid file type', {
+        description: 'Please select an image, PDF, or document file'
+      });
+      return;
+    }
+
+    setSelectedFile(file);
+  }
+};
+
+
       const ProfilePreviewDialog = () => (
         <Dialog open={showProfilePreview} onOpenChange={setShowProfilePreview}>
           <DialogContent className="max-w-3xl">
@@ -383,11 +413,65 @@
     }
   };
 
-  const handleSendMessage = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!message.trim()) return;
+  // const handleSendMessage = async (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   if (!message.trim()) return;
 
-    try {
+  //   try {
+  //     await sendMessage({
+  //       recipientId,
+  //       content: message,
+  //       replyTo: replyTo?._id
+  //     }).unwrap();
+      
+  //     socketService.sendPrivateMessage(recipientId, message);
+  //     setMessage('');
+  //     setReplyTo(null);
+      
+  //     // Add scroll after sending
+  //     setTimeout(scrollToBottom, 100);
+  //   } catch (error) {
+  //     console.error('Failed to send message:', error);
+  //   }
+  // };
+const handleSendMessage = async (e: React.FormEvent) => {
+  e.preventDefault();
+  if (!message.trim() && !selectedFile) return;
+
+  try {
+    if (selectedFile) {
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+      formData.append('recipientId', recipientId);
+      if (message.trim()) {
+        formData.append('content', message);
+      }
+      if (replyTo?._id) {
+        formData.append('replyTo', replyTo._id);
+      }
+
+      const result = await uploadFileWithMessage(formData).unwrap();
+      
+      // Emit socket event for real-time updates
+      socketService.socket?.emit('newPrivateMessage', {
+        recipientId,
+        content: message.trim() || '',
+        attachment: {
+          filename: selectedFile.name,
+          originalname: selectedFile.name,
+          mimetype: selectedFile.type,
+          size: selectedFile.size,
+          path: result.attachment?.path
+        }
+      });
+
+      // Clear file selection
+      setSelectedFile(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    } else if (message.trim()) {
+      // Send regular message
       await sendMessage({
         recipientId,
         content: message,
@@ -395,15 +479,20 @@
       }).unwrap();
       
       socketService.sendPrivateMessage(recipientId, message);
-      setMessage('');
-      setReplyTo(null);
-      
-      // Add scroll after sending
-      setTimeout(scrollToBottom, 100);
-    } catch (error) {
-      console.error('Failed to send message:', error);
     }
-  };
+
+    // Clear message input and reply
+    setMessage('');
+    setReplyTo(null);
+    
+    setTimeout(scrollToBottom, 100);
+  } catch (error) {
+    console.error('Failed to send message:', error);
+    toast.error('Failed to send message', {
+      description: error instanceof Error ? error.message : 'Unknown error occurred'
+    });
+  }
+};
 
   const handleReply = (msg: PrivateMessage) => {
     setReplyTo({
@@ -551,30 +640,26 @@
       return () => clearTimeout(timeoutId);
     }, []); // Run once on mount
     
-    useEffect(() => {
-      const handleNewMessage = (message: PrivateMessage) => {
-        if (
-          message &&
-          message.content &&
-          (message.sender._id === recipientId || message.recipient._id === recipientId)
-        ) {
-          setLocalMessages(prev => [...prev, message]);
-          scrollToBottom();
-        }
-      };
-    
-      socketService.socket?.on('newPrivateMessage', handleNewMessage);
-      socketService.socket?.on('messageSaved', handleNewMessage);
-    
-      return () => {
-        socketService.socket?.off('newPrivateMessage', handleNewMessage);
-        socketService.socket?.off('messageSaved', handleNewMessage);
-      };
-    }, [recipientId]);
-    
-    
+useEffect(() => {
+  const handleNewMessage = (message: PrivateMessage) => {
+    if (
+      message &&
+      (message.content || message.attachment) &&
+      (message.sender._id === recipientId || message.recipient._id === recipientId)
+    ) {
+      setLocalMessages(prev => [...prev, message]);
+      scrollToBottom();
+    }
+  };
 
+  socketService.socket?.on('newPrivateMessage', handleNewMessage);
+  socketService.socket?.on('messageSaved', handleNewMessage);
 
+  return () => {
+    socketService.socket?.off('newPrivateMessage', handleNewMessage);
+    socketService.socket?.off('messageSaved', handleNewMessage);
+  };
+}, [recipientId]);
 
 
 
@@ -604,39 +689,44 @@
       } mb-4`}
     >
       <div className="flex items-start gap-2 max-w-[70%]">
+
   {msg.sender._id === recipientId && (
     <ProfilePreviewTooltip userId={msg.sender._id}>
-      <Avatar 
-        className="h-8 w-8 cursor-pointer hover:ring-2 hover:ring-primary transition-all"
-        onClick={() => handleProfileClick(msg.sender._id)}
-      >
-        <AvatarImage 
-          src={msg.sender.avatarUrl 
-            ? `http://localhost:5000${msg.sender.avatarUrl}`
-            : undefined}
-          alt={msg.sender.name} 
-        />
-        <AvatarFallback>{getInitials(msg.sender.name)}</AvatarFallback>
-      </Avatar>
-    </ProfilePreviewTooltip>
+    <Avatar 
+      className="h-8 w-8 cursor-pointer hover:ring-2 hover:ring-primary transition-all"
+      onClick={() => handleProfileClick(msg.sender._id)}
+    >
+      <AvatarImage 
+        src={msg.sender.avatarUrl 
+          ? `http://localhost:5000${msg.sender.avatarUrl}`
+          : undefined}
+        alt={msg.sender.name} 
+      />
+      <AvatarFallback>{getInitials(msg.sender.name)}</AvatarFallback>
+    </Avatar>
+  </ProfilePreviewTooltip>
   )}
+  
 
-  {msg.sender._id !== recipientId && (
-    <ProfilePreviewTooltip userId={msg.sender._id}>
-      <Avatar 
-        className="h-8 w-8 cursor-pointer hover:ring-2 hover:ring-primary transition-all"
-        onClick={() => handleProfileClick(msg.sender._id)}
-      >
-        <AvatarImage 
-          src={msg.sender.avatarUrl 
+{msg.sender._id !== currentUserId && (
+  <ProfilePreviewTooltip userId={msg.sender._id}>
+    <Avatar
+      className="h-8 w-8 cursor-pointer hover:ring-2 hover:ring-primary transition-all"
+      onClick={() => handleProfileClick(msg.sender._id)}
+    >
+      <AvatarImage
+        src={
+          msg.sender.avatarUrl
             ? `http://localhost:5000${msg.sender.avatarUrl}`
-            : undefined}
-          alt={msg.sender.name} 
-        />
-        <AvatarFallback>{getInitials(msg.sender.name)}</AvatarFallback>
-      </Avatar>
-    </ProfilePreviewTooltip>
-  )}
+            : undefined
+        }
+        alt={msg.sender.name}
+      />
+      <AvatarFallback>{getInitials(msg.sender.name)}</AvatarFallback>
+    </Avatar>
+  </ProfilePreviewTooltip>
+)}
+
 
         {/* Message bubble */}
         <div
@@ -646,8 +736,12 @@
       : 'bg-blue-500 text-white rounded-tr-none'
   }`}
 >
+   <div className="text-sm font-semibold mb-1">
+    {msg.sender.name}
+  </div>
           {/* Reply content if exists */}
           {msg.replyTo && (
+            
             <div className="text-sm opacity-75 border-l-2 border-current pl-2 mb-1">
               <div className="italic">
                 {msg.replyTo.sender._id === currentUserId 
@@ -657,6 +751,28 @@
               <div className="truncate">{msg.replyTo.content}</div>
             </div>
           )}
+          
+{msg.attachment && (
+  <div className="mt-2">
+    {msg.attachment.mimetype.startsWith('image/') ? (
+      <img 
+        src={`http://localhost:5000${msg.attachment.path}`}
+        alt={msg.attachment.originalname} 
+        className="max-w-full rounded-lg"
+      />
+    ) : (
+      <a 
+        href={`http://localhost:5000${msg.attachment.path}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex items-center gap-2 text-blue-500 hover:text-blue-600"
+      >
+        <Paperclip size={16} />
+        <span className="text-sm">{msg.attachment.originalname}</span>
+      </a>
+    )}
+  </div>
+)}
 
           {/* Message content */}
           {editingMessageId === msg._id ? (
@@ -744,25 +860,25 @@
         </DropdownMenuItem>
 
         {/* Edit and Delete options - only for user's own messages */}
-        {msg.sender._id === currentUserId && (
-          <>
-            <DropdownMenuItem 
-              onClick={() => handleStartEdit(msg._id, msg.content)}
-              className="flex items-center gap-2"
-            >
-              <Edit2 size={14} />
-              Edit
-            </DropdownMenuItem>
-            
-            <DropdownMenuItem 
-              onClick={() => handleDeleteMessage(msg._id)}
-              className="flex items-center gap-2 text-red-600"
-            >
-              <Trash2 size={14} />
-              Delete
-            </DropdownMenuItem>
-          </>
-        )}
+        {msg.sender._id !== currentUserId && (
+    <Avatar
+      className="h-8 w-8 cursor-pointer hover:ring-2 hover:ring-primary transition-all"
+      onClick={() => handleProfileClick(msg.sender._id)}
+    >
+      <AvatarImage
+        src={
+          msg.sender.avatarUrl
+            ? `http://localhost:5000${msg.sender.avatarUrl}`
+            : undefined
+        }
+        alt={msg.sender.name}
+      />
+      <AvatarFallback>{getInitials(msg.sender.name)}</AvatarFallback>
+    </Avatar>
+  )}
+
+
+        
       </DropdownMenuContent>
     </DropdownMenu>
   </div>
@@ -777,20 +893,23 @@
         </div>
 
         {/* Avatar - Show only for sender's messages on the right */}
-        {msg.sender._id !== recipientId && (
-          <Avatar 
-            className="h-8 w-8 cursor-pointer hover:ring-2 hover:ring-primary transition-all"
-            onClick={() => handleProfileClick(msg.sender._id)}
-          >
-            <AvatarImage 
-              src={msg.sender.avatarUrl 
-                ? `http://localhost:5000${msg.sender.avatarUrl}`
-                : undefined}
-              alt={msg.sender.name} 
-            />
-            <AvatarFallback>{getInitials(msg.sender.name)}</AvatarFallback>
-          </Avatar>
-        )}
+       {msg.sender._id !== recipientId && (
+ <Avatar 
+  className="h-8 w-8 cursor-pointer hover:ring-2 hover:ring-primary transition-all"
+  onClick={() => handleProfileClick(msg.sender._id)}
+>
+  <AvatarImage 
+    src={msg.sender.avatarUrl 
+      ? `http://localhost:5000${msg.sender.avatarUrl}`
+      : undefined}
+    alt={msg.sender.name} 
+  />
+  <AvatarFallback>{getInitials(msg.sender.name)}</AvatarFallback>
+</Avatar>
+
+)}
+
+
       </div>
     </div>
   ))}
@@ -885,6 +1004,21 @@
           placeholder={replyTo ? 'Type your reply...' : 'Type a message...'}
         />
         <div className="absolute right-2 flex items-center gap-2">
+          <input
+          type="file"
+          ref={fileInputRef}
+          onChange={handleFileSelect}
+          className="hidden"
+          accept="image/*,.pdf,.doc,.docx,.xls,.xlsx"
+        />
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          className="text-gray-400 hover:text-gray-600 p-1 rounded-full transition-colors"
+        >
+          <Paperclip size={16} />
+        </button>
+
           <button
             type="button"
             onClick={() => setShowEmojiPicker(!showEmojiPicker)}
@@ -894,6 +1028,26 @@
           </button>
         </div>
       </div>
+      {selectedFile && (
+      <div className="mt-2 p-2 bg-gray-100 rounded flex items-center justify-between">
+        <div className="flex items-center">
+          <Paperclip size={16} className="mr-2" />
+          <span className="text-sm truncate">{selectedFile.name}</span>
+        </div>
+        <button
+          type="button"
+          onClick={() => {
+            setSelectedFile(null);
+            if (fileInputRef.current) {
+              fileInputRef.current.value = '';
+            }
+          }}
+          className="text-gray-500 hover:text-red-500"
+        >
+          <X size={16} />
+        </button>
+      </div>
+    )}
       {showEmojiPicker && (
         <div className="absolute bottom-full right-0 mb-2 z-50">
           <EmojiPicker

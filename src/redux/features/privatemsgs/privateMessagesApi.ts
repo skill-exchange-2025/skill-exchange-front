@@ -34,6 +34,19 @@ export const privateMessagesApi = baseApi.injectEndpoints({
         method: 'PATCH',
       }),
     }),
+
+    
+uploadFileWithMessage: builder.mutation<
+  PrivateMessage,
+  FormData
+>({
+  query: (formData) => ({
+    url: '/private-messages',
+    method: 'POST',
+    body: formData,
+  }),
+  invalidatesTags: ['PrivateMessage'],
+}),
     
 
     // Get messages with a specific user
@@ -96,6 +109,7 @@ export const privateMessagesApi = baseApi.injectEndpoints({
 });
 
 export const {
+  useUploadFileWithMessageMutation,
   useUploadVoiceMessageMutation,
   useSendVoiceMessageMutation,
   useMarkMessagesAsReadMutation,

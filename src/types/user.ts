@@ -35,6 +35,14 @@ export interface FriendRequest {
   }
   export interface PrivateMessage {
     _id: string;
+     attachment?: {
+    filename: string;
+    originalname: string;
+    mimetype: string;
+    size: number;
+    path: string;
+    url?: string;
+  };
     // sender: {
     //   _id: string;
     //   name: string;
