@@ -365,20 +365,30 @@ const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     });
 
     const handleOpenEmojiPicker = (messageId: string) => {
+      console.log('Opening emoji picker for message:', messageId);
       setCurrentMessageId(messageId);
       setShowEmojiPicker(true);
     };
   
-  // In PrivateMessageChat.tsx
   const handleEmojiSelect = async (emojiObject: any) => {
     try {
       if (currentMessageId) {
-        // Use the private messages reaction mutation instead
+        // Log de l'URL complète
+        const url = `/api/private-messages/${currentMessageId}/reactions`;
+        console.log('URL de la requête:', url);
+        console.log('Données envoyées:', {
+          messageId: currentMessageId,
+          type: emojiObject.emoji
+        });
+
         const result = await addReaction({
           messageId: currentMessageId,
-          type: emojiObject.emoji  // Note: the private messages API uses 'type' instead of 'emoji'
+          type: emojiObject.emoji
         }).unwrap();
-        
+
+        console.log('Réponse du serveur:', result);
+
+        // Mise à jour optimiste des messages locaux
         setLocalMessages((prev: PrivateMessage[]) => 
           prev.map(msg => 
             msg._id === currentMessageId 
@@ -390,55 +400,63 @@ const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
                       type: emojiObject.emoji,
                       user: currentUserId || '',
                       _id: result._id 
-                    } as Reaction
+                    }
                   ]
                 }
               : msg
           )
         );
 
+        // Émettre l'événement socket
         socketService.socket?.emit('reactionAdded', {
           messageId: currentMessageId,
           type: emojiObject.emoji,
           userId: currentUserId
         });
-      } else {
-        setMessage(prev => prev + emojiObject.emoji);
+
+        setShowEmojiPicker(false);
+        setCurrentMessageId(null);
       }
-      
-      setShowEmojiPicker(false);
-      setCurrentMessageId(null);
     } catch (error) {
-      console.error('Failed to handle emoji:', error);
+      console.error('Erreur complète:', error);
+      toast.error('Échec de l\'ajout de la réaction');
     }
   };
 
-  // const handleSendMessage = async (e: React.FormEvent) => {
-  //   e.preventDefault();
-  //   if (!message.trim()) return;
+useEffect(() => {
+  // Initialiser la connexion socket
+  const initializeSocket = async () => {
+    try {
+      if (!socketService.socket?.connected) {
+        await socketService.connect(recipientId);
+        console.log('Socket connecté avec succès');
+      }
+    } catch (error) {
+      console.error('Erreur de connexion socket:', error);
+    }
+  };
 
-  //   try {
-  //     await sendMessage({
-  //       recipientId,
-  //       content: message,
-  //       replyTo: replyTo?._id
-  //     }).unwrap();
-      
-  //     socketService.sendPrivateMessage(recipientId, message);
-  //     setMessage('');
-  //     setReplyTo(null);
-      
-  //     // Add scroll after sending
-  //     setTimeout(scrollToBottom, 100);
-  //   } catch (error) {
-  //     console.error('Failed to send message:', error);
-  //   }
-  // };
+  initializeSocket();
+
+  // Nettoyage lors du démontage du composant
+  return () => {
+    if (socketService.socket?.connected) {
+      socketService.socket.disconnect();
+    }
+  };
+}, []); // Exécuter une seule fois au montage
+
 const handleSendMessage = async (e: React.FormEvent) => {
   e.preventDefault();
   if (!message.trim() && !selectedFile) return;
 
   try {
+    // Vérifier la connexion socket avant d'envoyer
+    if (!socketService.socket?.connected) {
+      console.log('Tentative de reconnexion socket...');
+      await socketService.connect(recipientId);
+    }
+
     if (selectedFile) {
       const formData = new FormData();
       formData.append('file', selectedFile);
@@ -452,36 +470,36 @@ const handleSendMessage = async (e: React.FormEvent) => {
 
       const result = await uploadFileWithMessage(formData).unwrap();
       
-      // Emit socket event for real-time updates
-      socketService.socket?.emit('newPrivateMessage', {
-        recipientId,
-        content: message.trim() || '',
-        attachment: {
-          filename: selectedFile.name,
-          originalname: selectedFile.name,
-          mimetype: selectedFile.type,
-          size: selectedFile.size,
-          path: result.attachment?.path
-        }
-      });
+      if (socketService.socket?.connected) {
+        socketService.socket.emit('newPrivateMessage', {
+          recipientId,
+          content: message.trim() || '',
+          attachment: {
+            filename: selectedFile.name,
+            originalname: selectedFile.name,
+            mimetype: selectedFile.type,
+            size: selectedFile.size,
+            path: result.attachment?.path
+          }
+        });
+      }
 
-      // Clear file selection
       setSelectedFile(null);
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
     } else if (message.trim()) {
-      // Send regular message
       await sendMessage({
         recipientId,
         content: message,
         replyTo: replyTo?._id
       }).unwrap();
       
-      socketService.sendPrivateMessage(recipientId, message);
+      if (socketService.socket?.connected) {
+        socketService.sendPrivateMessage(recipientId, message);
+      }
     }
 
-    // Clear message input and reply
     setMessage('');
     setReplyTo(null);
     
@@ -572,17 +590,37 @@ const handleSendMessage = async (e: React.FormEvent) => {
 
 
   useEffect(() => {
-    const handleReactionAdded = (updatedMessage: PrivateMessage) => {
+    const handleReactionAdded = (data: { messageId: string, type: string, userId: string }) => {
       setLocalMessages(prev => 
         prev.map(msg => 
-          msg._id === updatedMessage._id ? updatedMessage : msg
+          msg._id === data.messageId 
+            ? {
+                ...msg,
+                reactions: [
+                  ...(msg.reactions || []),
+                  {
+                    type: data.type,
+                    user: data.userId,
+                    _id: Date.now().toString() // ID temporaire
+                  }
+                ]
+              }
+            : msg
         )
       );
     };
-    const handleReactionRemoved = (updatedMessage: PrivateMessage) => {
+
+    const handleReactionRemoved = (data: { messageId: string, type: string, userId: string }) => {
       setLocalMessages(prev => 
         prev.map(msg => 
-          msg._id === updatedMessage._id ? updatedMessage : msg
+          msg._id === data.messageId 
+            ? {
+                ...msg,
+                reactions: (msg.reactions || []).filter(
+                  reaction => !(reaction.type === data.type && reaction.user === data.userId)
+                )
+              }
+            : msg
         )
       );
     };
@@ -689,56 +727,35 @@ useEffect(() => {
       } mb-4`}
     >
       <div className="flex items-start gap-2 max-w-[70%]">
-
-  {msg.sender._id === recipientId && (
-    <ProfilePreviewTooltip userId={msg.sender._id}>
-    <Avatar 
-      className="h-8 w-8 cursor-pointer hover:ring-2 hover:ring-primary transition-all"
-      onClick={() => handleProfileClick(msg.sender._id)}
-    >
-      <AvatarImage 
-        src={msg.sender.avatarUrl 
-          ? `http://localhost:5000${msg.sender.avatarUrl}`
-          : undefined}
-        alt={msg.sender.name} 
-      />
-      <AvatarFallback>{getInitials(msg.sender.name)}</AvatarFallback>
-    </Avatar>
-  </ProfilePreviewTooltip>
-  )}
-  
-
-{msg.sender._id !== currentUserId && (
-  <ProfilePreviewTooltip userId={msg.sender._id}>
-    <Avatar
-      className="h-8 w-8 cursor-pointer hover:ring-2 hover:ring-primary transition-all"
-      onClick={() => handleProfileClick(msg.sender._id)}
-    >
-      <AvatarImage
-        src={
-          msg.sender.avatarUrl
-            ? `http://localhost:5000${msg.sender.avatarUrl}`
-            : undefined
-        }
-        alt={msg.sender.name}
-      />
-      <AvatarFallback>{getInitials(msg.sender.name)}</AvatarFallback>
-    </Avatar>
-  </ProfilePreviewTooltip>
-)}
-
+        {/* Avatar pour l'autre utilisateur */}
+        {msg.sender._id === recipientId && (
+          <ProfilePreviewTooltip userId={msg.sender._id}>
+            <Avatar 
+              className="h-8 w-8 cursor-pointer hover:ring-2 hover:ring-primary transition-all"
+              onClick={() => handleProfileClick(msg.sender._id)}
+            >
+              <AvatarImage 
+                src={msg.sender.avatarUrl 
+                  ? `http://localhost:5000${msg.sender.avatarUrl}`
+                  : undefined}
+                alt={msg.sender.name} 
+              />
+              <AvatarFallback>{getInitials(msg.sender.name)}</AvatarFallback>
+            </Avatar>
+          </ProfilePreviewTooltip>
+        )}
 
         {/* Message bubble */}
         <div
-  className={`relative p-3 pr-16 rounded-lg ${  // Add pr-16 for more space on the right
-    msg.sender._id === recipientId
-      ? 'bg-gray-100 dark:bg-gray-800 rounded-tl-none'
-      : 'bg-blue-500 text-white rounded-tr-none'
-  }`}
->
-   <div className="text-sm font-semibold mb-1">
-    {msg.sender.name}
-  </div>
+          className={`relative p-3 pr-16 rounded-lg ${
+            msg.sender._id === recipientId
+              ? 'bg-gray-100 dark:bg-gray-800 rounded-tl-none'
+              : 'bg-blue-500 text-white rounded-tr-none'
+          }`}
+        >
+          <div className="text-sm font-semibold mb-1">
+            {msg.sender.name}
+          </div>
           {/* Reply content if exists */}
           {msg.replyTo && (
             
@@ -860,25 +877,24 @@ useEffect(() => {
         </DropdownMenuItem>
 
         {/* Edit and Delete options - only for user's own messages */}
-        {msg.sender._id !== currentUserId && (
-    <Avatar
-      className="h-8 w-8 cursor-pointer hover:ring-2 hover:ring-primary transition-all"
-      onClick={() => handleProfileClick(msg.sender._id)}
-    >
-      <AvatarImage
-        src={
-          msg.sender.avatarUrl
-            ? `http://localhost:5000${msg.sender.avatarUrl}`
-            : undefined
-        }
-        alt={msg.sender.name}
-      />
-      <AvatarFallback>{getInitials(msg.sender.name)}</AvatarFallback>
-    </Avatar>
-  )}
-
-
-        
+        {msg.sender._id === currentUserId && (
+          <>
+            <DropdownMenuItem 
+              onClick={() => handleStartEdit(msg._id, msg.content)}
+              className="flex items-center gap-2"
+            >
+              <Edit2 size={14} />
+              Edit
+            </DropdownMenuItem>
+            <DropdownMenuItem 
+              onClick={() => handleDeleteMessage(msg._id)}
+              className="flex items-center gap-2 text-red-600"
+            >
+              <Trash2 size={14} />
+              Delete
+            </DropdownMenuItem>
+          </>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   </div>
@@ -892,24 +908,23 @@ useEffect(() => {
           />
         </div>
 
-        {/* Avatar - Show only for sender's messages on the right */}
-       {msg.sender._id !== recipientId && (
- <Avatar 
-  className="h-8 w-8 cursor-pointer hover:ring-2 hover:ring-primary transition-all"
-  onClick={() => handleProfileClick(msg.sender._id)}
->
-  <AvatarImage 
-    src={msg.sender.avatarUrl 
-      ? `http://localhost:5000${msg.sender.avatarUrl}`
-      : undefined}
-    alt={msg.sender.name} 
-  />
-  <AvatarFallback>{getInitials(msg.sender.name)}</AvatarFallback>
-</Avatar>
-
-)}
-
-
+        {/* Avatar pour l'utilisateur actuel */}
+        {msg.sender._id === currentUserId && (
+          <ProfilePreviewTooltip userId={msg.sender._id}>
+            <Avatar 
+              className="h-8 w-8 cursor-pointer hover:ring-2 hover:ring-primary transition-all"
+              onClick={() => handleProfileClick(msg.sender._id)}
+            >
+              <AvatarImage 
+                src={msg.sender.avatarUrl 
+                  ? `http://localhost:5000${msg.sender.avatarUrl}`
+                  : undefined}
+                alt={msg.sender.name} 
+              />
+              <AvatarFallback>{getInitials(msg.sender.name)}</AvatarFallback>
+            </Avatar>
+          </ProfilePreviewTooltip>
+        )}
       </div>
     </div>
   ))}
