@@ -6,7 +6,10 @@ export enum ListingType {
   COURSE = 'course',
   ONLINE_COURSE = 'onlineCourse',
 }
-
+export interface Lesson {
+  title: string;
+  description?: string;
+}
 // Define marketplace types
 export interface MarketplaceItem {
   _id?: string;
@@ -29,7 +32,7 @@ export interface MarketplaceItem {
   imagesUrl?: string[];
   views?: number;
   __v?: number;
-
+  lessons?: Lesson[];
   // Course specific fields (static content)
   contentUrls?: string[];
   contentDescription?: string;
