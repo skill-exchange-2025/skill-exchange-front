@@ -25,6 +25,8 @@ import { TransactionsPage } from '@/pages/marketplace/transactions';
 import MessagingLayout from '../pages/messaging/MessagingLayout';
 import ChannelPage from '../pages/messaging/ChannelPage';
 import ChannelListPage from '../pages/messaging/ChannelListPage';
+import CodingRoomPage from "@/pages/CodingRooms/CodingRoomPage";
+import CreateRoomPage from "@/pages/CodingRooms/CreateRoomPage.tsx";
 import { CreateLesson } from '@/pages/marketplace/create-lesson';
 import { EditLesson } from '@/pages/marketplace/edit-lesson';
 import { LessonDetail } from '@/pages/marketplace/lesson-detail';
@@ -187,14 +189,19 @@ const router = createBrowserRouter([
         ],
       },
       {
+        path: "coding-rooms/create",
+        element: <CreateRoomPage />,
+      },
+      {
         path: 'admin',
         element: (
           <ProtectedRoute>
             <DashboardLayout />
           </ProtectedRoute>
         ),
-        children: [{ path: '*', element: <AdminRoutes /> }],
+        children: [{ path: '*', element: <AdminRoutes /> },{ path: "coding-rooms/:roomId", element: <CodingRoomPage /> },],
       },
+      { path: "coding-rooms/:roomId", element: <CodingRoomPage /> },
       {
         path: 'user',
         element: (
@@ -202,7 +209,7 @@ const router = createBrowserRouter([
             <UserDashboard />
           </ProtectedRoute>
         ),
-        children: [{ path: '*', element: <UserRoutes /> }],
+        children: [{ path: '*', element: <UserRoutes /> },{ path: "coding-rooms/:roomId", element: <CodingRoomPage /> },],
       },
     ],
   },

@@ -1,9 +1,11 @@
 // admin.routes.tsx
 import AdminDashboard from "../pages/admin/AdminDashboard";
 import { TUserPath } from "@/types";
-import { Home, Users, GraduationCap, School } from 'lucide-react';
+import { Home, Users, GraduationCap, School, Code } from 'lucide-react';
 import ProfilePage from "@/pages/user/profile/ProfilePage.tsx";
 import { UsersView } from "@/pages/user/table/UsersView";
+import RoomsList from "@/pages/CodingRooms/RoomsList";
+import CreateRoomPage from "@/pages/CodingRooms/CreateRoomPage";
 
 // admin.routes.tsx
 export const adminPaths: TUserPath[] = [
@@ -35,4 +37,29 @@ export const adminPaths: TUserPath[] = [
       },
     ],
   },
+  {
+    name: "Coding Rooms",
+    icon: <Code size={16} />,
+    permissions: ["view:metrics"],
+    children: [
+      {
+        name: "All Rooms",
+        path: "coding-rooms",
+        element: <RoomsList />,
+        icon: <Code size={16} />,
+        permissions: ["view:metrics"],
+      },
+      {
+        name: "Create Room",
+        path: "coding-rooms/create",
+        element: <CreateRoomPage />,
+        icon: <Code size={16} />,
+        permissions: ["view:metrics"],
+      },
+    ],
+  },
 ];
+
+// This is a dynamic route that will be handled separately in AdminRoutes.tsx
+// It's not included directly in adminPaths because it has a dynamic parameter
+// coding-rooms/:roomId -> CodingRoomPage

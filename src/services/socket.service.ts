@@ -5,7 +5,7 @@ import {
   updateMessage,
   removeMessage,
 } from '../redux/features/messaging/channelsSlice';
-import { Message, Channel } from '../types/channel';
+import { Message } from '../types/channel';
 
 class SocketService {
   private socket: Socket | null = null;

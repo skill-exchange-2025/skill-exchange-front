@@ -17,6 +17,7 @@ import usersReducer from './features/users/usersSlice.ts';
 import marketplaceReducer from './features/marketplace/marketplaceSlice';
 import creditsReducer from './features/credits/creditsSlice';
 import channelsReducer from './features/messaging/channelsSlice';
+import codingRoomsReducer from './features/codingRoom/codingRoomsSlice';
 import lessonsReducer from './features/lessons/lessonsSlice';
 
 const persistConfig = {
@@ -28,6 +29,7 @@ const persistedAuthReducer = persistReducer(persistConfig, authReducer);
 
 export const store = configureStore({
   reducer: {
+    codingRooms: codingRoomsReducer,
     [baseApi.reducerPath]: baseApi.reducer,
     profile: profileReducer,
     users: usersReducer,
