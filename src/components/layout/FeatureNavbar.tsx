@@ -20,6 +20,7 @@ export function FeatureNavbar() {
 
   const navItems = [
     { name: 'Home', path: '/', icon: Home },
+    { name: 'Discover', path: '/discover', icon: Telescope },
     { name: 'Channels', path: '/messaging', icon: MessageSquare },
     { name: 'Marketplace', path: '/marketplace', icon: Store },
     { name: 'Chat', path: '/chat', icon: MessageCircle },
@@ -75,7 +76,7 @@ export function FeatureNavbar() {
 
             {isActive && (
               <motion.div
-                className="absolute h-0.5 bg-gradient-to-r from-primary/40 via-primary to-primary/40 rounded-full -bottom-1 w-full"
+                className="absolute h-0.5 bg-gradient-to-r from-green-400/40 via-green-400 to-green-400/40 rounded-full -bottom-1 w-full shadow-[0_0_5px_rgba(74,222,128,0.5),0_0_10px_rgba(74,222,128,0.3)]"
                 layoutId="activeFeatureNav"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}

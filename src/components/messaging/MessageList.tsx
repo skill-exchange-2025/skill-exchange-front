@@ -9,6 +9,7 @@ import {ArrowDown, Loader2, MessageSquare} from 'lucide-react';
 import {Button} from '../ui/button';
 import {format} from 'date-fns';
 import socketService from '../../services/socket.service';
+import MessageInput from './MessageInput';
 
 interface MessageListProps {
   channelId: string;
@@ -32,6 +33,10 @@ const MessageList: React.FC<MessageListProps> = ({ channelId }) => {
       channelId: string;
     }[]
   >([]);
+  const [typingUsers, setTypingUsers] = useState<Set<string>>(new Set());
+  const [scrollDebounceTimeout, setScrollDebounceTimeout] =
+    useState<NodeJS.Timeout | null>(null);
+  const [replyingTo, setReplyingTo] = useState<MessageType | null>(null);
 
   // Reset pagination when channelId changes
   useEffect(() => {
@@ -54,7 +59,7 @@ const MessageList: React.FC<MessageListProps> = ({ channelId }) => {
   );
 
   // Check if scrolled to bottom
-  const checkScrollPosition = () => {
+  const checkScrollPosition = useCallback(() => {
     if (!messagesContainerRef.current) return;
 
     const { scrollTop, scrollHeight, clientHeight } =
@@ -62,10 +67,10 @@ const MessageList: React.FC<MessageListProps> = ({ channelId }) => {
     // Consider "scrolled to bottom" if within 50px of the bottom
     const atBottom = scrollHeight - scrollTop - clientHeight < 50;
     setIsScrolledToBottom(atBottom);
-  };
+  }, []);
 
-  // Handle infinite scrolling
-  const handleScroll = () => {
+  // Debounced scroll handler to reduce event frequency
+  const handleScroll = useCallback(() => {
     if (!messagesContainerRef.current) return;
 
     // Set that user has manually scrolled
@@ -73,21 +78,48 @@ const MessageList: React.FC<MessageListProps> = ({ channelId }) => {
       setUserHasScrolled(true);
     }
 
-    const { scrollTop } = messagesContainerRef.current;
-
-    // When user scrolls near the top of the container, load more messages
-    if (
-      scrollTop < 100 &&
-      !isFetching &&
-      data &&
-      messages.length < data.total
-    ) {
-      dispatch(incrementPage());
+    // Clear existing timeout
+    if (scrollDebounceTimeout) {
+      clearTimeout(scrollDebounceTimeout);
     }
 
-    // Update scroll position state
-    checkScrollPosition();
-  };
+    // Set a new timeout
+    const timeout = setTimeout(() => {
+      const { scrollTop } = messagesContainerRef.current!;
+
+      // When user scrolls near the top of the container, load more messages
+      if (
+        scrollTop < 100 &&
+        !isFetching &&
+        data &&
+        messages.length < data.total
+      ) {
+        dispatch(incrementPage());
+      }
+
+      // Update scroll position state
+      checkScrollPosition();
+    }, 150); // 150ms debounce time
+
+    setScrollDebounceTimeout(timeout);
+  }, [
+    userHasScrolled,
+    isFetching,
+    data,
+    messages.length,
+    scrollDebounceTimeout,
+    dispatch,
+    checkScrollPosition,
+  ]);
+
+  // Clear timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (scrollDebounceTimeout) {
+        clearTimeout(scrollDebounceTimeout);
+      }
+    };
+  }, [scrollDebounceTimeout]);
 
   // Update messages when data changes
   useEffect(() => {
@@ -140,8 +172,12 @@ const MessageList: React.FC<MessageListProps> = ({ channelId }) => {
   const groupMessagesByDate = (messages: MessageType[]) => {
     const groups: { [key: string]: MessageType[] } = {};
 
+    // Create a map to track message IDs and prevent duplicates
+    const processedMessageIds = new Set<string>();
+
     [...messages].reverse().forEach((message) => {
       if (!message.createdAt) return; // Skip messages without a valid createdAt
+      if (processedMessageIds.has(message._id)) return; // Skip duplicate messages
 
       const date = new Date(message.createdAt);
       if (isNaN(date.getTime())) return; // Skip invalid dates
@@ -153,6 +189,7 @@ const MessageList: React.FC<MessageListProps> = ({ channelId }) => {
       }
 
       groups[dateKey].push(message);
+      processedMessageIds.add(message._id); // Track this message ID
     });
 
     return groups;
@@ -174,6 +211,23 @@ const MessageList: React.FC<MessageListProps> = ({ channelId }) => {
     } else {
       return format(date, 'MMMM d, yyyy');
     }
+  };
+
+  // Handle replying to a message
+  const handleReply = (message: MessageType) => {
+    setReplyingTo(message);
+    // Scroll down to the message composer
+    setTimeout(() => {
+      const composer = document.getElementById('message-composer');
+      if (composer) {
+        composer.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 100);
+  };
+
+  // Cancel replying
+  const handleCancelReply = () => {
+    setReplyingTo(null);
   };
 
   // Prepare messages with grouping by sender and date
@@ -198,7 +252,16 @@ const MessageList: React.FC<MessageListProps> = ({ channelId }) => {
     // Group messages by date
     const messagesByDate: Record<string, any[]> = {};
 
+    // Track processed messages to prevent duplicates
+    const processedMessageIds = new Set<string>();
+
     allMessages.forEach((item) => {
+      // Skip duplicate messages (check both regular and system messages)
+      const messageId =
+        item.type === 'regular' ? item.message._id : item.message.id;
+
+      if (processedMessageIds.has(messageId)) return;
+
       const date = new Date(item.timestamp);
       const dateKey = format(date, 'yyyy-MM-dd');
 
@@ -207,6 +270,7 @@ const MessageList: React.FC<MessageListProps> = ({ channelId }) => {
       }
 
       messagesByDate[dateKey].push(item);
+      processedMessageIds.add(messageId);
     });
 
     // Create elements with date separators
@@ -233,7 +297,7 @@ const MessageList: React.FC<MessageListProps> = ({ channelId }) => {
           const sysMsg = item.message as (typeof systemMessages)[0];
           elements.push(
             <SystemMessage
-              key={sysMsg.id}
+              key={`sys-${sysMsg.id}`}
               type={sysMsg.type}
               username={sysMsg.username}
               timestamp={sysMsg.timestamp}
@@ -241,7 +305,13 @@ const MessageList: React.FC<MessageListProps> = ({ channelId }) => {
           );
         } else {
           const msg = item.message as MessageType;
-          elements.push(<Message key={msg._id} message={msg} />);
+          elements.push(
+            <Message
+              key={`msg-${msg._id}`}
+              message={msg}
+              onReply={handleReply}
+            />
+          );
         }
       });
     });
@@ -254,46 +324,59 @@ const MessageList: React.FC<MessageListProps> = ({ channelId }) => {
     );
   }, [messages, systemMessages]);
 
-  // Load system messages from localStorage on mount
-  useEffect(() => {
-    if (channelId) {
-      const storedMessages = localStorage.getItem(
-        `systemMessages_${channelId}`
-      );
-      if (storedMessages) {
-        try {
-          const parsedMessages = JSON.parse(storedMessages);
-          setSystemMessages(parsedMessages);
-        } catch (error) {
-          console.error('Failed to parse stored system messages:', error);
-        }
-      }
-    }
-  }, [channelId]);
-
-  // Save system messages to localStorage when they change
-  useEffect(() => {
-    if (channelId && systemMessages.length > 0) {
-      localStorage.setItem(
-        `systemMessages_${channelId}`,
-        JSON.stringify(systemMessages)
-      );
-    }
-  }, [channelId, systemMessages]);
-
   // Listen for socket events and custom DOM events (join/leave)
   useEffect(() => {
-    console.log('Setting up event listeners for channel:', channelId);
+    // Join the channel via socket service when component mounts
+    socketService.joinChannel(channelId);
 
-    // Listen for socket message updates
-    socketService.listenForChannelMessages(channelId, (message) => {
-      console.log('New message received:', message);
-      if (messagesContainerRef.current && isScrolledToBottom) {
-        setTimeout(() => {
-          scrollToBottom();
-        }, 100);
+    // Handle typing events
+    const handleTyping = (event: CustomEvent) => {
+      const data = event.detail;
+      if (data.channelId === channelId) {
+        console.log(`👆 User ${data.userId} typing in channel ${channelId}`);
+        setTypingUsers((prev) => new Set(prev).add(data.userId));
       }
-    });
+    };
+
+    const handleStopTyping = (event: CustomEvent) => {
+      const data = event.detail;
+      if (data.channelId === channelId) {
+        console.log(
+          `✋ User ${data.userId} stopped typing in channel ${channelId}`
+        );
+        setTypingUsers((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete(data.userId);
+          return newSet;
+        });
+      }
+    };
+
+    // Handle message deleted by other user event
+    const handleMessageDeletedByOther = (event: CustomEvent) => {
+      const data = event.detail;
+      console.log('🗑️ MessageList received messageDeletedByOther event:', data);
+      // No need to handle here as the Redux store is already updated by the socket service
+      // Just scroll to maintain good UX if needed
+
+      // Force update scroll position after message is removed
+      setTimeout(() => {
+        if (isScrolledToBottom && messagesContainerRef.current) {
+          scrollToBottom();
+        }
+      }, 100);
+    };
+
+    // Add event listeners for typing
+    document.addEventListener('userTyping', handleTyping as EventListener);
+    document.addEventListener(
+      'userStoppedTyping',
+      handleStopTyping as EventListener
+    );
+    document.addEventListener(
+      'messageDeletedByOther',
+      handleMessageDeletedByOther as EventListener
+    );
 
     // Handle user join event
     const handleUserJoined = (event: CustomEvent) => {
@@ -305,7 +388,7 @@ const MessageList: React.FC<MessageListProps> = ({ channelId }) => {
         event.detail.user
       ) {
         console.log(
-          'Creating system message for user join:',
+          '👋 Creating system message for user join:',
           event.detail.user.name
         );
 
@@ -315,7 +398,7 @@ const MessageList: React.FC<MessageListProps> = ({ channelId }) => {
             .toString(36)
             .substring(2, 9)}`,
           type: 'join' as const,
-          username: event.detail.user.name,
+          username: event.detail.user.name || 'A user',
           timestamp: new Date().toISOString(),
           channelId: channelId,
         };
@@ -329,13 +412,6 @@ const MessageList: React.FC<MessageListProps> = ({ channelId }) => {
           );
           return updated;
         });
-
-        // Auto-scroll to bottom for system messages
-        if (isScrolledToBottom) {
-          setTimeout(() => {
-            scrollToBottom();
-          }, 100);
-        }
       }
     };
 
@@ -349,7 +425,7 @@ const MessageList: React.FC<MessageListProps> = ({ channelId }) => {
         event.detail.user
       ) {
         console.log(
-          'Creating system message for user leave:',
+          '👋 Creating system message for user leave:',
           event.detail.user.name
         );
 
@@ -359,7 +435,7 @@ const MessageList: React.FC<MessageListProps> = ({ channelId }) => {
             .toString(36)
             .substring(2, 9)}`,
           type: 'leave' as const,
-          username: event.detail.user.name,
+          username: event.detail.user.name || 'A user',
           timestamp: new Date().toISOString(),
           channelId: channelId,
         };
@@ -373,13 +449,6 @@ const MessageList: React.FC<MessageListProps> = ({ channelId }) => {
           );
           return updated;
         });
-
-        // Auto-scroll to bottom for system messages
-        if (isScrolledToBottom) {
-          setTimeout(() => {
-            scrollToBottom();
-          }, 100);
-        }
       }
     };
 
@@ -395,7 +464,16 @@ const MessageList: React.FC<MessageListProps> = ({ channelId }) => {
 
     // Clean up event listeners
     return () => {
-      console.log('Removing event listeners for channel:', channelId);
+      console.log(`🛑 Removing event listeners for channel: ${channelId}`);
+      document.removeEventListener('userTyping', handleTyping as EventListener);
+      document.removeEventListener(
+        'userStoppedTyping',
+        handleStopTyping as EventListener
+      );
+      document.removeEventListener(
+        'messageDeletedByOther',
+        handleMessageDeletedByOther as EventListener
+      );
       document.removeEventListener(
         'userJoinedChannel',
         handleUserJoined as EventListener
@@ -404,9 +482,20 @@ const MessageList: React.FC<MessageListProps> = ({ channelId }) => {
         'userLeftChannel',
         handleUserLeft as EventListener
       );
-      socketService.stopListeningForChannelMessages();
+      socketService.stopListeningForChannelMessages(channelId);
+      socketService.leaveChannel(channelId);
     };
-  }, [channelId, isScrolledToBottom, scrollToBottom]);
+  }, [channelId, dispatch]);
+
+  // Separate effect for scroll-to-bottom behavior when messages or system messages change
+  useEffect(() => {
+    // Auto-scroll to bottom for new messages if already at bottom
+    if (isScrolledToBottom) {
+      setTimeout(() => {
+        scrollToBottom();
+      }, 100);
+    }
+  }, [messages.length, systemMessages.length, isScrolledToBottom]);
 
   return (
     <div className="h-full flex flex-col">
@@ -437,7 +526,32 @@ const MessageList: React.FC<MessageListProps> = ({ channelId }) => {
             </p>
           </div>
         ) : (
-          <div className="pb-4 space-y-4">{messageElements}</div>
+          <div className="pb-4 space-y-4">
+            {messageElements}
+            {typingUsers.size > 0 && (
+              <div className="flex items-center gap-2 p-2 bg-muted/20 rounded-lg">
+                <div className="flex space-x-1">
+                  <div
+                    className="h-2 w-2 bg-primary rounded-full animate-bounce"
+                    style={{ animationDelay: '0ms' }}
+                  ></div>
+                  <div
+                    className="h-2 w-2 bg-primary rounded-full animate-bounce"
+                    style={{ animationDelay: '200ms' }}
+                  ></div>
+                  <div
+                    className="h-2 w-2 bg-primary rounded-full animate-bounce"
+                    style={{ animationDelay: '400ms' }}
+                  ></div>
+                </div>
+                <span className="text-sm text-muted-foreground">
+                  {typingUsers.size === 1
+                    ? 'Someone is typing...'
+                    : `${typingUsers.size} people are typing...`}
+                </span>
+              </div>
+            )}
+          </div>
         )}
       </div>
 
@@ -455,6 +569,15 @@ const MessageList: React.FC<MessageListProps> = ({ channelId }) => {
           </Button>
         </div>
       )}
+
+      {/* Pass the replyingTo message to MessageInput */}
+      <div id="message-composer">
+        <MessageInput
+          channelId={channelId}
+          replyingTo={replyingTo}
+          onCancelReply={handleCancelReply}
+        />
+      </div>
     </div>
   );
 };

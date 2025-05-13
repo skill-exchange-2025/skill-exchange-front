@@ -120,7 +120,7 @@ const ProfilePage = () => {
     <div className="container mx-auto py-12 px-4">
       <div className="max-w-3xl mx-auto">
         <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold mb-2">Your Profile</h1>
+          <h1 className="text-3xl font-bold mb-2 text-primary">Your Profile</h1>
           <p className="text-muted-foreground">
             Manage how others see you on the platform
           </p>

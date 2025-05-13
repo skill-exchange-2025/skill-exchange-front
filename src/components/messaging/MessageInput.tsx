@@ -15,6 +15,8 @@ import {useTheme} from 'next-themes';
 
 interface MessageInputProps {
   channelId: string;
+  replyingTo?: Message | null;
+  onCancelReply?: () => void;
 }
 
 // Emoji categories to filter
@@ -30,20 +32,68 @@ const emojiCategories = [
 ];
 
 // Common emoji shortcuts
-const quickEmojis = ['👍', '❤️', '😂', '🎉', '🙏', '👏', '🔥', '✅'];
+const quickEmojis = [
+  '👍',
+  '❤️',
+  '😂',
+  '🎉',
+  '🙏',
+  '👏',
+  '🔥',
+  '✅',
+  '👀',
+  '👆',
+  '👇',
+  '👈',
+  '👉',
+  '👌',
+  '👋',
+  '👍',
+  '👎',
+  '👊',
+  '👏',
+  '👐',
+  '👑',
+  '👒',
+  '👓',
+  '👔',
+  '👕',
+  '👖',
+  '👗',
+  '👘',
+  '👙',
+  '👚',
+  '👛',
+  '👜',
+  '👝',
+  '👞',
+  '👟',
+  '👠',
+  '👡',
+  '👢',
+  '👣',
+  '👤',
+  '👥',
+  '👦',
+  '👧',
+];
 
-const MessageInput: React.FC<MessageInputProps> = ({ channelId }) => {
+const MessageInput: React.FC<MessageInputProps> = ({
+  channelId,
+  replyingTo = null,
+  onCancelReply = () => {},
+}) => {
   const [message, setMessage] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const typingTimeoutRef = useRef<NodeJS.Timeout>();
   const [createMessage, { isLoading: isSending }] = useCreateMessageMutation();
   const [uploadFileWithMessage, { isLoading: isUploading }] =
     useUploadFileWithMessageMutation();
   const isSubmitting = isSending || isUploading;
-  const { toast } = useToast();
   const { theme } = useTheme();
   const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
   const [showAttachOptions, setShowAttachOptions] = useState(false);
@@ -54,9 +104,28 @@ const MessageInput: React.FC<MessageInputProps> = ({ channelId }) => {
     }
   }, [channelId]);
 
+  // Handle typing indicator with throttling
+  const handleTyping = () => {
+    if (!channelId) return;
+
+    // Clear existing timeout
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+
+    // Emit typing event (throttled)
+    socketService.emitTyping(channelId);
+
+    // Set timeout to emit stopped typing event
+    typingTimeoutRef.current = setTimeout(() => {
+      socketService.emitStopTyping(channelId);
+    }, 2000); // 2 seconds after last keystroke
+  };
+
   const handleMessageChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setMessage(e.target.value);
     handleTextareaResize(e);
+    handleTyping();
   };
 
   const handleFileSelect = (e: ChangeEvent<HTMLInputElement>) => {
@@ -65,10 +134,8 @@ const MessageInput: React.FC<MessageInputProps> = ({ channelId }) => {
 
       // Check file size (limit to 25MB)
       if (file.size > 25 * 1024 * 1024) {
-        toast({
-          title: 'File too large',
+        toast.error('File too large', {
           description: 'Maximum file size is 25MB',
-          variant: 'destructive',
         });
         return;
       }
@@ -146,55 +213,144 @@ const MessageInput: React.FC<MessageInputProps> = ({ channelId }) => {
     }
   };
 
+  // Clean up typing timeout on unmount or channel change
+  useEffect(() => {
+    return () => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+        if (channelId) {
+          socketService.emitStopTyping(channelId);
+        }
+      }
+    };
+  }, [channelId]);
+
+  // Handle message submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!message.trim() && !selectedFile) return;
 
     try {
+      // Cancel any pending typing timeout and explicitly stop typing
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+        socketService.emitStopTyping(channelId);
+      }
+
+      // Generate a client-side ID for this message (for optimistic updates)
+      const clientMessageId = `temp_${Date.now()}_${Math.random()
+        .toString(36)
+        .substring(2, 9)}`;
+
+      console.log(
+        `Message submission with clientMessageId: ${clientMessageId}`
+      );
+
+      // Create reply preview if replying to a message
+      let replyPreview = null;
+      if (replyingTo) {
+        const senderName =
+          typeof replyingTo.sender === 'object'
+            ? replyingTo.sender.name
+            : 'Unknown User';
+
+        replyPreview = {
+          content: replyingTo.content
+            ? replyingTo.content.substring(0, 100)
+            : 'Attachment',
+          sender:
+            typeof replyingTo.sender === 'object'
+              ? replyingTo.sender._id
+              : replyingTo.sender,
+          senderName,
+        };
+      }
+
+      // Step 1: For files, we'll do a dual approach:
+      // a) Send metadata via socket for real-time updates
+      // b) Upload the actual file via REST API
       if (selectedFile) {
-        // Log file details for debugging
-        console.log('Uploading file:', {
-          name: selectedFile.name,
-          type: selectedFile.type,
-          size: selectedFile.size,
+        // First, send a message with attachment metadata via socket
+        // This will show a "pending" preview of the attachment immediately
+        console.log(
+          `Sending attachment metadata via socket: ${selectedFile.name}`
+        );
+        socketService.sendMessage({
+          channelId,
+          content: message,
+          attachment: selectedFile,
+          clientMessageId,
+          // Add reply data if replying
+          ...(replyingTo && {
+            isReply: true,
+            parentMessageId: replyingTo._id,
+            parentMessagePreview: replyPreview,
+          }),
         });
 
-        // Create a FormData object for file upload
+        // Create FormData for file upload via REST API
         const formData = new FormData();
         formData.append('file', selectedFile);
         formData.append('channel', channelId);
-        formData.append('content', message || ''); // Ensure content is never undefined
+        formData.append('channelId', channelId); // Add both channel and channelId for safety
+        formData.append('content', message || '');
+        formData.append('clientMessageId', clientMessageId); // Send the client ID to link with socket message
 
-        // Show uploading toast
-        const toastId = toast({
-          title: 'Uploading file...',
-          description: selectedFile.name,
+        // Add reply data to formData if replying
+        if (replyingTo) {
+          formData.append('isReply', 'true');
+          formData.append('parentMessageId', replyingTo._id);
+          if (replyPreview) {
+            formData.append('replyPreview', JSON.stringify(replyPreview));
+          }
+        }
+
+        // Notify user about upload
+        toast.info('Uploading file...', {
+          id: clientMessageId,
+          duration: 3000,
         });
 
-        // Upload file with message
-        const response = await uploadFileWithMessage(formData).unwrap();
-        console.log('Message with file sent successfully:', response);
-
-        if (response.attachment) {
-          toast({
-            title: 'File uploaded successfully',
-            description: selectedFile.name,
-            variant: 'default',
+        // Upload the file via API
+        console.log(`Uploading file via REST API: ${selectedFile.name}`);
+        await uploadFileWithMessage(formData)
+          .unwrap()
+          .then(() => {
+            console.log(`File upload successful: ${selectedFile.name}`);
+            toast.success('File uploaded successfully', {
+              id: clientMessageId,
+              duration: 2000,
+            });
+          })
+          .catch((error) => {
+            console.error('Error with file upload via API:', error);
+            toast.error('File upload issue', {
+              id: clientMessageId,
+              description:
+                'Your message was sent but file upload may have issues',
+            });
+          });
+      } else {
+        // Step 2: For text-only messages, use socket for real-time delivery
+        console.log(`Sending text-only message via socket`);
+        if (replyingTo) {
+          // If replying, use the sendReply method
+          await socketService.sendReply({
+            channelId,
+            content: message,
+            parentMessageId: replyingTo._id,
+            parentMessagePreview: replyPreview || undefined,
+            clientMessageId,
+          });
+        } else {
+          // Regular message
+          socketService.sendMessage({
+            channelId,
+            content: message,
+            clientMessageId,
           });
         }
-      } else {
-        const messageData: CreateMessageDto = {
-          channel: channelId,
-          content: message,
-        };
-
-        await createMessage(messageData).unwrap();
-      }
-
-      // Clean up
-      if (previewUrl) {
-        URL.revokeObjectURL(previewUrl);
       }
 
       // Clear form after successful submission
@@ -210,12 +366,15 @@ const MessageInput: React.FC<MessageInputProps> = ({ channelId }) => {
         textareaRef.current.style.height = 'auto';
         textareaRef.current.focus();
       }
+
+      // Clear reply state after sending
+      if (replyingTo) {
+        onCancelReply();
+      }
     } catch (error) {
       console.error('Failed to send message:', error);
-      toast({
-        title: 'Error sending message',
+      toast.error('Error sending message', {
         description: 'Please try again later',
-        variant: 'destructive',
       });
     }
   };
@@ -276,6 +435,14 @@ const MessageInput: React.FC<MessageInputProps> = ({ channelId }) => {
         className="border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 pt-2 pb-3 px-4 shadow-md z-10"
         onSubmit={handleSubmit}
       >
+        {/* Show reply preview if replying to a message */}
+        {replyingTo && (
+          <MessageReplyPreview
+            parentMessage={replyingTo}
+            onCancel={onCancelReply}
+          />
+        )}
+
         {/* Quick emoji bar */}
         <div className="flex items-center justify-between mb-1">
           <div className="flex items-center space-x-1">
@@ -405,8 +572,7 @@ const MessageInput: React.FC<MessageInputProps> = ({ channelId }) => {
                           className="flex flex-col items-center justify-center h-16 w-full"
                           onClick={() => {
                             setShowAttachOptions(false);
-                            toast({
-                              title: 'Coming soon',
+                            toast.error('Coming soon', {
                               description:
                                 'Image capture will be available soon',
                             });
@@ -441,8 +607,7 @@ const MessageInput: React.FC<MessageInputProps> = ({ channelId }) => {
                           className="flex flex-col items-center justify-center h-16 w-full"
                           onClick={() => {
                             setShowAttachOptions(false);
-                            toast({
-                              title: 'Coming soon',
+                            toast.error('Coming soon', {
                               description:
                                 'Voice recording will be available soon',
                             });

@@ -10,6 +10,7 @@ import {SignUp} from '@/pages/auth/sign-up';
 import {ForgotPassword} from '@/pages/auth/forgot-password';
 import {Layout} from '@/components/layout/layout';
 import ProtectedRoute from '@/components/layout/ProtectedRoute';
+import PublicRoute from '@/components/layout/PublicRoute';
 import AdminRoutes from './AdminRoutes';
 import UserRoutes from './UserRoutes';
 import DashboardLayout from '@/components/layout/DashboardLayout';
@@ -25,13 +26,15 @@ import MessagingLayout from '../pages/messaging/MessagingLayout';
 import ChannelPage from '../pages/messaging/ChannelPage';
 import ChannelListPage from '../pages/messaging/ChannelListPage';
 import {CreateLesson} from '@/pages/marketplace/create-lesson';
-// Import the EditLesson component (you'll need to create this)
 import {EditLesson} from '@/pages/marketplace/edit-lesson';
 import {LessonDetail} from '@/pages/marketplace/lesson-detail';
 import ManageLessons from "@/pages/marketplace/manage-lessons.tsx";
 import {CreateFeedback} from "@/pages/user/feedback/CreateFeedback.tsx";
 import {FeedbackList} from "@/pages/user/feedback/FeedbackList.tsx";
 import {EditFeedback} from "@/pages/user/feedback/EditFeedback.tsx";
+import {CodingRoomPage} from "@/pages/CodingRooms/CodingRoomPage";
+import {CreateRoomPage} from "@/pages/CodingRooms/CreateRoomPage.tsx";
+import {DiscoverPage} from '@/pages/discover';
 import SummarizerPage from '@/pages/SummarizerPage';
 
 const router = createBrowserRouter([
@@ -46,7 +49,11 @@ const router = createBrowserRouter([
         children: [
           {
             path: 'login',
-            element: <LoginForm />,
+            element: (
+              <PublicRoute>
+                <LoginForm />
+              </PublicRoute>
+            ),
           },
           { index: true, element: <LandingPage /> },
           { path: 'about', element: <About /> },
@@ -54,79 +61,93 @@ const router = createBrowserRouter([
           { path: 'help', element: <Help /> },
           { path: 'privacy', element: <Privacy /> },
           { path: 'terms', element: <Terms /> },
-          { path: 'forgot-password', element: <ForgotPassword /> },
-          { path: 'signup', element: <SignUp /> },
+          {
+            path: 'forgot-password',
+            element: (
+              <PublicRoute>
+                <ForgotPassword />
+              </PublicRoute>
+            ),
+          },
+          {
+            path: 'signup',
+            element: (
+              <PublicRoute>
+                <SignUp />
+              </PublicRoute>
+            ),
+          },
           {
             path: 'marketplace',
             element: (
-                <ProtectedRoute>
-                  <ListingTypeSelection />
-                </ProtectedRoute>
+              <ProtectedRoute>
+                <ListingTypeSelection />
+              </ProtectedRoute>
             ),
           },
           {
             path: 'marketplace/all',
             element: (
-                <ProtectedRoute>
-                  <MarketplacePage />
-                </ProtectedRoute>
+              <ProtectedRoute>
+                <MarketplacePage />
+              </ProtectedRoute>
             ),
           },
           {
             path: 'marketplace/courses',
             element: (
-                <ProtectedRoute>
-                  <MarketplacePage type="course" />
-                </ProtectedRoute>
+              <ProtectedRoute>
+                <MarketplacePage type="course" />
+              </ProtectedRoute>
             ),
           },
           {
             path: 'marketplace/online-courses',
             element: (
-                <ProtectedRoute>
-                  <MarketplacePage type="onlineCourse" />
-                </ProtectedRoute>
+              <ProtectedRoute>
+                <MarketplacePage type="onlineCourse" />
+              </ProtectedRoute>
             ),
           },
           {
             path: 'marketplace/item/:id',
             element: (
-                <ProtectedRoute>
-                  <MarketplaceItemDetail />
-                </ProtectedRoute>
+              <ProtectedRoute>
+                <MarketplaceItemDetail />
+              </ProtectedRoute>
             ),
           },
           {
             path: 'marketplace/create',
             element: (
-                <ProtectedRoute>
-                  <CreateEditMarketplaceItem />
-                </ProtectedRoute>
+              <ProtectedRoute>
+                <CreateEditMarketplaceItem />
+              </ProtectedRoute>
             ),
           },
           {
             path: 'marketplace/edit/:id',
             element: (
-                <ProtectedRoute>
-                  <CreateEditMarketplaceItem />
-                </ProtectedRoute>
+              <ProtectedRoute>
+                <CreateEditMarketplaceItem />
+              </ProtectedRoute>
             ),
           },
           {
             path: 'marketplace/transactions',
             element: (
-                <ProtectedRoute>
-                  <TransactionsPage />
-                </ProtectedRoute>
+              <ProtectedRoute>
+                <TransactionsPage />
+              </ProtectedRoute>
             ),
           },
 
           {
             path: 'marketplace/item/:id/create-lesson',
             element: (
-                <ProtectedRoute>
-                  <CreateLesson />
-                </ProtectedRoute>
+              <ProtectedRoute>
+                <CreateLesson />
+              </ProtectedRoute>
             ),
           },
           {
@@ -167,16 +188,17 @@ const router = createBrowserRouter([
                     <ProtectedRoute>
                         <SummarizerPage />
                     </ProtectedRoute>
-                },
-
-
-
+          },
+          {
+            path: '/discover',
+            element: <DiscoverPage />,
+          },
           {
             path: 'messaging',
             element: (
-                <ProtectedRoute>
-                  <MessagingLayout />
-                </ProtectedRoute>
+              <ProtectedRoute>
+                <MessagingLayout />
+              </ProtectedRoute>
             ),
             children: [
               { index: true, element: <ChannelListPage /> },
@@ -186,13 +208,17 @@ const router = createBrowserRouter([
         ],
       },
       {
+        path: "coding-rooms/create",
+        element: <CreateRoomPage />,
+      },
+      {
         path: 'admin',
         element: (
-            <ProtectedRoute>
-              <DashboardLayout />
-            </ProtectedRoute>
+          <ProtectedRoute>
+            <DashboardLayout />
+          </ProtectedRoute>
         ),
-        children: [{ path: '*', element: <AdminRoutes /> }],
+        children: [{ path: '*', element: <AdminRoutes /> },{ path: "coding-rooms/:roomId", element: <CodingRoomPage /> },],
       },
         {
             path: 'user',
@@ -217,10 +243,19 @@ const router = createBrowserRouter([
                 }
             ],
         },
+      { path: "coding-rooms/:roomId", element: <CodingRoomPage /> },
+      {
+        path: 'user',
+        element: (
+          <ProtectedRoute>
+            <UserDashboard />
+          </ProtectedRoute>
+        ),
+        children: [{ path: '*', element: <UserRoutes /> },{ path: "coding-rooms/:roomId", element: <CodingRoomPage /> },],
+      },
     ],
   },
 
 ]);
-
 
 export default router;

@@ -22,7 +22,6 @@ export type TUser = {
   skills?: TSkill[];
   desiredSkills?: TDesiredSkill[];
   name?: string;
-  
 };
 
 export type TAuthState = {
@@ -43,10 +42,18 @@ const authSlice = createSlice({
       const { user, token } = action.payload;
       state.user = user;
       state.token = token;
+
+      // Also save token to localStorage for socket connection
+      if (token) {
+        localStorage.setItem('token', token);
+      }
     },
     logout: (state) => {
       state.user = null;
       state.token = null;
+
+      // Clear token from localStorage
+      localStorage.removeItem('token');
     },
     updateUserSkills: (state, action) => {
       if (state.user) {
@@ -72,8 +79,13 @@ export const useUserRoles = (state: RootState) => state.auth.user?.roles || [];
 export const useUserPermissions = (state: RootState) =>
   state.auth.user?.permissions || [];
 
-export const { setUser, logout, updateUserSkills, updateDesiredSkills, updateUserCredits } =
-  authSlice.actions;
+export const {
+  setUser,
+  logout,
+  updateUserSkills,
+  updateDesiredSkills,
+  updateUserCredits,
+} = authSlice.actions;
 
 export const logoutAndClearStorage = () => (dispatch: any) => {
   dispatch(logout());

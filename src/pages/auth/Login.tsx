@@ -51,7 +51,7 @@ const LoginForm = () => {
       if (result.user.roles.includes('admin')) {
         navigate('/admin/dashboard');
       } else {
-        navigate('/user/dashboard');
+        navigate('/');
       }
     } catch (error: any) {
       const errorMessage =
