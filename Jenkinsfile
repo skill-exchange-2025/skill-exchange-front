@@ -30,7 +30,6 @@ pipeline {
             }
         }
         /*
-
         stage('Test') {
             steps {
                 sh 'npm test -- --passWithNoTests || true' // Run tests if they exist
@@ -54,8 +53,7 @@ pipeline {
                 }
             }
         }
-        */
-
+*/
         stage('Build') {
             steps {
                 // Set environment variables for build
