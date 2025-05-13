@@ -30,6 +30,7 @@ import { EditLesson } from '@/pages/marketplace/edit-lesson';
 import { LessonDetail } from '@/pages/marketplace/lesson-detail';
 import ManageLessons from '@/pages/marketplace/manage-lessons.tsx';
 import { DiscoverPage } from '@/pages/discover';
+import BoughtCourses from '@/pages/courses/BoughtCourses';
 
 const router = createBrowserRouter([
   {
@@ -77,6 +78,14 @@ const router = createBrowserRouter([
               <ProtectedRoute>
                 <ListingTypeSelection />
               </ProtectedRoute>
+            ),
+          },
+          {
+            path: 'courses',
+            element: (
+                <ProtectedRoute>
+                  <BoughtCourses />
+                </ProtectedRoute>
             ),
           },
           {
