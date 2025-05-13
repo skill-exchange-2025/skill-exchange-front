@@ -3,15 +3,17 @@ import {useCreateMessageMutation, useUploadFileWithMessageMutation,} from '../..
 import {Button} from '../ui/button';
 import {Textarea} from '../ui/textarea';
 import {Camera, File, FileText, ImageIcon, Mic, Paperclip, Plus, Send, Smile, X,} from 'lucide-react';
-import {CreateMessageDto} from '../../types/channel';
 import {Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle,} from '../ui/dialog';
-import {useToast} from '../../hooks/use-toast';
 import {Badge} from '../ui/badge';
 import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,} from '../ui/tooltip';
 import {Popover, PopoverContent, PopoverTrigger} from '../ui/popover';
 import data from '@emoji-mart/data';
 import Picker from '@emoji-mart/react';
 import {useTheme} from 'next-themes';
+import socketService from '@/services/socket.service';
+import { toast } from '../use-toast';
+import MessageReplyPreview from './MessageReplyPreview';
+import { Message } from '../../types/channel';
 
 interface MessageInputProps {
   channelId: string;
@@ -134,7 +136,8 @@ const MessageInput: React.FC<MessageInputProps> = ({
 
       // Check file size (limit to 25MB)
       if (file.size > 25 * 1024 * 1024) {
-        toast.error('File too large', {
+        toast({
+          title: 'File too large',
           description: 'Maximum file size is 25MB',
         });
         return;
@@ -307,8 +310,8 @@ const MessageInput: React.FC<MessageInputProps> = ({
         }
 
         // Notify user about upload
-        toast.info('Uploading file...', {
-          id: clientMessageId,
+        toast({
+          title: 'Uploading file...',
           duration: 3000,
         });
 
@@ -318,15 +321,15 @@ const MessageInput: React.FC<MessageInputProps> = ({
           .unwrap()
           .then(() => {
             console.log(`File upload successful: ${selectedFile.name}`);
-            toast.success('File uploaded successfully', {
-              id: clientMessageId,
+            toast({
+              title: 'File uploaded successfully',
               duration: 2000,
             });
           })
           .catch((error) => {
             console.error('Error with file upload via API:', error);
-            toast.error('File upload issue', {
-              id: clientMessageId,
+            toast({
+              title: 'File upload issue',
               description:
                 'Your message was sent but file upload may have issues',
             });
@@ -373,7 +376,8 @@ const MessageInput: React.FC<MessageInputProps> = ({
       }
     } catch (error) {
       console.error('Failed to send message:', error);
-      toast.error('Error sending message', {
+      toast({
+        title: 'Error sending message',
         description: 'Please try again later',
       });
     }
@@ -572,7 +576,8 @@ const MessageInput: React.FC<MessageInputProps> = ({
                           className="flex flex-col items-center justify-center h-16 w-full"
                           onClick={() => {
                             setShowAttachOptions(false);
-                            toast.error('Coming soon', {
+                            toast({
+                              title: 'Coming soon',
                               description:
                                 'Image capture will be available soon',
                             });
@@ -607,7 +612,8 @@ const MessageInput: React.FC<MessageInputProps> = ({
                           className="flex flex-col items-center justify-center h-16 w-full"
                           onClick={() => {
                             setShowAttachOptions(false);
-                            toast.error('Coming soon', {
+                            toast({
+                              title: 'Coming soon',
                               description:
                                 'Voice recording will be available soon',
                             });

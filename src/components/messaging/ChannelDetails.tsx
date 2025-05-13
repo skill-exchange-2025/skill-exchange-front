@@ -4,9 +4,9 @@ import {Button} from '../ui/button';
 import {Avatar, AvatarFallback} from '../ui/avatar';
 import {Channel} from '@/types/channel';
 import {useAppSelector} from '../../redux/hooks';
-import {useJoinChannelMutation, useLeaveChannelMutation,} from '../../redux/api/messagingApi';
+import {useJoinChannelMutation} from '../../redux/api/messagingApi';
 import {Archive, CalendarClock, Hash, Info, LogIn, PenSquare, Sparkles, Users,} from 'lucide-react';
-import {useToast} from '../../hooks/use-toast';
+import {toast} from '../../hooks/use-toast';
 import {Badge} from '../ui/badge';
 import socketService from '../../services/socket.service';
 import {format} from 'date-fns';
@@ -38,7 +38,8 @@ const ChannelDetails: React.FC<ChannelDetailsProps> = ({
   const handleJoinChannel = async () => {
     try {
       await joinChannel(channel._id).unwrap();
-      toast.success('Joined channel', {
+      toast({
+        title: 'Joined channel',
         description: `You've successfully joined #${channel.name}`,
       });
       // Notify other members via socket - this will trigger the userJoinedChannel event from the server
@@ -48,7 +49,8 @@ const ChannelDetails: React.FC<ChannelDetailsProps> = ({
       // The server will emit userJoinedChannel event which will be handled automatically
     } catch (error) {
       console.error('Failed to join channel:', error);
-      toast.error('Error', {
+      toast({
+        title: 'Error',
         description: 'Failed to join channel',
       });
     }
