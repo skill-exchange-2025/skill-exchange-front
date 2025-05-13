@@ -1,75 +1,139 @@
-import React from 'react';
-import {useForm} from 'react-hook-form';
-import {ICreateFeedback} from '@/types/feedback.types';
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import { ICreateFeedback } from "@/types/feedback.types";
+import { useForm } from "react-hook-form";
 
 interface Props {
-    initialData?: Partial<ICreateFeedback>,
-    onSubmit: (data: ICreateFeedback) => void,
-    isLoading?: boolean,
-    initialValues?: unknown
+    initialData?: Partial<ICreateFeedback>;
+    onSubmit: (data: ICreateFeedback) => void;
+    isLoading?: boolean;
 }
 
-export const FeedbackForm: React.FC<Props> = ({initialData, onSubmit, isLoading}) => {
-    const {register, handleSubmit, formState: {errors}} = useForm<ICreateFeedback>({
+export const FeedbackForm: React.FC<Props> = ({
+                                                  initialData,
+                                                  onSubmit,
+                                                  isLoading,
+                                              }) => {
+    const {
+        register,
+        handleSubmit,
+        formState: { errors },
+        setValue,
+        watch,
+    } = useForm<ICreateFeedback>({
         defaultValues: initialData,
     });
 
+    const selectedType = watch("type");
+    const selectedPriority = watch("priority");
+
     return (
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="space-y-6 bg-white dark:bg-zinc-900 text-black dark:text-white p-6 rounded-xl shadow-md"
+            aria-label="Feedback form"
+        >
+            {/* Title */}
             <div>
-                <label className="block mb-1">Title</label>
-                <input
-                    {...register('title', {required: 'Title is required'})}
-                    className="w-full border rounded p-2"
+                <Label htmlFor="title">Title</Label>
+                <Input
+                    id="title"
+                    {...register("title", { required: "Title is required" })}
+                    aria-invalid={!!errors.title}
+                    aria-describedby={errors.title ? "title-error" : undefined}
                 />
                 {errors.title && (
-                    <span className="text-red-500 text-sm">{errors.title.message}</span>
+                    <p id="title-error" className="text-sm text-destructive mt-1">
+                        {errors.title.message}
+                    </p>
                 )}
             </div>
 
+            {/* Description */}
             <div>
-                <label className="block mb-1">Description</label>
-                <textarea
-                    {...register('description', {required: 'Description is required'})}
-                    className="w-full border rounded p-2"
+                <Label htmlFor="description">Description</Label>
+                <Textarea
+                    id="description"
                     rows={4}
+                    {...register("description", {
+                        required: "Description is required",
+                    })}
+                    aria-invalid={!!errors.description}
+                    aria-describedby={errors.description ? "description-error" : undefined}
                 />
                 {errors.description && (
-                    <span className="text-red-500 text-sm">{errors.description.message}</span>
+                    <p id="description-error" className="text-sm text-destructive mt-1">
+                        {errors.description.message}
+                    </p>
                 )}
             </div>
 
+            {/* Type */}
             <div>
-                <label className="block mb-1">Type</label>
-                <select
-                    {...register('type', {required: 'Type is required'})}
-                    className="w-full border rounded p-2"
+                <Label htmlFor="type">Type</Label>
+                <Select
+                    value={selectedType}
+                    onValueChange={(value) => setValue("type", value as any)}
                 >
-                    <option value="bug">Bug</option>
-                    <option value="improvement">Improvement</option>
-                    <option value="feature">Feature</option>
-                </select>
+                    <SelectTrigger id="type" aria-label="Feedback type">
+                        <SelectValue placeholder="Select type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="bug">Bug</SelectItem>
+                        <SelectItem value="improvement">Improvement</SelectItem>
+                        <SelectItem value="feature">Feature</SelectItem>
+                    </SelectContent>
+                </Select>
+                {errors.type && (
+                    <p className="text-sm text-destructive mt-1">
+                        {errors.type.message}
+                    </p>
+                )}
             </div>
 
+            {/* Priority */}
             <div>
-                <label className="block mb-1">Priority</label>
-                <select
-                    {...register('priority', {required: 'Priority is required'})}
-                    className="w-full border rounded p-2"
+                <Label htmlFor="priority">Priority</Label>
+                <Select
+                    value={selectedPriority}
+                    onValueChange={(value) => setValue("priority", value as any)}
                 >
-                    <option value="low">Low</option>
-                    <option value="medium">Medium</option>
-                    <option value="high">High</option>
-                </select>
+                    <SelectTrigger id="priority" aria-label="Priority level">
+                        <SelectValue placeholder="Select priority" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="low">Low</SelectItem>
+                        <SelectItem value="medium">Medium</SelectItem>
+                        <SelectItem value="high">High</SelectItem>
+                    </SelectContent>
+                </Select>
+                {errors.priority && (
+                    <p className="text-sm text-destructive mt-1">
+                        {errors.priority.message}
+                    </p>
+                )}
             </div>
 
-            <button
-                type="submit"
-                disabled={isLoading}
-                className="bg-primary text-white px-4 py-2 rounded disabled:opacity-50"
-            >
-                {isLoading ? 'Submitting...' : 'Submit'}
-            </button>
+            {/* Submit */}
+            <div className="pt-2">
+                <Button
+                    type="submit"
+                    disabled={isLoading}
+                    aria-busy={isLoading}
+                    className="w-full"
+                >
+                    {isLoading ? "Submitting..." : "Submit"}
+                </Button>
+            </div>
         </form>
     );
 };

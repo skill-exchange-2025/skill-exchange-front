@@ -4,7 +4,7 @@ import {IFeedback} from '@/types/feedback.types';
 export const feedbackApi = baseApi.injectEndpoints({
     endpoints: (builder) => ({
         // Get all feedbacks (admin)
-        getAllFeedbacks: builder.query<IFeedback[], void>({
+        getAllFeedbacks: builder.query<{ data: IFeedback[] }, void>({
             query: () => ({
                 url: '/feedback',
                 method: 'GET',

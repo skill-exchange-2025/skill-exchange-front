@@ -1,4 +1,3 @@
-// columns.ts
 import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { ArrowUpDown, Eye, Pencil, Trash2 } from "lucide-react";
@@ -45,18 +44,25 @@ export const columns: ColumnDef<IFeedback>[] = [
             </Button>
         ),
         cell: ({ row }) => {
-            const priority = row.getValue('priority');
-            const variant = {
-                1: 'destructive',
-                2: 'warning',
-                3: 'default'
-            }[priority] as 'destructive' | 'warning' | 'default';
+            const priority = row.getValue('priority') as string;
+
+            const priorityLabelMap: Record<string, string> = {
+                high: 'High',
+                medium: 'Medium',
+                low: 'Low'
+            };
+
+            const priorityVariantMap: Record<string, 'destructive' | 'secondary' | 'default' | 'outline'> = {
+                high: 'destructive',
+                medium: 'secondary',
+                low: 'default'
+            };
 
             return (
-                <Badge variant={variant}>
-                    {['High', 'Medium', 'Low'][Number(priority) - 1]}
+                <Badge variant={priorityVariantMap[priority]}>
+                    {priorityLabelMap[priority]}
                 </Badge>
-            )
+            );
         }
     },
     {
@@ -85,19 +91,20 @@ export const columns: ColumnDef<IFeedback>[] = [
     },
     {
         id: "actions",
-        // eslint-disable-next-line no-empty-pattern
-        cell({}) {
-            return <div className="flex gap-2">
-                <Button variant="ghost" size="icon">
-                    <Eye className="h-4 w-4"/>
-                </Button>
-                <Button variant="ghost" size="icon">
-                    <Pencil className="h-4 w-4 text-primary"/>
-                </Button>
-                <Button variant="ghost" size="icon">
-                    <Trash2 className="h-4 w-4 text-destructive"/>
-                </Button>
-            </div>;
+        cell() {
+            return (
+                <div className="flex gap-2">
+                    <Button variant="ghost" size="icon">
+                        <Eye className="h-4 w-4"/>
+                    </Button>
+                    <Button variant="ghost" size="icon">
+                        <Pencil className="h-4 w-4 text-primary"/>
+                    </Button>
+                    <Button variant="ghost" size="icon">
+                        <Trash2 className="h-4 w-4 text-destructive"/>
+                    </Button>
+                </div>
+            );
         },
     }
 ];
