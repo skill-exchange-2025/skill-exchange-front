@@ -10,15 +10,17 @@ import {Message as MessageType} from '../../types/channel';
 import {User} from '@/types/user';
 import {Avatar, AvatarFallback, AvatarImage} from '../ui/avatar';
 import {Button} from '../ui/button';
-import {Download, File, FileIcon, FileText, ImageIcon, MoreVertical, Smile, Trash2,} from 'lucide-react';
+import {CornerUpLeft, Download, File, FileIcon, FileText, ImageIcon, Loader2, MoreVertical, Smile, Trash2,} from 'lucide-react';
 import {Popover, PopoverContent, PopoverTrigger} from '../ui/popover';
 import EmojiPicker, {EmojiClickData} from 'emoji-picker-react';
 import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,} from '../ui/dropdown-menu';
-import {useToast} from '../use-toast';
+import {toast} from '../use-toast';
 import socketService from '../../services/socket.service';
 import MessageReactions from './MessageReactions';
 import {Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle,} from '../ui/dialog';
 import {Badge} from '../ui/badge';
+import MessageReplyButton from './MessageReplyButton';
+import MessageReplies from './MessageReplies';
 
 interface MessageProps {
   message: MessageType;
@@ -65,7 +67,8 @@ const Message: React.FC<MessageProps> = ({ message, onReply }) => {
       setShowEmojiPicker(false);
     } catch (error) {
       console.error('Failed to handle reaction:', error);
-      toast.error('Error', {
+      toast({
+        title: 'Error',
         description: 'Failed to process reaction',
       });
     }
@@ -83,7 +86,8 @@ const Message: React.FC<MessageProps> = ({ message, onReply }) => {
       socketService.removeReaction(message._id, currentChannel._id, emoji);
     } catch (error) {
       console.error('Failed to remove reaction:', error);
-      toast.error('Error', {
+      toast({
+        title: 'Error',
         description: 'Failed to remove reaction',
       });
     }
@@ -100,7 +104,8 @@ const Message: React.FC<MessageProps> = ({ message, onReply }) => {
       // This dual approach increases our chances of success
       try {
         await deleteMessage(message._id).unwrap();
-        toast.success('Message deleted', {
+        toast({
+          title: 'Message deleted',
           description: 'Your message has been successfully deleted',
         });
       } catch (error) {
@@ -112,7 +117,8 @@ const Message: React.FC<MessageProps> = ({ message, onReply }) => {
       }
     } catch (error) {
       console.error('Failed to delete message:', error);
-      toast.error('Error', {
+      toast({
+        title: 'Error',
         description: 'Failed to delete message',
       });
     }

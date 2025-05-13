@@ -12,7 +12,6 @@ import {z} from 'zod';
 import {useForm} from 'react-hook-form';
 import {zodResolver} from '@hookform/resolvers/zod';
 import socketService from '../../services/socket.service';
-import {useToast} from '../../hooks/use-toast';
 import {Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle,} from '../ui/dialog';
 import {Switch} from '../ui/switch';
 import ChannelDetails from './ChannelDetails';
