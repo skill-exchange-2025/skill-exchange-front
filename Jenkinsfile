@@ -20,7 +20,7 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                sh 'npm ci' // Using ci instead of install for more reliable builds
+                sh 'npm ci'
             }
         }
 
