@@ -92,7 +92,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout>();
-  const [createMessage, { isLoading: isSending }] = useCreateMessageMutation();
+  const [, { isLoading: isSending }] = useCreateMessageMutation();
   const [uploadFileWithMessage, { isLoading: isUploading }] =
     useUploadFileWithMessageMutation();
   const isSubmitting = isSending || isUploading;

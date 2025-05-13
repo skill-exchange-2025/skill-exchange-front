@@ -12,7 +12,7 @@ export const EditFeedback = () => {
     const [updateFeedback, { isLoading: isUpdating }] = useUpdateFeedbackMutation();
 
     // Use the skip parameter to conditionally fetch data instead of conditional hook calls
-    const { data: feedback, isLoading: isFetchingFeedback } = useGetSingleFeedbackQuery(id || '', {
+    const {  isLoading: isFetchingFeedback } = useGetSingleFeedbackQuery(id || '', {
         skip: !id // Skip the query if id is not available
     });
 
@@ -47,7 +47,6 @@ export const EditFeedback = () => {
             <FeedbackForm
                 onSubmit={handleSubmit}
                 isLoading={isUpdating}
-                initialValues={feedback}
             />
         </div>
     );

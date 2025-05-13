@@ -4,7 +4,6 @@ import { Button } from '../ui/button';
 import { CornerDownRight, ChevronDown, ChevronUp } from 'lucide-react';
 import { useGetMessageRepliesQuery } from '@/redux/api/messagingApi';
 import Message from './Message';
-import { useAppSelector } from '@/redux/hooks';
 import { Loader2 } from 'lucide-react';
 
 interface MessageRepliesProps {
@@ -13,7 +12,6 @@ interface MessageRepliesProps {
 
 const MessageReplies: React.FC<MessageRepliesProps> = ({ message }) => {
   const [isExpanded, setIsExpanded] = useState(false);
-  const { currentChannel } = useAppSelector((state) => state.channels);
 
   const {
     data: repliesData,

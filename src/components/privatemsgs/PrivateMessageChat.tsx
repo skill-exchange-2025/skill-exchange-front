@@ -4,9 +4,7 @@
     useDeletePrivateMessageMutation,
     useEditPrivateMessageMutation ,
     useAddReactionMutation,
-    useRemoveReactionMutation,
     useMarkMessagesAsReadMutation,
-    useUploadVoiceMessageMutation,
     useSendVoiceMessageMutation,
     useUploadFileWithMessageMutation
   } from '@/redux/features/privatemsgs/privateMessagesApi';
@@ -15,10 +13,9 @@
   import React, { useState, useEffect, useRef } from 'react';
   import { Mic, Square,Trash2, Edit2, X, Check, MessageSquare, Smile, Send } from 'lucide-react';
   import { useAppSelector } from '@/redux/hooks';
-  import { PrivateMessage, User } from '@/types/user';
-  import { useGetUserByIdQuery, useGetUsersQuery } from '@/redux/features/users/usersApi';
+  import { PrivateMessage } from '@/types/user';
+  import { useGetUserByIdQuery } from '@/redux/features/users/usersApi';
   import { ScrollArea } from '@/components/ui/scroll-area';
-  import { MoreHorizontal } from 'lucide-react'; 
   import MessageReacts from './MessageReacts';
   import EmojiPicker from 'emoji-picker-react';
   import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
@@ -38,17 +35,12 @@
     DropdownMenuTrigger 
   } from '@/components/ui/dropdown-menu';
   // import * as lamejs from 'lamejs';
-  import lamejs from 'lamejs';
   import { useGetProfileByUserIdQuery } from '@/redux/features/profile/profileApi';
   import { Button } from 'antd';
   import { TooltipProvider } from '@radix-ui/react-tooltip';
 import { toast } from 'sonner';
 
-  interface Reaction {
-    type: string;
-    user: string;
-    _id?: string;
-  }
+
 
   interface PrivateMessageChatProps {
     recipientId: string;
@@ -66,8 +58,7 @@ import { toast } from 'sonner';
   }
 
   const PrivateMessageChat: React.FC<PrivateMessageChatProps> = ({ 
-    recipientId, 
-    recipientName 
+    recipientId,
   }) => {
      const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -81,14 +72,12 @@ import { toast } from 'sonner';
   const [audioStream, setAudioStream] = useState<MediaStream | null>(null);
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
   const [recordingStartTime, setRecordingStartTime] = useState<number>(0);
-    const [uploadVoiceMessage] = useUploadVoiceMessageMutation();
     const [sendVoiceMessage] = useSendVoiceMessageMutation();
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const [addReaction] = useAddReactionMutation();
     const [markMessagesAsRead] = useMarkMessagesAsReadMutation();
     const [recordingDuration, setRecordingDuration] = useState<number>(0);
     const recordingTimer = useRef<NodeJS.Timeout>();
-    const [removeReaction] = useRemoveReactionMutation();
     const [showEmojiPicker, setShowEmojiPicker] = useState<boolean>(false);
     const [currentMessageId, setCurrentMessageId] = useState<string | null>(null);
       const [message, setMessage] = useState('');
@@ -222,24 +211,6 @@ const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         console.error('Error sending voice message:', error);
       }
     };
-    const handleStopRecording = async () => {
-      if (mediaRecorder && mediaRecorder.state === 'recording') {
-        mediaRecorder.stop();
-        mediaRecorder.ondataavailable = async (e) => {
-          const audioBlob = e.data;
-          const audioUrl = URL.createObjectURL(audioBlob);
-          
-          // Get audio duration
-          const audio = new Audio(audioUrl);
-          audio.addEventListener('loadedmetadata', () => {
-            const duration = audio.duration;
-            // Now send the message with the correct duration
-            handleVoiceMessageSend(audioBlob, duration);
-          });
-        };
-      }
-    };
-    
     const startRecording = async () => {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -287,8 +258,7 @@ const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
           audioStream.getTracks().forEach(track => track.stop());
           
           // Don't reset the duration immediately
-          const finalDuration = recordingDuration;
-          
+
           setIsRecording(false);
           setMediaRecorder(null);
           setAudioStream(null);
@@ -508,9 +478,9 @@ const handleSendMessage = async (e: React.FormEvent) => {
     setEditContent('');
   };
 
-  const { data: currentUserData } = useGetUserByIdQuery(currentUserId || '', {
-    skip: !currentUserId // Skip if currentUserId is not available
-  });
+    useGetUserByIdQuery(currentUserId || '', {
+      skip: !currentUserId // Skip if currentUserId is not available
+    });
 
     const handleSaveEdit = async (messageId: string) => {
       if (!editContent.trim()) return;

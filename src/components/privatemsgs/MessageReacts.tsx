@@ -21,14 +21,14 @@ const MessageReacts: React.FC<MessageReactsProps> = ({ message, currentUserId })
       );
   
       if (existingReaction) {
-        const result = await removeReaction({ messageId: message._id }).unwrap();
+        await removeReaction({ messageId: message._id }).unwrap();
         socketService.socket?.emit('reactionRemoved', {
           messageId: message._id,
           type: type,
           userId: currentUserId
         });
       } else {
-        const result = await addReaction({ messageId: message._id, type }).unwrap();
+        await addReaction({ messageId: message._id, type }).unwrap();
         socketService.socket?.emit('reactionAdded', {
           messageId: message._id,
           type: type,

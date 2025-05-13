@@ -1,8 +1,8 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {useNavigate, useParams} from 'react-router-dom';
-import {useAppSelector} from '../../redux/hooks';
-import {useCreateChannelMutation, useGetChannelsQuery, useJoinChannelMutation} from '../../redux/api/messagingApi';
-import {Channel} from '../../types/channel';
+import {useNavigate} from 'react-router-dom';
+import {useAppSelector} from '@/redux/hooks.ts';
+import {useCreateChannelMutation, useGetChannelsQuery, useJoinChannelMutation} from '@/redux/api/messagingApi.ts';
+import {Channel} from '@/types/channel.ts';
 import {Archive, Hash, Loader2, LogIn, MessageSquare, MessageSquareOff, Plus, Search,} from 'lucide-react';
 import {Button} from '../ui/button';
 import NewChannelModal from './NewChannelModal';
@@ -35,7 +35,6 @@ type ChannelFormValues = z.infer<typeof channelSchema>;
 
 const ChannelSidebar: React.FC = () => {
   const navigate = useNavigate();
-  const { channelId } = useParams<{ channelId: string }>();
   const [searchTerm, setSearchTerm] = useState('');
   const [showNewChannelModal, setShowNewChannelModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
@@ -52,7 +51,6 @@ const ChannelSidebar: React.FC = () => {
 
   // Fetch channels data
   const {
-    data: channelsData,
     isLoading: isLoadingChannelsData,
     refetch: refetchChannels,
   } = useGetChannelsQuery(undefined, {
@@ -204,7 +202,6 @@ const ChannelSidebar: React.FC = () => {
           <div className="space-y-1">
             {filteredChannels.map((channel) => {
               const isNewMessages = hasNewMessages(channel);
-              const isMember = isUserChannelMember(channel);
 
               return (
                 <div key={channel._id}>

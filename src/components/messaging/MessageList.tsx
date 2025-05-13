@@ -1,4 +1,4 @@
-import React, {useEffect, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useAppDispatch, useAppSelector} from '../../redux/hooks';
 import {useGetChannelMessagesQuery} from '../../redux/api/messagingApi';
 import {incrementPage, setCurrentPage, setLoading, setMessages,} from '../../redux/features/messaging/channelsSlice';
@@ -167,35 +167,6 @@ const MessageList: React.FC<MessageListProps> = ({ channelId }) => {
       }, 100);
     }
   };
-
-  // Group messages by date for better organization
-  const groupMessagesByDate = (messages: MessageType[]) => {
-    const groups: { [key: string]: MessageType[] } = {};
-
-    // Create a map to track message IDs and prevent duplicates
-    const processedMessageIds = new Set<string>();
-
-    [...messages].reverse().forEach((message) => {
-      if (!message.createdAt) return; // Skip messages without a valid createdAt
-      if (processedMessageIds.has(message._id)) return; // Skip duplicate messages
-
-      const date = new Date(message.createdAt);
-      if (isNaN(date.getTime())) return; // Skip invalid dates
-
-      const dateKey = format(date, 'yyyy-MM-dd');
-
-      if (!groups[dateKey]) {
-        groups[dateKey] = [];
-      }
-
-      groups[dateKey].push(message);
-      processedMessageIds.add(message._id); // Track this message ID
-    });
-
-    return groups;
-  };
-
-  const messageGroups = groupMessagesByDate(messages);
 
   // Format date for display
   const formatDateHeading = (dateKey: string) => {

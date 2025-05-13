@@ -3,10 +3,10 @@ import {Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTi
 import {Button} from '../ui/button';
 import {Avatar, AvatarFallback} from '../ui/avatar';
 import {Channel} from '@/types/channel';
-import {useAppSelector} from '../../redux/hooks';
-import {useJoinChannelMutation} from '../../redux/api/messagingApi';
+import {useAppSelector} from '@/redux/hooks.ts';
+import {useJoinChannelMutation} from '@/redux/api/messagingApi.ts';
 import {Archive, CalendarClock, Hash, Info, LogIn, PenSquare, Sparkles, Users,} from 'lucide-react';
-import {toast} from '../../hooks/use-toast';
+import {toast} from '@/hooks/use-toast.ts';
 import {Badge} from '../ui/badge';
 import socketService from '../../services/socket.service';
 import {format} from 'date-fns';

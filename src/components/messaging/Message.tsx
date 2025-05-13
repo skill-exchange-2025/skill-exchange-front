@@ -73,26 +73,6 @@ const Message: React.FC<MessageProps> = ({ message, onReply }) => {
       });
     }
   };
-
-  const handleRemoveReaction = async (emoji: string) => {
-    if (!currentChannel) return;
-
-    try {
-      await removeReaction({
-        messageId: message._id,
-        emoji,
-      });
-      // Also notify via socket for real-time updates
-      socketService.removeReaction(message._id, currentChannel._id, emoji);
-    } catch (error) {
-      console.error('Failed to remove reaction:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to remove reaction',
-      });
-    }
-  };
-
   const handleDeleteMessage = async () => {
     if (!currentChannel) return;
 

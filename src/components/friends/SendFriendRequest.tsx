@@ -18,7 +18,7 @@ export const SendFriendRequest: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   
   // Queries and mutations
-  const { data: suggestions = [], isLoading: isSearching } = useSearchUsersQuery(searchTerm, {
+  const { data: suggestions = []} = useSearchUsersQuery(searchTerm, {
     skip: searchTerm.length < 1,
   });
   const { data: friendRequests = [] } = useGetFriendRequestsQuery();

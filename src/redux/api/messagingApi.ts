@@ -152,7 +152,7 @@ export const messagingApi = baseApi.injectEndpoints({
         method: 'GET',
         params: { page, limit },
       }),
-      providesTags: (result, error, { messageId }) =>
+      providesTags: (result, _error, { messageId }) =>
         result
           ? [
               ...result.replies.map(({ _id }) => ({
