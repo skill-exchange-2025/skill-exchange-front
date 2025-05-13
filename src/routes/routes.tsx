@@ -31,6 +31,7 @@ import {CreateLesson} from '@/pages/marketplace/create-lesson';
 import {EditLesson} from '@/pages/marketplace/edit-lesson';
 import {LessonDetail} from '@/pages/marketplace/lesson-detail';
 import ManageLessons from "@/pages/marketplace/manage-lessons.tsx";
+import ProfilePage from '@/pages/user/profile/ProfilePage';
 import {CreateFeedback} from "@/pages/user/feedback/CreateFeedback.tsx";
 import {FeedbackList} from "@/pages/user/feedback/FeedbackList.tsx";
 import {EditFeedback} from "@/pages/user/feedback/EditFeedback.tsx";
@@ -185,7 +186,37 @@ const router = createBrowserRouter([
                 ),
             },
             {
-                path: 'summarizer',
+              path: 'chat',
+              element: (
+                <ProtectedRoute>
+                  <FriendsPage />
+                </ProtectedRoute>
+              ),
+            },
+            {
+              path: 'chat/:userId',
+              element: (
+                <ProtectedRoute>
+                  <FriendsPage />
+                </ProtectedRoute>
+              )},
+              {
+                path: 'profile/:userId',
+                element: (
+                  <ProtectedRoute>
+                    <ProfilePage />
+                  </ProtectedRoute>
+                ),
+              },
+              {
+                path: 'profile',
+                element: (
+                  <ProtectedRoute>
+                    <ProfilePage />
+                  </ProtectedRoute>
+                ),
+              },
+          {path: 'summarizer',
                 element:
                     <ProtectedRoute>
                         <SummarizerPage />

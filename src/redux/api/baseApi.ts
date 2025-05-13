@@ -67,8 +67,10 @@ export const baseApi = createApi({
     'Channel',
     'Message',
     'Lessons',
+    'FriendRequest',
+    'Friend',
+    'PrivateMessage',
     'Feedback',
     'DashboardStats',
     'WheelSpin'
-  ],
 });

@@ -9,6 +9,8 @@ import usersReducer from './features/users/usersSlice.ts';
 import marketplaceReducer from './features/marketplace/marketplaceSlice';
 import creditsReducer from './features/credits/creditsSlice';
 import channelsReducer from './features/messaging/channelsSlice';
+import friendRequestsReducer from './features/friends/friendRequestsSlice';
+import privateMessagesReducer from './features/privatemsgs/privateMessagesSlice';
 import codingRoomsReducer from './features/codingRoom/codingRoomsSlice';
 import lessonsReducer from './features/lessons/lessonsSlice';
 import feedbackReducer from './features/feedback/feedbackSlice';
@@ -31,6 +33,8 @@ export const store = configureStore({
     marketplace: marketplaceReducer,
     credits: creditsReducer,
     channels: channelsReducer,
+    friendRequests: friendRequestsReducer,
+    privateMessages: privateMessagesReducer,
     lessons: lessonsReducer,
     feedback: feedbackReducer,
     dashboard: dashboardReducer
@@ -45,4 +49,5 @@ export const store = configureStore({
 
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
+// export type LessonsStateType = RootState['lessons'];
 export const persistor = persistStore(store);

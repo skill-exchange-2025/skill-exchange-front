@@ -23,7 +23,57 @@ export interface User {
     permissionGroups: string[];
     skills: Skill[];
     desiredSkills: DesiredSkill[];
+    avatarUrl?: string;
 }
+export interface FriendRequest {
+    _id: string;
+    sender: User;
+    recipient: User;
+    status: 'pending' | 'accepted' | 'rejected';
+    createdAt: string;
+    updatedAt: string;
+  }
+  export interface PrivateMessage {
+    _id: string;
+     attachment?: {
+    filename: string;
+    originalname: string;
+    mimetype: string;
+    size: number;
+    path: string;
+    url?: string;
+  };
+    // sender: {
+    //   _id: string;
+    //   name: string;
+    // };
+    sender: User;
+    // recipient: {
+    //   _id: string;
+    //   name: string;
+    // };
+    recipient: User;
+    reactions: Array<{
+        user: string;
+        type: string;
+      }>;
+      isRead: boolean;
+    content: string;
+    createdAt: string;
+    audioUrl?: string;
+  duration?: number;
+  
+  isVoiceMessage?: boolean;
+    updatedAt: string;
+    replyTo?: {
+      _id: string;
+      content: string;
+      sender: {
+        _id: string;
+        name: string;
+      };
+    } | null;
+  }
 
 export interface PaginationParams {
     page?: number;
