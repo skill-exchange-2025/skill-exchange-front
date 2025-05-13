@@ -1,12 +1,8 @@
-import React, { useEffect } from 'react';
-import { Outlet } from 'react-router-dom';
-import { useGetChannelsQuery } from '../../redux/api/messagingApi';
-import { useAppDispatch } from '../../redux/hooks';
-import {
-  setChannels,
-  setLoading,
-  setError,
-} from '../../redux/features/messaging/channelsSlice';
+import React, {useEffect} from 'react';
+import {Outlet} from 'react-router-dom';
+import {useGetChannelsQuery} from '../../redux/api/messagingApi';
+import {useAppDispatch} from '../../redux/hooks';
+import {setChannels, setError, setLoading,} from '../../redux/features/messaging/channelsSlice';
 import socketService from '../../services/socket.service';
 
 const MessagingLayout: React.FC = () => {

@@ -1,38 +1,16 @@
-import React, { useMemo } from 'react';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-  SheetFooter,
-  SheetDescription,
-} from '../ui/sheet';
-import { Button } from '../ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
-import { Channel } from '@/types/channel';
-import { useAppSelector } from '../../redux/hooks';
-import {
-  useJoinChannelMutation,
-  useLeaveChannelMutation,
-} from '../../redux/api/messagingApi';
-import {
-  Users,
-  Hash,
-  Info,
-  ExternalLink,
-  LogOut,
-  LogIn,
-  CalendarClock,
-  PenSquare,
-  Archive,
-  Sparkles,
-} from 'lucide-react';
-import { toast } from 'sonner';
-import { Badge } from '../ui/badge';
+import React, {useMemo} from 'react';
+import {Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger,} from '../ui/sheet';
+import {Button} from '../ui/button';
+import {Avatar, AvatarFallback} from '../ui/avatar';
+import {Channel} from '@/types/channel';
+import {useAppSelector} from '../../redux/hooks';
+import {useJoinChannelMutation, useLeaveChannelMutation,} from '../../redux/api/messagingApi';
+import {Archive, CalendarClock, Hash, Info, LogIn, PenSquare, Sparkles, Users,} from 'lucide-react';
+import {useToast} from '../../hooks/use-toast';
+import {Badge} from '../ui/badge';
 import socketService from '../../services/socket.service';
-import { format } from 'date-fns';
-import { Link } from 'react-router-dom';
+import {format} from 'date-fns';
+import {Link} from 'react-router-dom';
 
 interface ChannelDetailsProps {
   channel: Channel;

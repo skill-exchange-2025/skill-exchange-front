@@ -1,26 +1,10 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { RootState } from '@/redux/store';
-import { lessonApi } from '@/redux/features/lessons/lessonApi';
-import { Lesson } from '@/types/lessons';
+// src/redux/features/lessons/lessonsSlice.tsx
+import {createSlice, PayloadAction} from '@reduxjs/toolkit';
+import {lessonApi} from './lessonApi';
+import type {Lesson, LessonsState} from '@/types/lessons';
+import type {RootState} from '@/redux/store';
 
-interface PaginationState {
-    currentPage: number;
-    itemsPerPage: number;
-    totalItems: number;
-}
-
-interface LessonsState {
-    lessons: Lesson[];
-    selectedLesson: Lesson | null;
-    filters: {
-        search: string;
-        status: string;
-        instructor: string;
-    };
-    pagination: PaginationState;
-    error: string | null;
-    loading: boolean;
-}
+// Remove the interface definitions since they're now in types/lessons.ts
 
 const initialState: LessonsState = {
     lessons: [],
@@ -43,11 +27,11 @@ const lessonsSlice = createSlice({
     name: 'lessons',
     initialState,
     reducers: {
+        // Your existing reducers remain the same
         setSearchTerm: (state, action: PayloadAction<string>) => {
             state.filters.search = action.payload;
             state.pagination.currentPage = 1;
         },
-        // ... other reducers ...
         setCurrentPage: (state, action: PayloadAction<number>) => {
             state.pagination.currentPage = action.payload;
         },
@@ -58,7 +42,6 @@ const lessonsSlice = createSlice({
         setTotalItems: (state, action: PayloadAction<number>) => {
             state.pagination.totalItems = action.payload;
         },
-        // Updated to only accept non-null Lesson objects
         setSelectedLesson: (state, action: PayloadAction<Lesson>) => {
             state.selectedLesson = action.payload;
         },
@@ -84,13 +67,13 @@ const lessonsSlice = createSlice({
                 state.loading = false;
                 state.error = action.error.message || 'Failed to fetch lessons';
             })
-            // Add matchers for getLessonById to update selectedLesson
             .addMatcher(lessonApi.endpoints.getLessonById?.matchFulfilled, (state, action) => {
                 state.selectedLesson = action.payload;
             });
     },
 });
 
+// Export actions
 export const {
     setSearchTerm,
     setCurrentPage,
@@ -101,9 +84,9 @@ export const {
     setError,
 } = lessonsSlice.actions;
 
+// Export selectors
 export const selectLessons = (state: RootState) => state.lessons.lessons;
 export const selectSelectedLesson = (state: RootState) => state.lessons.selectedLesson;
-// Add a non-null selector for type safety
 export const selectNonNullSelectedLesson = (state: RootState): Lesson => {
     if (!state.lessons.selectedLesson) {
         throw new Error("Selected lesson is null but was expected to be non-null");
@@ -115,4 +98,5 @@ export const selectPagination = (state: RootState) => state.lessons.pagination;
 export const selectLoading = (state: RootState) => state.lessons.loading;
 export const selectError = (state: RootState) => state.lessons.error;
 
+// Export reducer
 export default lessonsSlice.reducer;

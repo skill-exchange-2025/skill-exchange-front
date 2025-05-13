@@ -1,7 +1,7 @@
 import React from 'react';
-import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
-import { Button } from '@/components/ui/button';
-import { DialogFooter } from '@/components/ui/dialog';
+import {CardElement, useElements, useStripe} from '@stripe/react-stripe-js';
+import {Button} from '@/components/ui/button';
+import {DialogFooter} from '@/components/ui/dialog';
 
 interface StripePaymentFormProps {
   amount: number;

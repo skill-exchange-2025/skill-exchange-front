@@ -1,31 +1,13 @@
-import React, {
-  useEffect,
-  useRef,
-  useState,
-  useMemo,
-  useCallback,
-} from 'react';
-import { useAppSelector, useAppDispatch } from '../../redux/hooks';
-import { useGetChannelMessagesQuery } from '../../redux/api/messagingApi';
-import {
-  setMessages,
-  incrementPage,
-  setLoading,
-  setCurrentPage,
-  addMessage,
-} from '../../redux/features/messaging/channelsSlice';
-import { Message as MessageType, Channel } from '../../types/channel';
+import React, {useEffect, useMemo, useRef, useState} from 'react';
+import {useAppDispatch, useAppSelector} from '../../redux/hooks';
+import {useGetChannelMessagesQuery} from '../../redux/api/messagingApi';
+import {incrementPage, setCurrentPage, setLoading, setMessages,} from '../../redux/features/messaging/channelsSlice';
+import {Message as MessageType} from '../../types/channel';
 import Message from './Message';
 import SystemMessage from './SystemMessage';
-import {
-  Loader2,
-  MessageSquare,
-  ArrowDown,
-  CornerUpLeft,
-  X,
-} from 'lucide-react';
-import { Button } from '../ui/button';
-import { format } from 'date-fns';
+import {ArrowDown, Loader2, MessageSquare} from 'lucide-react';
+import {Button} from '../ui/button';
+import {format} from 'date-fns';
 import socketService from '../../services/socket.service';
 import MessageInput from './MessageInput';
 

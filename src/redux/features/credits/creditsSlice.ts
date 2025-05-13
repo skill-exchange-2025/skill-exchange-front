@@ -1,6 +1,6 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { RootState } from '../../store';
-import { creditsApi } from './creditsApi';
+import {createSlice, PayloadAction} from '@reduxjs/toolkit';
+import {RootState} from '../../store';
+import {creditsApi} from './creditsApi';
 
 // Define types
 export interface CreditsState {

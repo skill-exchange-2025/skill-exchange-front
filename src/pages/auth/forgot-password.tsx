@@ -1,24 +1,17 @@
-import { useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Button } from '@/components/ui/button';
+import {useRef, useState} from 'react';
+import {useNavigate} from 'react-router-dom';
+import {useForm} from 'react-hook-form';
+import {z} from 'zod';
+import {zodResolver} from '@hookform/resolvers/zod';
+import {Button} from '@/components/ui/button';
+import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage,} from '@/components/ui/form';
+import {Input} from '@/components/ui/input';
+import {toast} from 'sonner';
+import {cn} from '@/lib/utils';
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { toast } from 'sonner';
-import { cn } from '@/lib/utils';
-import {
-  useResetPasswordMutation,
-  useVerifyOTPMutation,
-  useUpdatePasswordMutation,
+    useResetPasswordMutation,
+    useUpdatePasswordMutation,
+    useVerifyOTPMutation,
 } from '@/redux/features/auth/authApi';
 
 const emailSchema = z.object({

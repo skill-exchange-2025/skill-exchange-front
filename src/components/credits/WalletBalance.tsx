@@ -1,22 +1,15 @@
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
+import {useState} from 'react';
+import {Button} from '@/components/ui/button';
+import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle,} from '@/components/ui/card';
+import {Input} from '@/components/ui/input';
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import {
-  useGetWalletQuery,
-  useCreatePaymentIntentMutation,
-  useProcessPaymentMutation,
+    useCreatePaymentIntentMutation,
+    useGetWalletQuery,
+    useProcessPaymentMutation,
 } from '@/redux/features/marketplace/marketplaceApi';
-import { toast } from 'sonner';
+import {toast} from 'sonner';
 import cryptoIcon from '@/assets/icons/crypto.png';
-import { Loader2, Plus } from 'lucide-react';
+import {Loader2, Plus} from 'lucide-react';
 
 export function WalletBalance() {
   const [amount, setAmount] = useState(100);

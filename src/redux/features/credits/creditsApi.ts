@@ -1,5 +1,5 @@
-import { baseApi } from '@/redux/api/baseApi';
-import { PurchaseRecord } from './creditsSlice';
+import {baseApi} from '@/redux/api/baseApi';
+import {PurchaseRecord} from './creditsSlice';
 
 interface Transaction {
   _id: string;

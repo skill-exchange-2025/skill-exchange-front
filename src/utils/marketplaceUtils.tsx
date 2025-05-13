@@ -1,7 +1,4 @@
-import {
-  ListingType,
-  MarketplaceItem,
-} from '@/redux/features/marketplace/marketplaceApi';
+import {ListingType, MarketplaceItem,} from '@/redux/features/marketplace/marketplaceApi';
 
 /**
  * Check if a marketplace item is a course

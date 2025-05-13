@@ -1,7 +1,7 @@
-import { Eye, EyeOff } from 'lucide-react';
-import { useState } from 'react';
-import { Input } from '@/components/ui/input';
-import { FormControl } from '@/components/ui/form';
+import {Eye, EyeOff} from 'lucide-react';
+import {useState} from 'react';
+import {Input} from '@/components/ui/input';
+import {FormControl} from '@/components/ui/form';
 
 interface PasswordInputProps {
     field: any; // Consider creating a proper type for the field prop

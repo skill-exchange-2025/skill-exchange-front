@@ -1,25 +1,19 @@
-import { Link, useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Moon, Sun, Bell, LogOut, User } from 'lucide-react';
+import {Link, useNavigate} from 'react-router-dom';
+import {Button} from '@/components/ui/button';
+import {Bell, Moon, Sun} from 'lucide-react';
 import cryptoIcon from '@/assets/icons/crypto.png';
 import logoImage from '@/assets/icons/logo.png';
-import { useTheme } from '@/components/theme-provider';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useAppDispatch, useAppSelector } from '@/redux/hooks';
-import { logout, useCurrentUser } from '@/redux/features/auth/authSlice';
-import { useEffect, useState } from 'react';
-import { CreditPurchaseDialog } from '../credits/CreditPurchaseDialog';
-import { useGetUserCreditsQuery } from '@/redux/features/credits/creditsApi';
-import { useCurrentProfile } from '@/redux/features/profile/profileSlice';
-import { useFetchProfileQuery } from '@/redux/features/profile/profileApi';
-import { Badge } from '@/components/ui/badge';
-import { WheelFortuneDialog } from '../wheel/WheelFortuneDialog';
+import {useTheme} from '@/components/theme-provider';
+import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,} from '@/components/ui/dropdown-menu';
+import {Avatar, AvatarFallback, AvatarImage} from '@/components/ui/avatar';
+import {useAppDispatch, useAppSelector} from '@/redux/hooks';
+import {logout, useCurrentUser} from '@/redux/features/auth/authSlice';
+import {useEffect, useState} from 'react';
+import {CreditPurchaseDialog} from '../credits/CreditPurchaseDialog';
+import {useGetUserCreditsQuery} from '@/redux/features/credits/creditsApi';
+import {useCurrentProfile} from '@/redux/features/profile/profileSlice';
+import {useFetchProfileQuery} from '@/redux/features/profile/profileApi';
+import {Badge} from '@/components/ui/badge';
 
 export function Navbar() {
   const { theme, setTheme } = useTheme();
@@ -326,25 +320,27 @@ export function Navbar() {
                         </div>
                       </div>
 
-                      {/* Menu Items */}
-                      <div className="p-1">
-                        <DropdownMenuItem asChild className="cursor-pointer">
-                          <Link to="/user/profile" className="flex items-center">
-                            <User className="mr-2 h-4 w-4"/>
-                            Manage Profile
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                            onClick={handleSignOut}
-                            className="cursor-pointer text-red-500 flex items-center"
-                        >
-                          <LogOut className="mr-2 h-4 w-4"/>
-                          Sign Out
-                        </DropdownMenuItem>
-                      </div>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
+                    {/* Menu Items */}
+                    <div className="p-1">
+                      <DropdownMenuItem asChild className="cursor-pointer">
+                        <Link to="/user/profile">Manage Profile</Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild className="cursor-pointer">
+                        <Link to="/user/feedback">Manage My feedbacks</Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild className="cursor-pointer">
+                        <Link to="/messaging">Messages</Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={handleSignOut}
+                        className="cursor-pointer"
+                      >
+                        Sign Out
+                      </DropdownMenuItem>
+                    </div>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
             ) : (
                 <div className="flex items-center space-x-2">
                 <Link to="/login">

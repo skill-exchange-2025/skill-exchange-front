@@ -1,9 +1,11 @@
 // admin.routes.tsx
 import AdminDashboard from "../pages/admin/AdminDashboard";
-import { TUserPath } from "@/types";
-import { Home, Users, GraduationCap, School, Code } from 'lucide-react';
+import {TUserPath} from "@/types";
+import {GraduationCap, Home, MessageSquare, School, Users, Code} from 'lucide-react';
 import ProfilePage from "@/pages/user/profile/ProfilePage.tsx";
-import { UsersView } from "@/pages/user/table/UsersView";
+import {UsersView} from "@/pages/user/table/UsersView";
+import {FeedbackManagement} from "@/pages/admin/feedback/FeedbackManagement.tsx";
+import AdminStatistics from "@/pages/admin/AdminStatistics.tsx";
 import RoomsList from "@/pages/CodingRooms/RoomsList";
 import CreateRoomPage from "@/pages/CodingRooms/CreateRoomPage";
 
@@ -34,6 +36,20 @@ export const adminPaths: TUserPath[] = [
         element: <AdminDashboard />,
         icon: <School size={16} />,
         permissions: ["create_faculty"],
+      },
+      {
+        name: "Feedback Management",
+        path: "feedbacks",
+        element: <FeedbackManagement />,
+        icon: <MessageSquare size={16} />,
+        permissions: ["view:metrics"]
+      },
+      {
+        name: "View Statistics",
+        path: "stats",
+        element: <AdminStatistics />,
+        icon: <School size={16} />,
+        permissions: ["view:metrics"],
       },
     ],
   },

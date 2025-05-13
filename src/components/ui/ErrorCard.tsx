@@ -1,4 +1,4 @@
-import { Button } from '@/components/ui/button';
+import {Button} from '@/components/ui/button';
 import {Card} from "antd";
 import {CardContent} from "@/components/ui/card.tsx";
 

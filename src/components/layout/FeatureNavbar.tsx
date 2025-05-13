@@ -1,18 +1,8 @@
-import { Link } from 'react-router-dom';
-import { cn } from '@/lib/utils';
-import { useLocation } from 'react-router-dom';
-import {
-  MessageSquare,
-  Store,
-  Heart,
-  Home,
-  Book,
-  MessageCircle,
-  Search,
-  Telescope,
-} from 'lucide-react';
-import { motion, useScroll } from 'framer-motion';
-import { useEffect, useState } from 'react';
+import {Link, useLocation} from 'react-router-dom';
+import {cn} from '@/lib/utils';
+import {Book, Home, MessageCircle, MessageSquare, Store,} from 'lucide-react';
+import {motion, useScroll} from 'framer-motion';
+import {useEffect, useState} from 'react';
 
 export function FeatureNavbar() {
   const location = useLocation();

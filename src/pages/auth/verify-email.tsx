@@ -1,7 +1,7 @@
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useVerifyEmailQuery } from '@/redux/features/auth/authApi';
-import { Button } from '@/components/ui/button';
-import { Loader2 } from 'lucide-react';
+import {useNavigate, useSearchParams} from 'react-router-dom';
+import {useVerifyEmailQuery} from '@/redux/features/auth/authApi';
+import {Button} from '@/components/ui/button';
+import {Loader2} from 'lucide-react';
 
 export function VerifyEmail() {
   const [searchParams] = useSearchParams();

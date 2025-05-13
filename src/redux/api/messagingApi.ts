@@ -1,11 +1,5 @@
-import { baseApi } from './baseApi';
-import {
-  Channel,
-  Message,
-  CreateChannelDto,
-  CreateMessageDto,
-  ChannelMessagesResponse,
-} from '@/types/channel.ts';
+import {baseApi} from './baseApi';
+import {Channel, ChannelMessagesResponse, CreateChannelDto, CreateMessageDto, Message,} from '../../types/channel';
 
 export const messagingApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
