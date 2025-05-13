@@ -1,9 +1,9 @@
-import React, { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAppSelector } from '../../redux/hooks';
+import React, {useEffect} from 'react';
+import {useNavigate} from 'react-router-dom';
+import {useAppSelector} from '../../redux/hooks';
 import ChannelSidebar from '../../components/messaging/ChannelSidebar';
-import { MessageSquare } from 'lucide-react';
-import { Button } from '../../components/ui/button';
+import {MessageSquare} from 'lucide-react';
+import {Button} from '../../components/ui/button';
 
 const ChannelListPage: React.FC = () => {
   const navigate = useNavigate();

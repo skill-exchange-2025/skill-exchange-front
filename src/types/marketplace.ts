@@ -1,4 +1,4 @@
-import { ListingType } from '@/redux/features/marketplace/marketplaceApi';
+import {ListingType} from '@/redux/features/marketplace/marketplaceApi';
 
 export interface MarketplaceItem {
   _id?: string;

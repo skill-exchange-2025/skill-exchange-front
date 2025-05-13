@@ -1,24 +1,11 @@
-import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Slider } from '@/components/ui/slider';
-import {
-  LayoutGrid,
-  List,
-  Search,
-  SlidersHorizontal,
-  X,
-  RotateCcw,
-} from 'lucide-react';
-import { MarketplaceFilters } from '@/types/marketplace';
-import { ListingTypeFilter } from './ListingTypeFilter';
+import {useEffect, useState} from 'react';
+import {Button} from '@/components/ui/button';
+import {Input} from '@/components/ui/input';
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue,} from '@/components/ui/select';
+import {Slider} from '@/components/ui/slider';
+import {LayoutGrid, List, RotateCcw, Search, SlidersHorizontal, X,} from 'lucide-react';
+import {MarketplaceFilters} from '@/types/marketplace';
+import {ListingTypeFilter} from './ListingTypeFilter';
 
 interface MarketplaceFilterBarProps {
   filters: MarketplaceFilters;

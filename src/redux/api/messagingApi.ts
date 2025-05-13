@@ -1,12 +1,5 @@
-import { baseApi } from './baseApi';
-import {
-  Channel,
-  Message,
-  CreateChannelDto,
-  CreateMessageDto,
-  ChannelMessagesResponse,
-  AddReactionDto,
-} from '../../types/channel';
+import {baseApi} from './baseApi';
+import {Channel, ChannelMessagesResponse, CreateChannelDto, CreateMessageDto, Message,} from '../../types/channel';
 
 export const messagingApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -58,7 +51,7 @@ export const messagingApi = baseApi.injectEndpoints({
         method: 'GET',
         params: { page, limit },
       }),
-      providesTags: (result, error, { channelId }) =>
+      providesTags: (result, _error, { channelId }) =>
         result
           ? [
               ...result.messages.map(({ _id }) => ({
@@ -77,7 +70,7 @@ export const messagingApi = baseApi.injectEndpoints({
         method: 'POST',
         body: createMessageDto,
       }),
-      invalidatesTags: (result, error, { channel }) =>
+      invalidatesTags: (_result, error, { channel }) =>
         error ? [] : [{ type: 'Message', id: `CHANNEL_${channel}` }],
     }),
 
@@ -86,7 +79,7 @@ export const messagingApi = baseApi.injectEndpoints({
         url: `/messaging/messages/${messageId}/delete`,
         method: 'POST',
       }),
-      invalidatesTags: (result, error, messageId) =>
+      invalidatesTags: (_result, error, messageId) =>
         error ? [] : [{ type: 'Message', id: messageId }],
     }),
 
@@ -97,7 +90,7 @@ export const messagingApi = baseApi.injectEndpoints({
         body: formData,
         formData: true,
       }),
-      invalidatesTags: (result, error, formData) => {
+      invalidatesTags: (_result, error, formData) => {
         // Extract the channel ID from the FormData
         const channelId = formData.get('channel') as string;
         return error ? [] : [{ type: 'Message', id: `CHANNEL_${channelId}` }];
@@ -133,7 +126,7 @@ export const messagingApi = baseApi.injectEndpoints({
         method: 'POST',
         body: { emoji },
       }),
-      invalidatesTags: (result, error, { messageId }) =>
+      invalidatesTags: (_result, error, { messageId }) =>
         error ? [] : [{ type: 'Message', id: messageId }],
     }),
 
@@ -146,7 +139,7 @@ export const messagingApi = baseApi.injectEndpoints({
         method: 'DELETE',
         body: { emoji },
       }),
-      invalidatesTags: (result, error, { messageId }) =>
+      invalidatesTags: (_result, error, { messageId }) =>
         error ? [] : [{ type: 'Message', id: messageId }],
     }),
 

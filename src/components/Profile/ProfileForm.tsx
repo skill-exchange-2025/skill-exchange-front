@@ -1,22 +1,21 @@
-import React, { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { useAppDispatch, useAppSelector } from '@/redux/hooks';
-import { RootState } from '@/redux/store';
-import { Profile } from '@/types/profile';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { useRef } from 'react';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { useUploadAvatarMutation } from '@/redux/features/profile/profileApi';
-import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import React, {useEffect, useRef, useState} from 'react';
+import {useForm} from 'react-hook-form';
+import {useAppDispatch, useAppSelector} from '@/redux/hooks';
+import {RootState} from '@/redux/store';
+import {Profile} from '@/types/profile';
+import {Button} from '@/components/ui/button';
+import {Input} from '@/components/ui/input';
+import {Avatar, AvatarFallback, AvatarImage} from '@/components/ui/avatar';
 import {
     useCreateProfileMutation,
     useFetchProfileQuery,
     useUpdateProfileMutation,
+    useUploadAvatarMutation
 } from '@/redux/features/profile/profileApi';
-import { setProfile, resetStatus } from '@/redux/features/profile/profileSlice';
+import {Textarea} from '@/components/ui/textarea';
+import {Card, CardContent, CardHeader, CardTitle} from '@/components/ui/card';
+import {Alert, AlertDescription} from '@/components/ui/alert';
+import {resetStatus, setProfile} from '@/redux/features/profile/profileSlice';
 import {useCurrentProfile} from "@/redux/features/profile/profileSlice.ts";
 
 export const ProfileForm: React.FC = () => {

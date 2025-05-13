@@ -87,15 +87,15 @@ export default {
           },
           '25%': {
             textShadow:
-              '0 0 4px #00EC96, 0 0 8px #00EC96, 0 0 16px #00EC96, 0 0 20px #00EC96',
+                '0 0 4px #00EC96, 0 0 8px #00EC96, 0 0 16px #00EC96, 0 0 20px #00EC96',
           },
           '50%': {
             textShadow:
-              '0 0 2px #00EC96, 0 0 5px #00EC96, 0 0 10px #00EC96, 0 0 15px #00EC96, 0 0 25px #00EC96',
+                '0 0 2px #00EC96, 0 0 5px #00EC96, 0 0 10px #00EC96, 0 0 15px #00EC96, 0 0 25px #00EC96',
           },
           '75%': {
             textShadow:
-              '0 0 4px #00EC96, 0 0 8px #00EC96, 0 0 16px #00EC96, 0 0 20px #00EC96',
+                '0 0 4px #00EC96, 0 0 8px #00EC96, 0 0 16px #00EC96, 0 0 20px #00EC96',
           },
           '100%': {
             textShadow: '0 0 4px #00EC96, 0 0 8px #00EC96, 0 0 12px #00EC96',
@@ -112,7 +112,7 @@ export default {
       },
       textShadow: {
         'neon-green':
-          '0 0 4px #00EC96, 0 0 8px #00EC96, 0 0 12px #00EC96, 0 0 16px #00EC96',
+            '0 0 4px #00EC96, 0 0 8px #00EC96, 0 0 12px #00EC96, 0 0 16px #00EC96',
       },
     },
   },

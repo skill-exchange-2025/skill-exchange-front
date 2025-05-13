@@ -1,5 +1,5 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { User, UsersState } from '@/types/user';
+import {createSlice, PayloadAction} from '@reduxjs/toolkit';
+import {User, UsersState} from '@/types/user';
 
 const initialState: UsersState = {
     selectedUser: null,
@@ -36,7 +36,7 @@ const usersSlice = createSlice({
 
         setSearchTerm: (state, action: PayloadAction<string>) => {
             state.filters.search = action.payload;
-            state.pagination.currentPage = 1; // Reset to first page when search changes
+            state.pagination.currentPage = 1;
         },
 
         setRoleFilter: (state, action: PayloadAction<string | null>) => {

@@ -1,37 +1,27 @@
-import { motion } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { Link } from 'react-router-dom';
+import {motion} from 'framer-motion';
+import {Button} from '@/components/ui/button';
+import {Link} from 'react-router-dom';
 import {
-  ArrowRight,
-  CheckCircle2,
-  Shield,
-  ShoppingBag,
-  Zap,
-  Users,
-  GraduationCap,
-  Star,
-  MessageSquare,
-  ChevronLeft,
-  ChevronRight,
+    ArrowRight,
+    CheckCircle2,
+    ChevronLeft,
+    ChevronRight,
+    GraduationCap,
+    MessageSquare,
+    Shield,
+    ShoppingBag,
+    Sparkles,
+    Star,
+    Users,
+    Zap,
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { Sparkles } from '@/components/ui/sparkles';
+import {useEffect, useState} from 'react';
 
 export function LandingPage() {
   return (
     <div className="flex flex-col relative overflow-hidden">
       <Sparkles
-        className="opacity-90"
-        count={300}
-        colors={[
-          'text-[#00EC96]',
-          'text-[#2ECC71]',
-          'text-[#50C878]',
-          'text-[#00A86B]',
-          'text-[#4CBB17]',
-          'text-[#00EC96]',
-          'text-[#2ECC71]',
-        ]}
+        className="opacity-90 absolute top-0 left-0 w-96 h-96 text-[#00EC96]/20 animate-pulse"
       />
       {/* Hero Section */}
       <section className="container py-24 md:py-32 bg-gradient-to-b from-background to-background/80 mx-auto ">

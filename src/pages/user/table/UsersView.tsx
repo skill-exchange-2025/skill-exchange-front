@@ -1,18 +1,24 @@
 // UsersView.tsx
 import React from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { useGetUsersQuery, useGetUserMetricsQuery } from '@/redux/features/users/usersApi';
-import { selectFilters, selectPagination, selectUserPreferences, setSearchTerm, setCurrentPage } from '@/redux/features/users/usersSlice';
-import { UsersList } from '@/components/users/UsersList';
-import { UsersGrid } from '@/components/users/UsersGrid';
-import { UserFilters } from '@/components/users/UserFilters';
-import { UserMetrics } from '@/components/users/UserMetrics';
-import { Pagination } from '@/components/users/Pagination';
-import { UserModal } from '@/components/users/UserModal';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent } from '@/components/ui/card';
-import { Plus } from 'lucide-react';
+import {useDispatch, useSelector} from 'react-redux';
+import {useGetUserMetricsQuery, useGetUsersQuery} from '@/redux/features/users/usersApi';
+import {
+    selectFilters,
+    selectPagination,
+    selectUserPreferences,
+    setCurrentPage,
+    setSearchTerm
+} from '@/redux/features/users/usersSlice';
+import {UsersList} from '@/components/users/UsersList';
+import {UsersGrid} from '@/components/users/UsersGrid';
+import {UserFilters} from '@/components/users/UserFilters';
+import {UserMetrics} from '@/components/users/UserMetrics';
+import {Pagination} from '@/components/users/Pagination';
+import {UserModal} from '@/components/users/UserModal';
+import {Button} from '@/components/ui/button';
+import {Input} from '@/components/ui/input';
+import {Card, CardContent} from '@/components/ui/card';
+import {Plus} from 'lucide-react';
 
 export const UsersView: React.FC = () => {
     const dispatch = useDispatch();
@@ -39,6 +45,7 @@ export const UsersView: React.FC = () => {
                 <Button onClick={() => setIsModalOpen(true)}>
                     <Plus className="mr-2 h-4 w-4" /> Add User
                 </Button>
+
             </div>
 
             {/* Metrics Cards */}

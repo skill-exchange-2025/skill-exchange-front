@@ -1,6 +1,4 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-expect-error
-import path from 'path';
+import * as path from 'path';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 
@@ -12,6 +10,6 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
-    exclude: ['lucide-react'],
+    include: ['lucide-react'], // Changed from exclude to include
   },
 });

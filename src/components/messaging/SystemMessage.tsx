@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, UserPlus, UserMinus } from 'lucide-react';
+import {User, UserMinus, UserPlus} from 'lucide-react';
 
 interface SystemMessageProps {
   type: 'join' | 'leave' | 'info';

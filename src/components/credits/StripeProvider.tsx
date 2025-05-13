@@ -1,6 +1,6 @@
 import React from 'react';
-import { loadStripe } from '@stripe/stripe-js';
-import { Elements } from '@stripe/react-stripe-js';
+import {loadStripe} from '@stripe/stripe-js';
+import {Elements} from '@stripe/react-stripe-js';
 
 // Replace with your Stripe publishable key
 // In a real application, this should be stored in an environment variable

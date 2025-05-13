@@ -1,5 +1,5 @@
-import { selectFilters, setRoleFilter, setSortBy } from "@/redux/features/users/usersSlice";
-import { useDispatch, useSelector } from "react-redux";
+import {selectFilters, setRoleFilter, setSortBy} from "@/redux/features/users/usersSlice";
+import {useDispatch, useSelector} from "react-redux";
 
 // components/UserFilters.tsx
 export const UserFilters: React.FC = () => {

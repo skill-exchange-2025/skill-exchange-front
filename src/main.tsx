@@ -1,18 +1,18 @@
 import {
-  CheckBadgeIcon,
-  ExclamationCircleIcon,
-  ExclamationTriangleIcon,
-  InformationCircleIcon,
-  MagnifyingGlassCircleIcon,
+    CheckBadgeIcon,
+    ExclamationCircleIcon,
+    ExclamationTriangleIcon,
+    InformationCircleIcon,
+    MagnifyingGlassCircleIcon,
 } from "@heroicons/react/24/outline";
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { HelmetProvider } from "react-helmet-async";
-import { Provider } from "react-redux";
-import { RouterProvider } from "react-router-dom";
-import { Toaster } from "sonner";
+import {HelmetProvider} from "react-helmet-async";
+import {Provider} from "react-redux";
+import {RouterProvider} from "react-router-dom";
+import {Toaster} from "sonner";
 import "./index.css";
-import { store } from "./redux/store.ts";
+import {store} from "./redux/store.ts";
 import router from "./routes/routes.tsx";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(

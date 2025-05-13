@@ -1,13 +1,26 @@
-import { useActivateUserMutation,useDeleteUserMutation, useGetUsersQuery, useUpdateUserStatusMutation } from "@/redux/features/users/usersApi";
-import { User } from "@/types/user";
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogTrigger, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { useSelector } from "react-redux";
-import { selectFilters, selectPagination } from "@/redux/features/users/usersSlice.ts";
-import { useState } from "react";
-import { UserModal } from "./UserModal";
+import {
+    useActivateUserMutation,
+    useDeleteUserMutation,
+    useGetUsersQuery,
+    useUpdateUserStatusMutation
+} from "@/redux/features/users/usersApi";
+import {User} from "@/types/user";
+import {Card} from '@/components/ui/card';
+import {Button} from '@/components/ui/button';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger
+} from '@/components/ui/dialog';
+import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
+import {useSelector} from "react-redux";
+import {selectFilters, selectPagination} from "@/redux/features/users/usersSlice.ts";
+import {useState} from "react";
+import {UserModal} from "./UserModal";
 
 
 export const UsersList: React.FC<{ users: User[] }> = ({ users }) => {

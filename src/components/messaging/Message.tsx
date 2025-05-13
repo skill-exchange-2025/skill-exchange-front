@@ -1,53 +1,24 @@
-import React, { useState } from 'react';
-import { format } from 'date-fns';
-import { useAppSelector } from '../../redux/hooks';
+import React, {useState} from 'react';
+import {format} from 'date-fns';
+import {useAppSelector} from '../../redux/hooks';
 import {
-  useAddReactionMutation,
-  useRemoveReactionMutation,
-  useDeleteMessageMutation,
+    useAddReactionMutation,
+    useDeleteMessageMutation,
+    useRemoveReactionMutation,
 } from '../../redux/api/messagingApi';
-import { Message as MessageType } from '../../types/channel';
-import { User } from '@/types/user';
-import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
-import { Button } from '../ui/button';
-import {
-  Smile,
-  FileIcon,
-  Link as LinkIcon,
-  Download,
-  Trash2,
-  MoreVertical,
-  X,
-  ImageIcon,
-  FileText,
-  File,
-  Eye,
-  MessageCircle,
-  UserCircle,
-  Loader2,
-  CornerUpLeft,
-} from 'lucide-react';
-import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
-import EmojiPicker, { EmojiClickData } from 'emoji-picker-react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '../ui/dropdown-menu';
-import { toast } from 'sonner';
+import {Message as MessageType} from '../../types/channel';
+import {User} from '@/types/user';
+import {Avatar, AvatarFallback, AvatarImage} from '../ui/avatar';
+import {Button} from '../ui/button';
+import {Download, File, FileIcon, FileText, ImageIcon, MoreVertical, Smile, Trash2,} from 'lucide-react';
+import {Popover, PopoverContent, PopoverTrigger} from '../ui/popover';
+import EmojiPicker, {EmojiClickData} from 'emoji-picker-react';
+import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,} from '../ui/dropdown-menu';
+import {useToast} from '../use-toast';
 import socketService from '../../services/socket.service';
 import MessageReactions from './MessageReactions';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '../ui/dialog';
-import { Badge } from '../ui/badge';
-import MessageReplyButton from './MessageReplyButton';
-import MessageReplies from './MessageReplies';
+import {Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle,} from '../ui/dialog';
+import {Badge} from '../ui/badge';
 
 interface MessageProps {
   message: MessageType;

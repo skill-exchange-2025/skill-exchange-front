@@ -1,6 +1,6 @@
-import { User } from "@/types/user";
-import { Button } from '@/components/ui/button';
-import { Card } from "@/components/ui/card";
+import {User} from "@/types/user";
+import {Button} from '@/components/ui/button';
+import {Card} from "@/components/ui/card";
 
 // components/UsersGrid.tsx
 export const UsersGrid: React.FC<{ users: User[] }> = ({ users }) => (

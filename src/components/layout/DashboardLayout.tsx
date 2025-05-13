@@ -1,12 +1,12 @@
-import { Layout } from 'antd';
-import { Outlet } from 'react-router-dom';
+import {Layout} from 'antd';
+import {Outlet} from 'react-router-dom';
 // import Navbar from "../ui/custom/others/Navbar";
 import Sidebar from './Sidebar';
-import { Navbar } from './navbar';
-import { Footer } from './footer'; // You'll need to create this component
-import { FeatureNavbar } from './FeatureNavbar';
-import { useAppSelector } from '@/redux/hooks';
-import { useCurrentUser } from '@/redux/features/auth/authSlice';
+import {Navbar} from './navbar';
+import {Footer} from './footer'; // You'll need to create this component
+import {FeatureNavbar} from './FeatureNavbar';
+import {useAppSelector} from '@/redux/hooks';
+import {useCurrentUser} from '@/redux/features/auth/authSlice';
 
 const { Content } = Layout;
 

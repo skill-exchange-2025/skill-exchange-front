@@ -1,39 +1,20 @@
 import {useNavigate, useParams} from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useGetLessonsByListingQuery, useDeleteLessonMutation } from '@/redux/features/lessons/lessonApi';
-import { Lesson } from '@/types/lessons';
-import { toast } from 'sonner';
-import { Pagination } from 'antd';
-import { useDispatch, useSelector } from 'react-redux';
-import {setCurrentPage, selectPagination, setSelectedLesson} from '@/redux/features/lessons/lessonsSlice';
-import { useEffect } from "react";
-import {
-    Accordion,
-    AccordionContent,
-    AccordionItem,
-    AccordionTrigger,
-} from "@/components/ui/accordion";
-import {
-    Lock,
-    Check,
-    ChevronRight,
-    BookOpen,
-    GraduationCap,
-    Calendar,
-    Users,
-    Clock,
-    MapPin,
-    Plus,
-    Trash2,
-    Edit2,
-    Eye
-} from "lucide-react";
-import { ListingType, useGetMarketplaceItemByIdQuery } from '@/redux/features/marketplace/marketplaceApi';
-import { format } from 'date-fns';
-import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { useTheme } from 'next-themes';
+import {Button} from '@/components/ui/button';
+import {Card, CardContent, CardHeader, CardTitle} from '@/components/ui/card';
+import {useDeleteLessonMutation, useGetLessonsByListingQuery} from '@/redux/features/lessons/lessonApi';
+import {Lesson} from '@/types/lessons';
+import {toast} from 'sonner';
+import {Pagination} from 'antd';
+import {useDispatch, useSelector} from 'react-redux';
+import {selectPagination, setCurrentPage, setSelectedLesson} from '@/redux/features/lessons/lessonsSlice';
+import {useEffect} from 'react';
+import {Accordion, AccordionContent, AccordionItem, AccordionTrigger,} from '@/components/ui/accordion';
+import {BookOpen, Check, Edit2, Eye, GraduationCap, Lock, Plus, Trash2} from 'lucide-react';
+import {ListingType, useGetMarketplaceItemByIdQuery} from '@/redux/features/marketplace/marketplaceApi';
+import {Badge} from '@/components/ui/badge';
+import {ScrollArea} from '@/components/ui/scroll-area';
+import {useTheme} from 'next-themes';
+
 
 export function ManageLessons() {
     const navigate = useNavigate();
@@ -71,15 +52,16 @@ export function ManageLessons() {
         try {
             await deleteLesson(lessonId).unwrap();
             toast.success('Lesson deleted successfully!');
-        } catch (err) {
+        } catch {
             toast.error('Failed to delete lesson.');
         }
     };
 
+
     const handleEdit = (lessonId: string) => {
         navigate(`/marketplace/item/${itemId}/lessons/${lessonId}/edit`);
     };
-
+   
     const handleCreate = () => {
         navigate(`/marketplace/item/${itemId}/create-lesson`);
     };
@@ -129,63 +111,15 @@ export function ManageLessons() {
                             <p className="text-muted-foreground">{marketplaceItem.description}</p>
                         </div>
                         <Badge variant="outline" className={marketplaceItem.type === ListingType.ONLINE_COURSE ? "bg-emerald-500/10 text-emerald-500" : "bg-amber-500/10 text-amber-500"}>
-                            {marketplaceItem.type === ListingType.ONLINE_COURSE ? (
-                                <div className="flex items-center gap-1">
-                                    <GraduationCap className="h-4 w-4" />
-                                    <span>Interactive Course</span>
-                                </div>
-                            ) : (
-                                <div className="flex items-center gap-1">
-                                    <BookOpen className="h-4 w-4" />
-                                    <span>Static Course</span>
-                                </div>
-                            )}
+                            <div className="flex items-center gap-1">
+                                {marketplaceItem.type === ListingType.ONLINE_COURSE ? <GraduationCap className="h-4 w-4" /> : <BookOpen className="h-4 w-4" />}
+                                <span>{marketplaceItem.type === ListingType.ONLINE_COURSE ? 'Interactive Course' : 'Static Course'}</span>
+                            </div>
                         </Badge>
                     </div>
                 </CardHeader>
 
                 <CardContent className="p-6 space-y-6">
-                    {/* Course Details Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-4 rounded-lg bg-muted/50">
-                        {marketplaceItem.startDate && (
-                            <div className="flex items-center gap-3 p-3 rounded-md bg-background">
-                                <Calendar className="h-5 w-5 text-primary" />
-                                <div>
-                                    <p className="text-xs text-muted-foreground">Start Date</p>
-                                    <p className="font-medium">{format(new Date(marketplaceItem.startDate), 'PPP')}</p>
-                                </div>
-                            </div>
-                        )}
-                        {marketplaceItem.endDate && (
-                            <div className="flex items-center gap-3 p-3 rounded-md bg-background">
-                                <Calendar className="h-5 w-5 text-primary" />
-                                <div>
-                                    <p className="text-xs text-muted-foreground">End Date</p>
-                                    <p className="font-medium">{format(new Date(marketplaceItem.endDate), 'PPP')}</p>
-                                </div>
-                            </div>
-                        )}
-                        {marketplaceItem.maxStudents && (
-                            <div className="flex items-center gap-3 p-3 rounded-md bg-background">
-                                <Users className="h-5 w-5 text-primary" />
-                                <div>
-                                    <p className="text-xs text-muted-foreground">Max Students</p>
-                                    <p className="font-medium">{marketplaceItem.maxStudents}</p>
-                                </div>
-                            </div>
-                        )}
-                        {marketplaceItem.durationHours && (
-                            <div className="flex items-center gap-3 p-3 rounded-md bg-background">
-                                <Clock className="h-5 w-5 text-primary" />
-                                <div>
-                                    <p className="text-xs text-muted-foreground">Duration</p>
-                                    <p className="font-medium">{marketplaceItem.durationHours} hours</p>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Create Lesson Button */}
                     <div className="flex justify-end">
                         <Button onClick={handleCreate} className="gap-2">
                             <Plus className="h-4 w-4" />
@@ -193,7 +127,6 @@ export function ManageLessons() {
                         </Button>
                     </div>
 
-                    {/* Lessons List */}
                     <ScrollArea className="h-[600px] pr-4">
                         {!data.data || data.data.length === 0 ? (
                             <div className="flex flex-col items-center justify-center h-[200px] text-muted-foreground">
@@ -246,6 +179,7 @@ export function ManageLessons() {
                                                             e.stopPropagation();
                                                             handleEdit(lesson._id);
                                                         }}
+
                                                     >
                                                         <Edit2 className="h-4 w-4" />
                                                         Edit
@@ -272,7 +206,6 @@ export function ManageLessons() {
                         )}
                     </ScrollArea>
 
-                    {/* Pagination */}
                     {data.meta && data.meta.total > itemsPerPage && (
                         <div className="flex justify-center pt-4">
                             <Pagination

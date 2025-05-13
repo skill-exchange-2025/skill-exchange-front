@@ -1,11 +1,14 @@
-import { io, Socket } from 'socket.io-client';
-import { store } from '../redux/store';
+import {io, Socket} from 'socket.io-client';
+import {store} from '../redux/store';
 import {
-  addMessage,
-  updateMessage,
-  removeMessage,
+    addMessage,
+    removeMessage,
+    setChannels,
+    updateChannel,
+    updateMessage,
 } from '../redux/features/messaging/channelsSlice';
-import { Message, Channel } from '../types/channel';
+import {Message} from '../types/channel';
+
 
 class SocketService {
   private socket: Socket | null = null;
