@@ -25,7 +25,6 @@ import {
   Share2,
   Settings,
   Users,
-  X,
   TerminalSquare
 } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
