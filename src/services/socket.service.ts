@@ -3,11 +3,8 @@ import {store} from '../redux/store';
 import {
     addMessage,
     removeMessage,
-    setChannels,
-    updateChannel,
     updateMessage,
 } from '../redux/features/messaging/channelsSlice';
-import {Message} from '../types/channel';
 
 
 class SocketService {

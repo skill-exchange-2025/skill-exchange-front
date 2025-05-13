@@ -72,5 +72,6 @@ export const baseApi = createApi({
     'PrivateMessage',
     'Feedback',
     'DashboardStats',
-    'WheelSpin'
+    'WheelSpin',
+  ]
 });

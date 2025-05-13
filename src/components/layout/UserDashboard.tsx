@@ -1,12 +1,12 @@
-import {Layout} from 'antd';
-import {Outlet} from 'react-router-dom';
+import {Outlet, useLocation} from 'react-router-dom';
 // import Navbar from "../ui/custom/others/Navbar";
 import {Navbar} from './navbar';
 import {Footer} from './footer';
-import {FeatureNavbar} from "@/components/layout/FeatureNavbar.tsx"; // You'll need to create this component
+import {FeatureNavbar} from "@/components/layout/FeatureNavbar.tsx";
+import {useAppSelector} from "@/redux/hooks.ts";
+import {useCurrentUser} from "@/redux/features/auth/authSlice.ts"; // You'll need to create this component
 
 
-const { Content } = Layout;
 
 const UserDashboard = () => {
   const currentUser = useAppSelector(useCurrentUser);

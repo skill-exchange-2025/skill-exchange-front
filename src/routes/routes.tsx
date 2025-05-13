@@ -39,6 +39,7 @@ import CodingRoomPage from "@/pages/CodingRooms/CodingRoomPage";
 import CreateRoomPage from "@/pages/CodingRooms/CreateRoomPage.tsx";
 import {DiscoverPage} from '@/pages/discover';
 import SummarizerPage from '@/pages/SummarizerPage';
+import FriendsPage from "@/pages/friends.tsx";
 
 const router = createBrowserRouter([
   {

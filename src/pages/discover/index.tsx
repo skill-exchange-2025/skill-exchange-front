@@ -4,17 +4,14 @@ import { Link } from 'react-router-dom';
 import {
   BookOpen,
   MessageSquare,
-  Store,
   Users,
   GraduationCap,
-  Sparkles,
   ArrowRight,
   Star,
   Zap,
   Shield,
   ShoppingBag,
   Brain,
-  TrendingUp,
   UserPlus,
   BookMarked,
   Cpu,
@@ -23,7 +20,6 @@ import { Sparkles as SparklesComponent } from '@/components/ui/sparkles';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Progress } from '@/components/ui/progress';
 
 // Mock data for AI recommendations
 const recommendedCourses = [

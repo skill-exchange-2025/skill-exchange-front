@@ -91,11 +91,9 @@ import { toast } from 'sonner';
     const [removeReaction] = useRemoveReactionMutation();
     const [showEmojiPicker, setShowEmojiPicker] = useState<boolean>(false);
     const [currentMessageId, setCurrentMessageId] = useState<string | null>(null);
-    const [isConnected, setIsConnected] = useState(false);
       const [message, setMessage] = useState('');
       const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
       const [editContent, setEditContent] = useState('');
-      const [openMenuId, setOpenMenuId] = useState<string | null>(null);
       const [sendMessage] = useSendPrivateMessageMutation();
       const [deleteMessage] = useDeletePrivateMessageMutation();
       const [editMessage] = useEditPrivateMessageMutation();
@@ -201,45 +199,7 @@ const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
           // If clicking other user's avatar, go to their profile
           navigate(`/profile/${senderId}`);
         }
-      };
-
-    const convertToMp3 = (audioData: Float32Array): Blob => {
-      try {
-        const channels = 1; // Mono
-        const sampleRate = 44100; // Standard sample rate
-        const kbps = 128; // Bitrate
-    
-        const mp3Encoder = new lamejs.Mp3Encoder(channels, sampleRate, kbps);
-        const mp3Data: Int8Array[] = [];
-    
-        // Convert Float32Array to Int16Array
-        const samples = new Int16Array(audioData.length);
-        for (let i = 0; i < audioData.length; i++) {
-          const s = Math.max(-1, Math.min(1, audioData[i]));
-          samples[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
-        }
-    
-        // Process chunks
-        const chunkSize = 1152;
-        for (let i = 0; i < samples.length; i += chunkSize) {
-          const chunk = samples.slice(i, i + chunkSize);
-          const mp3Buffer = mp3Encoder.encodeBuffer(chunk);
-          if (mp3Buffer.length > 0) {
-            mp3Data.push(mp3Buffer);
-          }
-        }
-    
-        const end = mp3Encoder.flush();
-        if (end.length > 0) {
-          mp3Data.push(end);
-        }
-    
-        return new Blob(mp3Data, { type: 'audio/mpeg' });
-      } catch (error) {
-        console.error('MP3 conversion error:', error);
-        throw new Error('Failed to convert audio to MP3');
       }
-    };
 
 
     const handleVoiceMessageSend = async (audioBlob: Blob, duration: number) => {
