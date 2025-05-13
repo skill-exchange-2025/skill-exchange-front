@@ -361,14 +361,14 @@ export const marketplaceApi = baseApi.injectEndpoints({
     // Transaction endpoints
     getTransactions: builder.query<PaginatedResponse<Transaction>, void>({
       query: () => ({
-        url: '/marketplace/transactions',
+        url: '/marketplace/my-purchases',
         method: 'GET',
       }),
     }),
 
     completeTransaction: builder.mutation<Transaction, string>({
       query: (transactionId) => ({
-        url: `/marketplace/transactions/${transactionId}/complete`,
+        url: `/marketplace/my-purchases/${transactionId}/complete`,
         method: 'PATCH',
       }),
     }),

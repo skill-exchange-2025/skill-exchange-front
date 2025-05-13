@@ -25,6 +25,8 @@ import {TransactionsPage} from '@/pages/marketplace/transactions';
 import MessagingLayout from '../pages/messaging/MessagingLayout';
 import ChannelPage from '../pages/messaging/ChannelPage';
 import ChannelListPage from '../pages/messaging/ChannelListPage';
+import BoughtCourses from '@/pages/courses/BoughtCourses';
+
 import {CreateLesson} from '@/pages/marketplace/create-lesson';
 import {EditLesson} from '@/pages/marketplace/edit-lesson';
 import {LessonDetail} from '@/pages/marketplace/lesson-detail';
@@ -83,6 +85,14 @@ const router = createBrowserRouter([
               <ProtectedRoute>
                 <ListingTypeSelection />
               </ProtectedRoute>
+            ),
+          },
+          {
+            path: 'courses',
+            element: (
+                <ProtectedRoute>
+                  <BoughtCourses />
+                </ProtectedRoute>
             ),
           },
           {

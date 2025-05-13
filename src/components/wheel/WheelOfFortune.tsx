@@ -1,6 +1,5 @@
-import React, {
-    useState,
-    useEffect
+import  {
+    useState
 } from 'react';
 import { Wheel } from 'react-custom-roulette';
 import { useSpinWheelMutation, useGetLastSpinTimeQuery } from '@/redux/features/wheel/wheelSpinApi';
@@ -22,7 +21,7 @@ export const WheelOfFortune = () => {
     const [mustSpin, setMustSpin] = useState(false);
     const [prizeNumber, setPrizeNumber] = useState(0);
     const [spinWheel] = useSpinWheelMutation();
-    const { data: lastSpinData, isLoading } = useGetLastSpinTimeQuery();
+    const { data: lastSpinData } = useGetLastSpinTimeQuery();
 
     const canSpin = () => {
         if (!lastSpinData?.lastSpinTime) return true;
@@ -44,7 +43,6 @@ export const WheelOfFortune = () => {
             // Map the prize to a number on the wheel
             const prizeIndex = data.findIndex(item => item.option.includes(result.credits.toString()));
             setPrizeNumber(prizeIndex);
-            toast.success(`Congratulations! You won ${result.credits} credits!`);
         } catch (error) {
             toast.error('Failed to spin the wheel. Please try again later.');
         }
