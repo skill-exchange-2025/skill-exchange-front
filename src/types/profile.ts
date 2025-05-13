@@ -18,6 +18,7 @@ interface User {
   phone: number;
   skills: Skill[];
   desiredSkills: DesiredSkill[];
+  createdAt?: string;
 }
 
 export interface CompletionStatus {

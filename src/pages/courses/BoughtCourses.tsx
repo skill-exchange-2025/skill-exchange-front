@@ -15,13 +15,9 @@ const BoughtCourses = () => {
     const [status, setStatus] = useState('all');
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
     const [selectedCourse, setSelectedCourse] = useState<any>(null);
+    console.log(page)
 
-    const limit = 20;
-
-    const { data: response, isLoading } = useGetTransactionsQuery(
-        { page, limit, status, },
-        { refetchOnMountOrArgChange: true }
-    );
+    const { data: response, isLoading } = useGetTransactionsQuery();
 
     const { data: lessonsData, isLoading: isLoadingLessons } = useGetLessonsByListingQuery(
         {

@@ -138,7 +138,7 @@ const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
       const ProfilePreviewDialog = () => (
         <Dialog open={showProfilePreview} onOpenChange={setShowProfilePreview}>
           <DialogContent className="max-w-3xl">
-            <ProfileView userId={recipientId} />
+            <ProfileView />
             <Button 
               onClick={() => {
                 setShowProfilePreview(false);

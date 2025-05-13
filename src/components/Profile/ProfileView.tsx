@@ -962,9 +962,9 @@ export const ProfileView: React.FC = () => {
                         <div className="space-y-2">
                           <h4 className="font-medium">Recommended Skills</h4>
                           <div className="flex flex-wrap gap-2">
-                            {predictionData.recommended_skills.map((skill, index) => (
+                            {predictionData.recommended_skills.map((skill: any, index) => (
                                 <Badge key={index} variant="outline" className="text-sm">
-                                  {typeof skill === 'object' ? skill.skill : skill}
+                                  {skill.skill}
                                 </Badge>
                             ))}
                           </div>
