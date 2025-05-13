@@ -6,10 +6,11 @@ import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow,} from '@/
 import {Badge} from '@/components/ui/badge';
 import {Tabs, TabsContent, TabsList, TabsTrigger} from '@/components/ui/tabs';
 import {
-    Transaction,
-    useCompleteTransactionMutation,
-    useCreateReviewMutation,
-    useGetTransactionsQuery,
+  Review,
+  Transaction,
+  useCompleteTransactionMutation,
+  useCreateReviewMutation,
+  useGetTransactionsQuery,
 } from '@/redux/features/marketplace/marketplaceApi';
 import {ArrowLeft, Star} from 'lucide-react';
 import {formatDistanceToNow} from 'date-fns';
@@ -27,12 +28,11 @@ import {Textarea} from '@/components/ui/textarea';
 import {Skeleton} from '@/components/ui/skeleton';
 
 // Define an extended Transaction type that includes review
-interface ExtendedTransaction extends Transaction {
-  review?: {
-    rating: number;
-    comment: string;
-  };
+interface ExtendedTransaction extends Omit<Transaction, 'review'> {
+  review?: Review | null;
 }
+
+
 
 export function TransactionsPage() {
   const navigate = useNavigate();

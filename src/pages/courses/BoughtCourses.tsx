@@ -19,7 +19,7 @@ const BoughtCourses = () => {
     const limit = 20;
 
     const { data: response, isLoading } = useGetTransactionsQuery(
-        { page, limit, status },
+        { page, limit, status, },
         { refetchOnMountOrArgChange: true }
     );
 

@@ -17,7 +17,9 @@ export const wheelSpinApi = baseApi.injectEndpoints({
         }),
 
         getLastSpinTime: builder.query<{ lastSpinTime: string | null }, void>({
-            query: () => '/wheel-spin/last-spin',
+            query: () => ({
+                url: '/wheel-spin/last-spin',
+            }),
             providesTags: ['WheelSpin'],
         }),
     }),

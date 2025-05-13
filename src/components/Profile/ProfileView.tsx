@@ -863,8 +863,8 @@ export const ProfileView: React.FC = () => {
                                   <BookOpen className="h-5 w-5" />
                                 </div>
                                 <div>
-                                  <h4 className="font-medium">Skill :{typeof course === 'string' ? course : JSON.stringify(course.skill)}</h4>
-                                  <h4 className="font-medium">Confidence :{typeof course === 'string' ? course : JSON.stringify(course.confidence)}</h4>
+                                  <h4 className="font-medium">Skill :{course}</h4>
+                                  <h4 className="font-medium">Confidence :{course}</h4>
                                   <p className="text-sm text-muted-foreground">Recommended based on your skills</p>
                                 </div>
                               </div>

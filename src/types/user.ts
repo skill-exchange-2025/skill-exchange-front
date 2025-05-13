@@ -11,6 +11,14 @@ interface DesiredSkill {
     description: string;
     desiredProficiencyLevel: 'beginner' | 'intermediate' | 'advanced';
 }
+export interface CreateUserRequest {
+    email: string;
+    password?: string;
+    name: string;
+    phone: number;
+    roles: string[];
+    skills?: Skill[]; // ✅ Add this line
+}
 
 export interface User {
     _id: string;
@@ -95,6 +103,7 @@ export interface UpdateUserRequest {
     email?: string;
     phone?: number;
     roles?: string[];
+    skills?: Skill[];
 }
 
 export interface ChangePasswordRequest {

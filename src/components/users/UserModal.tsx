@@ -64,11 +64,23 @@ export const UserModal: React.FC<{
                     id: user._id,
                     data: {
                         ...user,
-                        skills: skills.map(skill => ({
-                            name: skill.name,
-                            proficiencyLevel: skill.proficiencyLevel,
-                            description: ''
-                        }))
+                        skills: skills.map(skill => {
+                            const existingSkill = user?.skills.find(s => s.name === skill.name);
+                            const level = skill.proficiencyLevel;
+                            const safeLevel: 'beginner' | 'intermediate' | 'advanced' =
+                                level === 'beginner' || level === 'intermediate' || level === 'advanced'
+                                    ? level
+                                    : 'beginner'; // fallback default
+
+                            return {
+                                _id: existingSkill?._id ?? '',
+                                name: skill.name,
+                                proficiencyLevel: safeLevel,
+                                description: existingSkill?.description ?? '',
+                            };
+                        })
+
+
                     }
                 }).unwrap();
                 setSelectedSkills(skills);
@@ -91,11 +103,23 @@ export const UserModal: React.FC<{
                         email: data.email,
                         phone: Number(data.phone),
                         roles: rolesArray,
-                        skills: selectedSkills.map(skill => ({
-                            name: skill.name,
-                            proficiencyLevel: skill.proficiencyLevel,
-                            description: ''
-                        }))
+                        skills: selectedSkills.map(skill => {
+                            const existingSkill = user?.skills.find(s => s.name === skill.name);
+                            const level = skill.proficiencyLevel;
+                            const safeLevel: 'beginner' | 'intermediate' | 'advanced' =
+                                level === 'beginner' || level === 'intermediate' || level === 'advanced'
+                                    ? level
+                                    : 'beginner';
+
+                            return {
+                                _id: existingSkill?._id ?? '',
+                                name: skill.name,
+                                proficiencyLevel: safeLevel,
+                                description: existingSkill?.description ?? '',
+                            };
+                        })
+
+
                     }
                 }).unwrap();
             } else {
@@ -106,6 +130,7 @@ export const UserModal: React.FC<{
                     skills: [],
                 }).unwrap();
             }
+
             await getUsers();
             onClose();
         } catch (error) {
@@ -218,12 +243,14 @@ export const UserModal: React.FC<{
                     </div>
                 </form>
 
-                <SkillsEditDialog
-                    open={isSkillsDialogOpen}
-                    onClose={() => setIsSkillsDialogOpen(false)}
-                    user={user}
-                    onSave={handleSaveSkills}
-                />
+                {user && (
+                    <SkillsEditDialog
+                        open={isSkillsDialogOpen}
+                        onClose={() => setIsSkillsDialogOpen(false)}
+                        user={user}
+                        onSave={handleSaveSkills}
+                    />
+                )}
             </DialogContent>
         </Dialog>
     );
