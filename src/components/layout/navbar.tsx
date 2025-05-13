@@ -1,6 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Moon, Sun, Bell } from 'lucide-react';
+import { Moon, Sun, Bell, LogOut, User } from 'lucide-react';
 import cryptoIcon from '@/assets/icons/crypto.png';
 import logoImage from '@/assets/icons/logo.png';
 import { useTheme } from '@/components/theme-provider';
@@ -19,6 +19,7 @@ import { useGetUserCreditsQuery } from '@/redux/features/credits/creditsApi';
 import { useCurrentProfile } from '@/redux/features/profile/profileSlice';
 import { useFetchProfileQuery } from '@/redux/features/profile/profileApi';
 import { Badge } from '@/components/ui/badge';
+import { WheelFortuneDialog } from '../wheel/WheelFortuneDialog';
 
 export function Navbar() {
   const { theme, setTheme } = useTheme();
@@ -164,6 +165,10 @@ export function Navbar() {
 
           {/* Right Side Controls */}
           <div className="flex items-center space-x-4">
+
+
+            {/* Daily Spin Button */}
+
             {/* Theme Switcher */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -189,156 +194,159 @@ export function Navbar() {
             </DropdownMenu>
 
             {currentUser ? (
-              <div className="flex items-center space-x-4">
-                {/* Credits Section */}
-                <div
-                  className="flex items-center space-x-2 px-3 py-1 rounded-full bg-secondary cursor-pointer hover:bg-secondary/80 transition-colors"
-                  onClick={() => setCreditDialogOpen(true)}
-                >
-                  <img src={cryptoIcon} alt="Credits" className="h-4 w-4" />
-                  <span className="font-medium">
+                <div className="flex items-center space-x-4">
+                  <WheelFortuneDialog/>
+
+                  {/* Credits Section */}
+                  <div
+                      className="flex items-center space-x-2 px-3 py-1 rounded-full bg-secondary cursor-pointer hover:bg-secondary/80 transition-colors"
+                      onClick={() => setCreditDialogOpen(true)}
+                  >
+                    <img src={cryptoIcon} alt="Credits" className="h-4 w-4"/>
+                    <span className="font-medium">
                     {creditsData?.balance || 0}
                   </span>
-                </div>
+                  </div>
 
-                {/* Notifications */}
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="relative">
-                      <Bell className="h-5 w-5" />
-                      {unreadCount > 0 && (
-                        <Badge
-                          variant="destructive"
-                          className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-xs"
-                        >
-                          {unreadCount}
-                        </Badge>
-                      )}
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-80">
-                    <div className="flex items-center justify-between p-2 border-b">
-                      <h4 className="font-medium">Notifications</h4>
-                      {unreadCount > 0 && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={markAllAsRead}
-                          className="text-xs"
-                        >
-                          Mark all as read
-                        </Button>
-                      )}
-                    </div>
-                    <div className="max-h-[300px] overflow-y-auto">
-                      {notifications.length === 0 ? (
-                        <div className="p-4 text-center text-sm text-muted-foreground">
-                          No notifications
-                        </div>
-                      ) : (
-                        notifications.map((notification) => (
-                          <DropdownMenuItem
-                            key={notification.id}
-                            className={`flex flex-col items-start p-3 cursor-pointer ${
-                              !notification.read ? 'bg-accent/50' : ''
-                            }`}
-                            onClick={() => markAsRead(notification.id)}
-                          >
-                            <div className="flex items-center justify-between w-full">
+                  {/* Notifications */}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="relative">
+                        <Bell className="h-5 w-5"/>
+                        {unreadCount > 0 && (
+                            <Badge
+                                variant="destructive"
+                                className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-xs"
+                            >
+                              {unreadCount}
+                            </Badge>
+                        )}
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-80">
+                      <div className="flex items-center justify-between p-2 border-b">
+                        <h4 className="font-medium">Notifications</h4>
+                        {unreadCount > 0 && (
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={markAllAsRead}
+                                className="text-xs"
+                            >
+                              Mark all as read
+                            </Button>
+                        )}
+                      </div>
+                      <div className="max-h-[300px] overflow-y-auto">
+                        {notifications.length === 0 ? (
+                            <div className="p-4 text-center text-sm text-muted-foreground">
+                              No notifications
+                            </div>
+                        ) : (
+                            notifications.map((notification) => (
+                                <DropdownMenuItem
+                                    key={notification.id}
+                                    className={`flex flex-col items-start p-3 cursor-pointer ${
+                                        !notification.read ? 'bg-accent/50' : ''
+                                    }`}
+                                    onClick={() => markAsRead(notification.id)}
+                                >
+                                  <div className="flex items-center justify-between w-full">
                               <span className="text-sm font-medium">
                                 {notification.message}
                               </span>
-                              {!notification.read && (
-                                <div className="h-2 w-2 rounded-full bg-primary" />
-                              )}
-                            </div>
-                            <span className="text-xs text-muted-foreground mt-1">
+                                    {!notification.read && (
+                                        <div className="h-2 w-2 rounded-full bg-primary"/>
+                                    )}
+                                  </div>
+                                  <span className="text-xs text-muted-foreground mt-1">
                               {new Date().toLocaleString()}
                             </span>
-                          </DropdownMenuItem>
-                        ))
-                      )}
-                    </div>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-
-                {/* User Avatar & Profile Menu */}
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      className="relative h-8 w-8 rounded-full overflow-hidden p-0 border border-border/40 hover:border-primary/40 transition-colors"
-                      onClick={() => {
-                        // If we have a user but no profile, try to fetch the profile
-                        if (currentUser && !userProfile) {
-                          refetchProfile();
-                        }
-                      }}
-                    >
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage
-                          src={getAvatarUrl()}
-                          alt={currentUser?.email || ''}
-                          className="object-cover"
-                          onError={(e) => {
-                            // Hide the image on error and show fallback
-                            const target = e.target as HTMLImageElement;
-                            target.style.display = 'none';
-                          }}
-                        />
-                        <AvatarFallback className="dark:bg-blue-600 text-white">
-                          {getAvatarFallback()}
-                        </AvatarFallback>
-                      </Avatar>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-56" align="end" forceMount>
-                    {/* User Info Header */}
-                    <div className="flex items-center gap-2 p-2 border-b border-border">
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage
-                          src={getAvatarUrl()}
-                          alt={currentUser?.email || ''}
-                          onError={(e) => {
-                            // Hide the image on error and show fallback
-                            const target = e.target as HTMLImageElement;
-                            target.style.display = 'none';
-                          }}
-                        />
-                        <AvatarFallback className="dark:bg-blue-600 text-white">
-                          {getAvatarFallback()}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex flex-col space-y-1">
-                        <p className="text-sm font-medium leading-none">
-                          {getDisplayName()}
-                        </p>
-                        <p className="text-xs text-muted-foreground leading-none">
-                          {currentUser?.email || ''}
-                        </p>
+                                </DropdownMenuItem>
+                            ))
+                        )}
                       </div>
-                    </div>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
 
-                    {/* Menu Items */}
-                    <div className="p-1">
-                      <DropdownMenuItem asChild className="cursor-pointer">
-                        <Link to="/user/profile">Manage Profile</Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild className="cursor-pointer">
-                        <Link to="/messaging">Messages</Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={handleSignOut}
-                        className="cursor-pointer"
+                  {/* User Avatar & Profile Menu */}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                          variant="ghost"
+                          className="relative h-8 w-8 rounded-full overflow-hidden p-0 border border-border/40 hover:border-primary/40 transition-colors"
+                          onClick={() => {
+                            // If we have a user but no profile, try to fetch the profile
+                            if (currentUser && !userProfile) {
+                              refetchProfile();
+                            }
+                          }}
                       >
-                        Sign Out
-                      </DropdownMenuItem>
-                    </div>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
+                        <Avatar className="h-8 w-8">
+                          <AvatarImage
+                              src={getAvatarUrl()}
+                              alt={currentUser?.email || ''}
+                              className="object-cover"
+                              onError={(e) => {
+                                // Hide the image on error and show fallback
+                                const target = e.target as HTMLImageElement;
+                                target.style.display = 'none';
+                              }}
+                          />
+                          <AvatarFallback className="dark:bg-blue-600 text-white">
+                            {getAvatarFallback()}
+                          </AvatarFallback>
+                        </Avatar>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="w-56" align="end" forceMount>
+                      {/* User Info Header */}
+                      <div className="flex items-center gap-2 p-2 border-b border-border">
+                        <Avatar className="h-8 w-8">
+                          <AvatarImage
+                              src={getAvatarUrl()}
+                              alt={currentUser?.email || ''}
+                              onError={(e) => {
+                                // Hide the image on error and show fallback
+                                const target = e.target as HTMLImageElement;
+                                target.style.display = 'none';
+                              }}
+                          />
+                          <AvatarFallback className="dark:bg-blue-600 text-white">
+                            {getAvatarFallback()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex flex-col space-y-1">
+                          <p className="text-sm font-medium leading-none">
+                            {getDisplayName()}
+                          </p>
+                          <p className="text-xs text-muted-foreground leading-none">
+                            {currentUser?.email || ''}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Menu Items */}
+                      <div className="p-1">
+                        <DropdownMenuItem asChild className="cursor-pointer">
+                          <Link to="/user/profile" className="flex items-center">
+                            <User className="mr-2 h-4 w-4"/>
+                            Manage Profile
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                            onClick={handleSignOut}
+                            className="cursor-pointer text-red-500 flex items-center"
+                        >
+                          <LogOut className="mr-2 h-4 w-4"/>
+                          Sign Out
+                        </DropdownMenuItem>
+                      </div>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
             ) : (
-              <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-2">
                 <Link to="/login">
                   <Button variant="ghost">Sign In</Button>
                 </Link>

@@ -39,6 +39,7 @@ import {
   MapPin,
   Users,
   BookOpen,
+  List as ListIcon, // Added for lesson management icon
 } from 'lucide-react';
 import { ConfirmationDialog } from '@/pages/marketplace/confirmation-dialog';
 import { CreditPurchaseDialog } from '@/components/credits/CreditPurchaseDialog';
@@ -54,81 +55,81 @@ import { marketplaceApi } from '@/redux/features/marketplace/marketplaceApi';
 // Item detail skeleton component
 const ItemDetailSkeleton = () => {
   return (
-    <div className="container py-8">
-      <div className="mb-6">
-        <Skeleton className="h-10 w-32" />
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        {/* Image section */}
-        <div className="md:col-span-2">
-          <Card className="overflow-hidden">
-            <Skeleton className="h-[400px] w-full" />
-          </Card>
+      <div className="container py-8">
+        <div className="mb-6">
+          <Skeleton className="h-10 w-32" />
         </div>
 
-        {/* Details section */}
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <Skeleton className="h-8 w-3/4 mb-2" />
-              <div className="flex flex-wrap gap-2">
-                <Skeleton className="h-6 w-20 rounded-full" />
-                <Skeleton className="h-6 w-24 rounded-full" />
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex justify-between items-center">
-                <Skeleton className="h-8 w-24" />
-                <Skeleton className="h-8 w-32" />
-              </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {/* Image section */}
+          <div className="md:col-span-2">
+            <Card className="overflow-hidden">
+              <Skeleton className="h-[400px] w-full" />
+            </Card>
+          </div>
 
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <Skeleton className="h-5 w-5 rounded-full" />
-                  <Skeleton className="h-5 w-40" />
+          {/* Details section */}
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <Skeleton className="h-8 w-3/4 mb-2" />
+                <div className="flex flex-wrap gap-2">
+                  <Skeleton className="h-6 w-20 rounded-full" />
+                  <Skeleton className="h-6 w-24 rounded-full" />
                 </div>
-                <div className="flex items-center gap-2">
-                  <Skeleton className="h-5 w-5 rounded-full" />
-                  <Skeleton className="h-5 w-48" />
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <Skeleton className="h-8 w-24" />
+                  <Skeleton className="h-8 w-32" />
                 </div>
-              </div>
 
-              <Skeleton className="h-10 w-full rounded-md" />
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <Skeleton className="h-6 w-32" />
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center space-x-3">
-                <Skeleton className="h-12 w-12 rounded-full" />
-                <div>
-                  <Skeleton className="h-5 w-32 mb-1" />
-                  <Skeleton className="h-4 w-24" />
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="h-5 w-5 rounded-full" />
+                    <Skeleton className="h-5 w-40" />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="h-5 w-5 rounded-full" />
+                    <Skeleton className="h-5 w-48" />
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+
+                <Skeleton className="h-10 w-full rounded-md" />
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <Skeleton className="h-6 w-32" />
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center space-x-3">
+                  <Skeleton className="h-12 w-12 rounded-full" />
+                  <div>
+                    <Skeleton className="h-5 w-32 mb-1" />
+                    <Skeleton className="h-4 w-24" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
-      </div>
 
-      {/* Description section */}
-      <Card className="mt-8">
-        <CardHeader>
-          <Skeleton className="h-6 w-32" />
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <Skeleton className="h-4 w-full" />
-          <Skeleton className="h-4 w-full" />
-          <Skeleton className="h-4 w-3/4" />
-          <Skeleton className="h-4 w-5/6" />
-          <Skeleton className="h-4 w-full" />
-        </CardContent>
-      </Card>
-    </div>
+        {/* Description section */}
+        <Card className="mt-8">
+          <CardHeader>
+            <Skeleton className="h-6 w-32" />
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-3/4" />
+            <Skeleton className="h-4 w-5/6" />
+            <Skeleton className="h-4 w-full" />
+          </CardContent>
+        </Card>
+      </div>
   );
 };
 
@@ -150,7 +151,7 @@ const getLevelBadge = (level?: string) => {
       break;
     case 'advanced':
       color =
-        'bg-purple-100 text-purple-800 hover:bg-purple-200 border-purple-300';
+          'bg-purple-100 text-purple-800 hover:bg-purple-200 border-purple-300';
       icon = '🌳'; // Full tree for advanced
       break;
     case 'expert':
@@ -163,9 +164,9 @@ const getLevelBadge = (level?: string) => {
   }
 
   return (
-    <Badge variant="outline" className={`${color} font-medium shadow-sm`}>
-      <span className="mr-1">{icon}</span> {level}
-    </Badge>
+      <Badge variant="outline" className={`${color} font-medium shadow-sm`}>
+        <span className="mr-1">{icon}</span> {level}
+      </Badge>
   );
 };
 
@@ -190,8 +191,7 @@ export function MarketplaceItemDetail() {
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [purchaseDialogOpen, setPurchaseDialogOpen] = useState(false);
-  const [creditPurchaseDialogOpen, setCreditPurchaseDialogOpen] =
-    useState(false);
+  const [creditPurchaseDialogOpen, setCreditPurchaseDialogOpen] = useState(false);
   const [completeDialogOpen, setCompleteDialogOpen] = useState(false);
   const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
   const [rating] = useState(5);
@@ -207,9 +207,9 @@ export function MarketplaceItemDetail() {
   });
 
   const [purchaseItem, { isLoading: isPurchasing }] =
-    usePurchaseMarketplaceItemMutation();
+      usePurchaseMarketplaceItemMutation();
   const [deleteItem, { isLoading: isDeleting }] =
-    useDeleteMarketplaceItemMutation();
+      useDeleteMarketplaceItemMutation();
   const [completeTransaction] = useCompleteTransactionMutation();
   const [createReview] = useCreateReviewMutation();
   const [updateItem] = useUpdateMarketplaceItemMutation();
@@ -233,89 +233,63 @@ export function MarketplaceItemDetail() {
     };
   }, [dispatch]);
 
-  // Handle view count increment - separate useEffect that runs only once when component mounts
+  // Increment view count when the component mounts - only for different users, not the seller
   useEffect(() => {
-    // Create a flag to run this effect only once
-    let isMounted = true;
+    if (!id || !item || viewCountUpdatedRef.current) return;
 
-    const updateViewCount = async () => {
-      // Only proceed if we have valid ID, item data, and haven't updated view count yet
-      if (!id || !item || !isMounted || viewCountUpdatedRef.current) return;
-
-      // Don't increment view count if current user is the seller
-      const isOwner =
+    // Don't increment view count if the current user is the seller
+    const isOwner =
         currentUser && item.seller && item.seller._id === currentUser._id;
-      if (isOwner) {
-        console.log(
-          'Seller viewing their own item - not incrementing view count'
-        );
-        return;
-      }
+    if (isOwner) {
+      console.log('Seller viewing their own item - not incrementing view count');
+      return;
+    }
 
-      // Generate a unique storage key that will persist for this visit
-      const visitorId =
-        localStorage.getItem('visitorId') ||
-        `visitor_${Math.random().toString(36).substring(2, 15)}`;
+    // Check if this user has already viewed this item using localStorage
+    const viewedItems = JSON.parse(localStorage.getItem('viewedItems') || '{}');
 
-      // Store the visitorId if not already set
-      if (!localStorage.getItem('visitorId')) {
-        localStorage.setItem('visitorId', visitorId);
-      }
+    // If user has already viewed this item, don't increment
+    if (viewedItems[id]) {
+      console.log('User already viewed this item - not incrementing view count');
+      return;
+    }
 
-      // Create a storage key specific to this visitor and this item
-      const viewKey = `viewed_${id}_${visitorId}`;
+    // Mark this item as viewed by this user
+    viewedItems[id] = true;
+    localStorage.setItem('viewedItems', JSON.stringify(viewedItems));
 
-      // Check if this specific visitor has already viewed this specific item
-      const hasViewed = localStorage.getItem(viewKey);
+    // Set flag to prevent multiple updates
+    viewCountUpdatedRef.current = true;
 
-      if (hasViewed) {
-        console.log(
-          'This visitor has already viewed this item - not incrementing view count'
-        );
-        return;
-      }
+    console.log('Incrementing view count for item:', id);
 
-      // Mark this view to prevent duplicate counts
-      viewCountUpdatedRef.current = true;
-      localStorage.setItem(viewKey, 'true');
+    // Update local view count immediately for better UX
+    const newViewCount = (item.views || 0) + 1;
+    updateItem({
+      id,
+      data: { views: newViewCount },
+    })
+        .then(() => {
+          console.log('View count updated successfully');
 
-      console.log('Incrementing view count for item:', id);
-
-      try {
-        // Update view count in the database
-        const newViewCount = (item.views || 0) + 1;
-        await updateItem({
-          id,
-          data: { views: newViewCount },
-        }).unwrap();
-
-        console.log('View count updated successfully');
-
-        // Invalidate cache to show updated counts in listings
-        dispatch(
-          marketplaceApi.util.invalidateTags([
-            { type: 'MarketplaceItem', id: 'LIST' },
-            { type: 'MarketplaceItem', id: 'COURSES' },
-            { type: 'MarketplaceItem', id: 'ONLINE_COURSES' },
-          ])
-        );
-      } catch (err) {
-        console.error('Failed to update view count:', err);
-        // Reset the flag in case of error
-        viewCountUpdatedRef.current = false;
-        localStorage.removeItem(viewKey);
-      }
-    };
-
-    // Call the function
-    updateViewCount();
-
-    // Cleanup function
-    return () => {
-      isMounted = false;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id, item?.seller?._id]); // Minimal dependencies to avoid re-running
+          // Invalidate all relevant caches to ensure the updated view count is shown in listing pages
+          dispatch(
+              marketplaceApi.util.invalidateTags([
+                { type: 'MarketplaceItem', id: 'LIST' },
+                { type: 'MarketplaceItem', id: 'COURSES' },
+                { type: 'MarketplaceItem', id: 'ONLINE_COURSES' },
+              ])
+          );
+        })
+        .catch((err) => {
+          console.error('Failed to update view count:', err);
+          // Reset the flag if the update fails, so we can try again
+          viewCountUpdatedRef.current = false;
+          // Remove this item from viewed items to allow retry
+          delete viewedItems[id];
+          localStorage.setItem('viewedItems', JSON.stringify(viewedItems));
+        });
+  }, [id, item, updateItem, dispatch, currentUser]);
 
   const handleBack = () => {
     // Navigate back to the appropriate listing type page
@@ -337,7 +311,7 @@ export function MarketplaceItemDetail() {
     try {
       await deleteItem(id || '').unwrap();
       toast.success('Item deleted successfully');
-      navigate('/marketplace/all');
+      navigate('/marketplace/listings');
     } catch (err) {
       toast.error('Failed to delete item');
       console.error('Failed to delete item:', err);
@@ -361,24 +335,14 @@ export function MarketplaceItemDetail() {
       const result = await purchaseItem(id || '').unwrap();
       setTransaction(result);
 
-      // Show success message and add notification
-      toast.success('Item purchased successfully!', {
-        description: 'Your credits have been updated.',
-      });
+      toast.success('Item purchased successfully!');
 
-      // Add notification for purchase
-      const notification = new CustomEvent('addNotification', {
-        detail: {
-          message: `Successfully purchased ${item?.title}`,
-          type: 'transaction',
-        },
-      });
-      window.dispatchEvent(notification);
-
-      // Invalidate the wallet query to refresh credits amount
-      dispatch(marketplaceApi.util.invalidateTags(['Credits']));
-      // Navigate back to marketplace
-      navigate('/marketplace/all');
+      // For courses, show the complete transaction dialog
+      if (item?.type === 'course' || item?.type === 'onlineCourse') {
+        setCompleteDialogOpen(true);
+      } else {
+        navigate('/marketplace/listings');
+      }
     } catch (err) {
       toast.error('Failed to purchase item');
       console.error('Failed to purchase item:', err);
@@ -392,16 +356,7 @@ export function MarketplaceItemDetail() {
     try {
       await completeTransaction(transaction._id).unwrap();
       toast.success('Transaction completed successfully!');
-      // Add notification for transaction completion
-      const notification = new CustomEvent('addNotification', {
-        detail: {
-          message: `Transaction completed for ${item?.title}`,
-          type: 'transaction',
-        },
-      });
-      window.dispatchEvent(notification);
-      // Show review button instead of automatically opening review dialog
-      setReviewDialogOpen(false);
+      setReviewDialogOpen(true);
     } catch (err) {
       toast.error('Failed to complete transaction');
       console.error('Failed to complete transaction:', err);
@@ -419,23 +374,23 @@ export function MarketplaceItemDetail() {
         comment: reviewComment,
       }).unwrap();
       toast.success('Review submitted successfully!');
-      navigate('/marketplace/all');
+      navigate('/marketplace/listings');
     } catch (err) {
       toast.error('Failed to submit review');
       console.error('Failed to submit review:', err);
     }
   };
+// NEW: Lesson handlers for listing owners
+  const handleAddLesson = () => {
+    navigate(`/marketplace/item/${id}/create-lesson`);
+  };
 
-  // Add function to handle review button click
-  const handleReviewClick = () => {
-    setReviewDialogOpen(true);
+  const handleManageLessons = () => {
+    navigate(`/marketplace/item/${id}/lessons`);
   };
 
   // Determine if current user is the seller
   const isOwner = currentUser && item?.seller?._id === currentUser._id;
-
-  // Add function to check if user can review
-  const canReview = transaction?.status === 'completed' && !transaction?.review;
 
   if (isLoading) {
     return <ItemDetailSkeleton />;
@@ -443,40 +398,40 @@ export function MarketplaceItemDetail() {
 
   if (error) {
     return (
-      <div className="container py-8">
-        <Card>
-          <CardContent className="p-6">
-            <div className="text-center">
-              <h2 className="text-xl font-semibold text-red-500 mb-2">
-                Error Loading Item
-              </h2>
-              <p className="text-muted-foreground mb-4">
-                There was a problem loading this marketplace item.
-              </p>
-              <Button onClick={handleBack}>Go Back</Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+        <div className="container py-8">
+          <Card>
+            <CardContent className="p-6">
+              <div className="text-center">
+                <h2 className="text-xl font-semibold text-red-500 mb-2">
+                  Error Loading Item
+                </h2>
+                <p className="text-muted-foreground mb-4">
+                  There was a problem loading this marketplace item.
+                </p>
+                <Button onClick={handleBack}>Go Back</Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
     );
   }
 
   if (!item) {
     return (
-      <div className="container py-8">
-        <Card>
-          <CardContent className="p-6">
-            <div className="text-center">
-              <h2 className="text-xl font-semibold mb-2">Item Not Found</h2>
-              <p className="text-muted-foreground mb-4">
-                The marketplace item you're looking for doesn't exist or has
-                been removed.
-              </p>
-              <Button onClick={handleBack}>Go Back to Marketplace</Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+        <div className="container py-8">
+          <Card>
+            <CardContent className="p-6">
+              <div className="text-center">
+                <h2 className="text-xl font-semibold mb-2">Item Not Found</h2>
+                <p className="text-muted-foreground mb-4">
+                  The marketplace item you're looking for doesn't exist or has
+                  been removed.
+                </p>
+                <Button onClick={handleBack}>Go Back to Marketplace</Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
     );
   }
 
@@ -486,7 +441,7 @@ export function MarketplaceItemDetail() {
 
   // Format date for display
   const formattedDate = new Date(
-    item.createdAt?.toString() || ''
+      item.createdAt?.toString() || ''
   ).toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
@@ -494,175 +449,171 @@ export function MarketplaceItemDetail() {
   });
 
   return (
-    <div className="container py-8">
-      <Button variant="outline" onClick={handleBack} className="mb-6">
-        <ArrowLeft className="mr-2 h-4 w-4" /> Back to Marketplace
-      </Button>
+      <div className="container py-8">
+        <Button variant="outline" onClick={handleBack} className="mb-8">
+          <ArrowLeft className="mr-2 h-4 w-4" /> Back to Marketplace
+        </Button>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        {/* Image section */}
-        <div className="md:col-span-2">
-          <motion.div
+        <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-          >
-            <Card className="overflow-hidden shadow-md">
+        >
+          <Card className="overflow-hidden shadow-md">
+            <div className="md:flex">
               {item.imagesUrl && item.imagesUrl.length > 0 ? (
-                <div className="w-full">
-                  <img
-                    src={item.imagesUrl[0]}
-                    alt={item.title}
-                    className="w-full h-[400px] object-cover"
-                  />
-                </div>
+                  <div className="md:w-1/2">
+                    <img
+                        src={item.imagesUrl[0]}
+                        alt={item.title}
+                        className="w-full h-full object-cover rounded-t-xl md:rounded-l-xl md:rounded-t-none"
+                    />
+                  </div>
               ) : (
-                <div className="w-full h-[400px] bg-muted flex items-center justify-center">
-                  <div className="text-8xl opacity-30">{typeInfo.icon}</div>
-                </div>
+                  <div className="md:w-1/2 bg-muted flex items-center justify-center p-12">
+                    <div className="text-8xl opacity-30">{typeInfo.icon}</div>
+                  </div>
               )}
-            </Card>
-          </motion.div>
-        </div>
-
-        {/* Details section */}
-        <div className="space-y-6">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <Card className="shadow-md">
-              <CardHeader>
-                <div className="flex flex-col">
-                  <div className="flex items-center gap-2 mb-2">
-                    <CardTitle className="text-2xl">{item.title}</CardTitle>
-                    <Badge
-                      variant="secondary"
-                      className="flex items-center gap-1 bg-black/70 text-white shadow-md"
-                    >
-                      <span className="text-lg">{typeInfo.icon}</span>
-                      {typeInfo.label}
-                    </Badge>
+              <div
+                  className={`md:w-${
+                      item.imagesUrl && item.imagesUrl.length > 0 ? '1/2' : 'full'
+                  } flex flex-col`}
+              >
+                <CardHeader>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <CardTitle className="text-2xl">{item.title}</CardTitle>
+                        <Badge
+                            variant="secondary"
+                            className="flex items-center gap-1 bg-black/70 text-white shadow-md"
+                        >
+                          <span className="text-lg">{typeInfo.icon}</span>
+                          {typeInfo.label}
+                        </Badge>
+                      </div>
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {item.category && (
+                            <Badge
+                                variant="outline"
+                                className="flex items-center gap-1"
+                            >
+                              <Tag className="h-3 w-3" />
+                              {item.category}
+                            </Badge>
+                        )}
+                        {item.proficiencyLevel &&
+                            getLevelBadge(item.proficiencyLevel)}
+                        {item.skillName && (
+                            <Badge
+                                variant="outline"
+                                className="bg-amber-100 text-amber-800 border-amber-300"
+                            >
+                              <Sparkles className="h-3 w-3 mr-1" />
+                              {item.skillName}
+                            </Badge>
+                        )}
+                      </div>
+                    </div>
+                    <div className="text-2xl font-bold flex items-center gap-2 bg-primary/10 p-2 rounded-md">
+                      <img src={cryptoIcon} alt="Credits" className="h-6 w-6" />
+                      {Math.round(item.price)}
+                    </div>
                   </div>
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {item.category && (
-                      <Badge
-                        variant="outline"
-                        className="flex items-center gap-1"
+                </CardHeader>
+                <CardContent className="flex-grow">
+                  <div className="mb-4">
+                    <h3 className="font-semibold mb-2 text-lg flex items-center gap-2">
+                      <BookOpen className="h-4 w-4" /> Description
+                    </h3>
+                    <p className="text-muted-foreground">{item.description}</p>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 mb-4">
+                    <div className="flex items-center gap-2 text-sm">
+                      <Clock className="h-4 w-4 text-muted-foreground" />
+                      <span>Listed {formattedDate}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm">
+                      <Eye className="h-4 w-4 text-muted-foreground" />
+                      <span>{formatViewCount(item.views)}</span>
+                    </div>
+                  </div>
+
+                  <div className="mb-4">
+                    <h3 className="font-semibold mb-2 flex items-center gap-2">
+                      <User className="h-4 w-4" /> Seller
+                    </h3>
+                    <div className="flex items-center gap-2 bg-muted/30 p-2 rounded-md">
+                      <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center">
+                        {item.seller?.name?.charAt(0) || 'U'}
+                      </div>
+                      <div>
+                        <p className="font-medium">{item.seller?.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          Member since{' '}
+                          {new Date(item.createdAt || '').getFullYear()}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+                <CardFooter className="flex justify-between bg-muted/10 border-t">
+                  {isOwner ? (
+                      <div className="flex flex-wrap gap-2">
+                        <Button
+                            variant="outline"
+                            onClick={handleEdit}
+                            className="flex items-center gap-1"
+                        >
+                          <Edit className="h-4 w-4" /> Edit
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            onClick={() => setDeleteDialogOpen(true)}
+                            disabled={isDeleting}
+                            className="flex items-center gap-1"
+                        >
+                          <Trash className="h-4 w-4" /> Delete
+                        </Button>
+                        {/* NEW LESSON BUTTONS */}
+                        <Button
+                            variant="secondary"
+                            onClick={handleAddLesson}
+                            className="flex items-center gap-1"
+                        >
+                          <BookOpen className="h-4 w-4" /> Add Lesson
+                        </Button>
+                        <Button
+                            variant="secondary"
+                            onClick={handleManageLessons}
+                            className="flex items-center gap-1"
+                        >
+                          <ListIcon className="h-4 w-4" /> Manage Lessons
+                        </Button>
+                      </div>
+                  ) : (
+                      <Button
+                          onClick={handlePurchaseClick}
+                          disabled={isPurchasing}
+                          className="flex items-center gap-1 w-full"
                       >
-                        <Tag className="h-3 w-3" />
-                        {item.category}
-                      </Badge>
-                    )}
-                    {item.proficiencyLevel &&
-                      getLevelBadge(item.proficiencyLevel)}
-                    {item.skillName && (
-                      <Badge
-                        variant="outline"
-                        className="bg-amber-100 text-amber-800 border-amber-300"
-                      >
-                        <Sparkles className="h-3 w-3 mr-1" />
-                        {item.skillName}
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <h3 className="font-semibold flex items-center gap-2">
-                    <BookOpen className="h-4 w-4" /> Description
-                  </h3>
-                  <div className="text-2xl font-bold flex items-center gap-2 bg-primary/10 p-2 rounded-md">
-                    <img src={cryptoIcon} alt="Credits" className="h-6 w-6" />
-                    {Math.round(item.price)}
-                  </div>
-                </div>
+                        <ShoppingCart className="h-4 w-4" /> Purchase Now
+                      </Button>
+                  )}
+                </CardFooter>
+              </div>
+            </div>
+          </Card>
+        </motion.div>
 
-                <p className="text-muted-foreground">{item.description}</p>
-
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-sm">
-                    <Clock className="h-4 w-4 text-muted-foreground" />
-                    <span>Listed {formattedDate}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm">
-                    <Eye className="h-4 w-4 text-muted-foreground" />
-                    <span>{formatViewCount(item.views)}</span>
-                  </div>
-                </div>
-
-                {isOwner ? (
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      onClick={handleEdit}
-                      className="flex items-center gap-1"
-                    >
-                      <Edit className="h-4 w-4" /> Edit
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      onClick={() => setDeleteDialogOpen(true)}
-                      disabled={isDeleting}
-                      className="flex items-center gap-1"
-                    >
-                      <Trash className="h-4 w-4" /> Delete
-                    </Button>
-                  </div>
-                ) : (
-                  <Button
-                    onClick={handlePurchaseClick}
-                    disabled={isPurchasing}
-                    className="flex items-center gap-1 w-full"
-                  >
-                    <ShoppingCart className="h-4 w-4" /> Purchase Now
-                  </Button>
-                )}
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          {/* Seller section */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-          >
-            <Card className="shadow-md">
-              <CardHeader>
-                <CardTitle className="text-sm">Seller</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center space-x-3">
-                  <div className="h-12 w-12 rounded-full bg-primary/20 flex items-center justify-center text-lg font-medium">
-                    {item.seller?.name?.charAt(0) ||
-                      item.seller?.email?.charAt(0) ||
-                      'U'}
-                  </div>
-                  <div>
-                    <p className="font-medium">
-                      {item.seller?.name ||
-                        item.seller?.email ||
-                        'Unknown seller'}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      Member since{' '}
-                      {new Date(item.createdAt || '').getFullYear()}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          {/* Tags section */}
-          {item.tags && item.tags.length > 0 && (
+        {/* Tags section */}
+        {item.tags && item.tags.length > 0 && (
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.1 }}
+                className="mt-4"
             >
               <Card className="shadow-sm">
                 <CardHeader className="pb-2">
@@ -671,175 +622,140 @@ export function MarketplaceItemDetail() {
                 <CardContent>
                   <div className="flex flex-wrap gap-2">
                     {item.tags.map((tag, index) => (
-                      <Badge key={index} variant="outline" className="text-xs">
-                        {tag}
-                      </Badge>
+                        <Badge key={index} variant="outline" className="text-xs">
+                          {tag}
+                        </Badge>
                     ))}
                   </div>
                 </CardContent>
               </Card>
             </motion.div>
-          )}
+        )}
 
-          {/* Add Review Button in the details section */}
-          {canReview && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="mt-4"
-            >
-              <Card className="shadow-md">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Star className="h-5 w-5 text-yellow-500" />
-                      <span className="font-medium">Leave a Review</span>
+        {/* Listing Type Specific Content */}
+        <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="mt-8"
+        >
+          <Card className="shadow-md">
+            <CardHeader className="border-b">
+              <CardTitle className="flex items-center gap-2">
+                <span className="text-2xl">{typeInfo.icon}</span>
+                {typeInfo.label} Details
+              </CardTitle>
+              <p className="text-muted-foreground">{typeInfo.description}</p>
+            </CardHeader>
+            <CardContent className="pt-6">
+              {/* Type-specific information */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                {typeInfo.dateInfo && (
+                    <div className="flex items-center gap-2 p-2 bg-muted/20 rounded-md">
+                      <Calendar className="h-5 w-5 text-primary" />
+                      <span>{typeInfo.dateInfo}</span>
                     </div>
-                    <Button
-                      onClick={handleReviewClick}
-                      className="flex items-center gap-2"
-                    >
-                      <Star className="h-4 w-4" />
-                      Write Review
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          )}
-        </div>
-      </div>
+                )}
+                {typeInfo.locationInfo && (
+                    <div className="flex items-center gap-2 p-2 bg-muted/20 rounded-md">
+                      <MapPin className="h-5 w-5 text-red-500" />
+                      <span>{typeInfo.locationInfo}</span>
+                    </div>
+                )}
+                {typeInfo.studentsInfo && (
+                    <div className="flex items-center gap-2 p-2 bg-muted/20 rounded-md">
+                      <Users className="h-5 w-5 text-blue-500" />
+                      <span>{typeInfo.studentsInfo}</span>
+                    </div>
+                )}
+                {typeInfo.contentInfo && (
+                    <div className="flex items-center gap-2 p-2 bg-muted/20 rounded-md">
+                      <BookOpen className="h-5 w-5 text-green-500" />
+                      <span>{typeInfo.contentInfo}</span>
+                    </div>
+                )}
+              </div>
 
-      {/* Listing Type Specific Content */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.3 }}
-        className="mt-8"
-      >
-        <Card className="shadow-md">
-          <CardHeader className="border-b">
-            <CardTitle className="flex items-center gap-2">
-              <span className="text-2xl">{typeInfo.icon}</span>
-              {typeInfo.label} Details
-            </CardTitle>
-            <p className="text-muted-foreground">{typeInfo.description}</p>
-          </CardHeader>
-          <CardContent className="pt-6">
-            {/* Type-specific information */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-              {typeInfo.dateInfo && (
-                <div className="flex items-center gap-2 p-2 bg-muted/20 rounded-md">
-                  <Calendar className="h-5 w-5 text-primary" />
-                  <span>{typeInfo.dateInfo}</span>
-                </div>
-              )}
-              {typeInfo.locationInfo && (
-                <div className="flex items-center gap-2 p-2 bg-muted/20 rounded-md">
-                  <MapPin className="h-5 w-5 text-red-500" />
-                  <span>{typeInfo.locationInfo}</span>
-                </div>
-              )}
-              {typeInfo.studentsInfo && (
-                <div className="flex items-center gap-2 p-2 bg-muted/20 rounded-md">
-                  <Users className="h-5 w-5 text-blue-500" />
-                  <span>{typeInfo.studentsInfo}</span>
-                </div>
-              )}
-              {typeInfo.contentInfo && (
-                <div className="flex items-center gap-2 p-2 bg-muted/20 rounded-md">
-                  <BookOpen className="h-5 w-5 text-green-500" />
-                  <span>{typeInfo.contentInfo}</span>
-                </div>
-              )}
+              {/* Render the main content based on listing type */}
+              <div className="mt-4">{content.mainContent}</div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        <ConfirmationDialog
+            open={deleteDialogOpen}
+            onOpenChange={setDeleteDialogOpen}
+            title="Delete Item"
+            description="Are you sure you want to delete this item? This action cannot be undone."
+            confirmText="Delete"
+            onConfirm={handleDelete}
+        />
+
+        <ConfirmationDialog
+            open={purchaseDialogOpen}
+            onOpenChange={setPurchaseDialogOpen}
+            title="Purchase Item"
+            description={`Are you sure you want to purchase "${item.title}" for ${Math.round(item.price)} credits?`}
+            confirmText="Purchase"
+            onConfirm={handlePurchase}
+        />
+
+        <CreditPurchaseDialog
+            open={creditPurchaseDialogOpen}
+            onOpenChange={(open) => {
+              setCreditPurchaseDialogOpen(open);
+            }}
+            customMessage={
+              item
+                  ? `You don't have enough credits to purchase "${item.title}" (${Math.round(
+                      item.price
+                  )} credits required). Please purchase more credits to continue.`
+                  : undefined
+            }
+        />
+
+        <ConfirmationDialog
+            open={completeDialogOpen}
+            onOpenChange={setCompleteDialogOpen}
+            title="Complete Transaction"
+            description="Are you sure you want to complete this transaction?"
+            confirmText="Complete"
+            onConfirm={handleCompleteTransaction}
+        />
+
+        <ConfirmationDialog
+            open={reviewDialogOpen}
+            onOpenChange={setReviewDialogOpen}
+            title="Submit Review"
+            description="Please provide your feedback for this transaction."
+            confirmText="Submit"
+            onConfirm={handleSubmitReview}
+        >
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <div className="flex">
+                {[1, 2, 3, 4, 5].map((star) => (
+                    <Star
+                        key={star}
+                        className={`h-5 w-5 ${
+                            star <= rating
+                                ? 'text-yellow-500 fill-yellow-500'
+                                : 'text-gray-300'
+                        }`}
+                    />
+                ))}
+              </div>
+              <span className="text-sm font-medium">{rating}/5</span>
             </div>
-
-            {/* Render the main content based on listing type */}
-            <div className="mt-4">{content.mainContent}</div>
-          </CardContent>
-        </Card>
-      </motion.div>
-
-      {/* Dialogs */}
-      <ConfirmationDialog
-        open={deleteDialogOpen}
-        onOpenChange={setDeleteDialogOpen}
-        title="Delete Item"
-        description="Are you sure you want to delete this item? This action cannot be undone."
-        confirmText="Delete"
-        onConfirm={handleDelete}
-      />
-
-      <ConfirmationDialog
-        open={purchaseDialogOpen}
-        onOpenChange={setPurchaseDialogOpen}
-        title="Purchase Item"
-        description={`Are you sure you want to purchase "${
-          item.title
-        }" for ${Math.round(item.price)} credits?`}
-        confirmText="Purchase"
-        onConfirm={handlePurchase}
-      />
-
-      <CreditPurchaseDialog
-        open={creditPurchaseDialogOpen}
-        onOpenChange={(open) => {
-          setCreditPurchaseDialogOpen(open);
-        }}
-        customMessage={
-          item
-            ? `You don't have enough credits to purchase "${
-                item.title
-              }" (${Math.round(
-                item.price
-              )} credits required). Please purchase more credits to continue.`
-            : undefined
-        }
-      />
-
-      <ConfirmationDialog
-        open={completeDialogOpen}
-        onOpenChange={setCompleteDialogOpen}
-        title="Complete Transaction"
-        description="Are you sure you want to complete this transaction?"
-        confirmText="Complete"
-        onConfirm={handleCompleteTransaction}
-      />
-
-      <ConfirmationDialog
-        open={reviewDialogOpen}
-        onOpenChange={setReviewDialogOpen}
-        title="Submit Review"
-        description="Please provide your feedback for this transaction."
-        confirmText="Submit Review"
-        onConfirm={handleSubmitReview}
-      >
-        <div className="space-y-4">
-          <div className="flex items-center gap-2">
-            <div className="flex">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <Star
-                  key={star}
-                  className={`h-5 w-5 ${
-                    star <= rating
-                      ? 'text-yellow-500 fill-yellow-500'
-                      : 'text-gray-300'
-                  }`}
-                />
-              ))}
-            </div>
-            <span className="text-sm font-medium">{rating}/5</span>
+            <textarea
+                value={reviewComment}
+                onChange={(e) => setReviewComment(e.target.value)}
+                placeholder="Write your review here..."
+                className="w-full p-3 border rounded-md focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                rows={4}
+            />
           </div>
-          <textarea
-            value={reviewComment}
-            onChange={(e) => setReviewComment(e.target.value)}
-            placeholder="Write your review here..."
-            className="w-full p-3 border rounded-md focus:ring-2 focus:ring-primary/50 focus:border-primary"
-            rows={4}
-          />
-        </div>
-      </ConfirmationDialog>
-    </div>
+        </ConfirmationDialog>
+      </div>
   );
 }

@@ -29,7 +29,6 @@ import {
   useJoinChannelMutation,
 } from '../../redux/api/messagingApi';
 import socketService from '../../services/socket.service';
-import { useToast } from '../../hooks/use-toast';
 import {
   Dialog,
   DialogContent,
@@ -40,7 +39,7 @@ import {
 } from '../ui/dialog';
 import { Switch } from '../ui/switch';
 import ChannelDetails from './ChannelDetails';
-
+import { toast } from 'sonner';
 const channelSchema = z.object({
   name: z
     .string()
@@ -61,7 +60,6 @@ type ChannelFormValues = z.infer<typeof channelSchema>;
 const ChannelSidebar: React.FC = () => {
   const navigate = useNavigate();
   const { channelId } = useParams<{ channelId: string }>();
-  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [showNewChannelModal, setShowNewChannelModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
@@ -126,18 +124,15 @@ const ChannelSidebar: React.FC = () => {
       }).unwrap();
       setShowNewChannelModal(false);
       form.reset();
-      toast({
-        title: 'Channel created',
+      toast.success('Channel created', {
         description: `#${values.name} has been created successfully`,
       });
       // Refetch channels to get the new channel in the list
       refetchChannels();
     } catch (error) {
-      toast({
-        title: 'Failed to create channel',
+      toast.error('Failed to create channel', {
         description:
           'There was an error creating the channel. Please try again.',
-        variant: 'destructive',
       });
     }
   };
@@ -169,35 +164,22 @@ const ChannelSidebar: React.FC = () => {
 
     try {
       await joinChannel(channelId).unwrap();
-      toast({
-        title: 'Joined channel',
+      toast.success('Joined channel', {
         description: 'You have successfully joined the channel',
       });
 
       // Navigate to the channel after joining
       navigate(`/messaging/${channelId}`);
 
-      // Notify via socket
+      // Notify via socket - this will trigger the userJoinedChannel event from the server
       socketService.joinChannel(channelId);
 
-      // Manually trigger system message
-      const joinEvent = new CustomEvent('userJoinedChannel', {
-        detail: {
-          channelId: channelId,
-          user: {
-            _id: user?._id || '',
-            name: user?.name || 'Unknown User',
-          },
-        },
-      });
-
-      document.dispatchEvent(joinEvent);
+      // Remove manual triggering of system message as it causes duplication
+      // The server will emit userJoinedChannel event which will be handled automatically
     } catch (error) {
       console.error('Failed to join channel:', error);
-      toast({
-        title: 'Error',
+      toast.error('Error', {
         description: 'Failed to join channel',
-        variant: 'destructive',
       });
     }
   };

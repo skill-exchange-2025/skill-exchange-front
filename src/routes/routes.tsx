@@ -1,4 +1,3 @@
-// src/routes/routes.tsx
 import { createBrowserRouter } from 'react-router-dom';
 import App from '../App';
 import { LandingPage } from '@/pages/landing';
@@ -11,12 +10,12 @@ import { SignUp } from '@/pages/auth/sign-up';
 import { ForgotPassword } from '@/pages/auth/forgot-password';
 import { Layout } from '@/components/layout/layout';
 import ProtectedRoute from '@/components/layout/ProtectedRoute';
-// import Redirector from "@/components/Redirector";
+import PublicRoute from '@/components/layout/PublicRoute';
 import AdminRoutes from './AdminRoutes';
 import UserRoutes from './UserRoutes';
-import DashboardLayout from '@/components/layout/DashboardLayout'; // Added this import
-import UserDashboard from '@/components/layout/UserDashboard'; // Added this import
-import LoginForm from '@/pages/auth/Login'; // Added this import
+import DashboardLayout from '@/components/layout/DashboardLayout';
+import UserDashboard from '@/components/layout/UserDashboard';
+import LoginForm from '@/pages/auth/Login';
 import { VerifyEmail } from '@/pages/auth/verify-email';
 import { MarketplacePage } from '@/pages/marketplace';
 import { MarketplaceItemDetail } from '@/pages/marketplace/item-detail';
@@ -28,6 +27,11 @@ import ChannelPage from '../pages/messaging/ChannelPage';
 import ChannelListPage from '../pages/messaging/ChannelListPage';
 import CodingRoomPage from "@/pages/CodingRooms/CodingRoomPage";
 import CreateRoomPage from "@/pages/CodingRooms/CreateRoomPage.tsx";
+import { CreateLesson } from '@/pages/marketplace/create-lesson';
+import { EditLesson } from '@/pages/marketplace/edit-lesson';
+import { LessonDetail } from '@/pages/marketplace/lesson-detail';
+import ManageLessons from '@/pages/marketplace/manage-lessons.tsx';
+import { DiscoverPage } from '@/pages/discover';
 
 const router = createBrowserRouter([
   {
@@ -41,7 +45,11 @@ const router = createBrowserRouter([
         children: [
           {
             path: 'login',
-            element: <LoginForm />,
+            element: (
+              <PublicRoute>
+                <LoginForm />
+              </PublicRoute>
+            ),
           },
           { index: true, element: <LandingPage /> },
           { path: 'about', element: <About /> },
@@ -49,8 +57,22 @@ const router = createBrowserRouter([
           { path: 'help', element: <Help /> },
           { path: 'privacy', element: <Privacy /> },
           { path: 'terms', element: <Terms /> },
-          { path: 'forgot-password', element: <ForgotPassword /> },
-          { path: 'signup', element: <SignUp /> },
+          {
+            path: 'forgot-password',
+            element: (
+              <PublicRoute>
+                <ForgotPassword />
+              </PublicRoute>
+            ),
+          },
+          {
+            path: 'signup',
+            element: (
+              <PublicRoute>
+                <SignUp />
+              </PublicRoute>
+            ),
+          },
           {
             path: 'marketplace',
             element: (
@@ -115,7 +137,43 @@ const router = createBrowserRouter([
               </ProtectedRoute>
             ),
           },
-          // Messaging routes
+
+          {
+            path: 'marketplace/item/:id/create-lesson',
+            element: (
+              <ProtectedRoute>
+                <CreateLesson />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: 'marketplace/lessons/:lessonId/edit',
+            element: (
+              <ProtectedRoute>
+                <EditLesson />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: 'marketplace/item/:itemId/lessons',
+            element: (
+              <ProtectedRoute>
+                <ManageLessons />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: 'marketplace/item/:itemId/lessons/:lessonId',
+            element: (
+              <ProtectedRoute>
+                <LessonDetail />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: '/discover',
+            element: <DiscoverPage />,
+          },
           {
             path: 'messaging',
             element: (

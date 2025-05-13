@@ -82,6 +82,25 @@ export const usersApi = baseApi.injectEndpoints({
                 method: 'POST',
             }),
         }),
+
+         // Activate user (new endpoint for activation)
+         activateUser: builder.mutation<User, string>({
+            query: (id) => ({
+                url: `/users/${id}/activate`,
+                method: 'POST',
+            }),
+        }),
+        
+          
+        // desactivate user 
+        updateUserStatus: builder.mutation<User, { userId: string; isActive: boolean }>({
+            query: ({ userId, isActive }) => ({
+              url: `/users/deactivate/${userId}`,  // This is your deactivation endpoint
+              method: 'PATCH',
+              body: { isActive },  // You can still send the isActive status if needed
+            }),
+          }),
+
     }),
 });
 
@@ -97,5 +116,7 @@ export const {
     useChangePasswordMutation,
     useGetUserMetricsQuery,
     useChangeRoleMutation,
+    useUpdateUserStatusMutation,
+    useActivateUserMutation,
     useVerifyUserMutation,
 } = usersApi;

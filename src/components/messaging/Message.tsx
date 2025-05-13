@@ -24,6 +24,8 @@ import {
   Eye,
   MessageCircle,
   UserCircle,
+  Loader2,
+  CornerUpLeft,
 } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import EmojiPicker, { EmojiClickData } from 'emoji-picker-react';
@@ -33,7 +35,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
-import { useToast } from '../use-toast';
+import { toast } from 'sonner';
 import socketService from '../../services/socket.service';
 import MessageReactions from './MessageReactions';
 import {
@@ -44,12 +46,15 @@ import {
   DialogFooter,
 } from '../ui/dialog';
 import { Badge } from '../ui/badge';
+import MessageReplyButton from './MessageReplyButton';
+import MessageReplies from './MessageReplies';
 
 interface MessageProps {
   message: MessageType;
+  onReply?: (message: MessageType) => void;
 }
 
-const Message: React.FC<MessageProps> = ({ message }) => {
+const Message: React.FC<MessageProps> = ({ message, onReply }) => {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showAttachmentPreview, setShowAttachmentPreview] = useState(false);
   const { user } = useAppSelector((state) => state.auth);
@@ -57,7 +62,6 @@ const Message: React.FC<MessageProps> = ({ message }) => {
   const [addReaction] = useAddReactionMutation();
   const [removeReaction] = useRemoveReactionMutation();
   const [deleteMessage, { isLoading: isDeleting }] = useDeleteMessageMutation();
-  const { toast } = useToast();
 
   const handleEmojiClick = async (emojiData: EmojiClickData) => {
     try {
@@ -90,10 +94,8 @@ const Message: React.FC<MessageProps> = ({ message }) => {
       setShowEmojiPicker(false);
     } catch (error) {
       console.error('Failed to handle reaction:', error);
-      toast({
-        title: 'Error',
+      toast.error('Error', {
         description: 'Failed to process reaction',
-        variant: 'destructive',
       });
     }
   };
@@ -110,10 +112,8 @@ const Message: React.FC<MessageProps> = ({ message }) => {
       socketService.removeReaction(message._id, currentChannel._id, emoji);
     } catch (error) {
       console.error('Failed to remove reaction:', error);
-      toast({
-        title: 'Error',
+      toast.error('Error', {
         description: 'Failed to remove reaction',
-        variant: 'destructive',
       });
     }
   };
@@ -122,20 +122,27 @@ const Message: React.FC<MessageProps> = ({ message }) => {
     if (!currentChannel) return;
 
     try {
-      await deleteMessage(message._id).unwrap();
-      // Also notify via socket for real-time updates
+      // First, try the socketService approach for real-time updates
       socketService.deleteMessage(message._id, currentChannel._id);
 
-      toast({
-        title: 'Message deleted',
-        description: 'Your message has been successfully deleted',
-      });
+      // Also make a direct API call (the socket approach already includes a fallback)
+      // This dual approach increases our chances of success
+      try {
+        await deleteMessage(message._id).unwrap();
+        toast.success('Message deleted', {
+          description: 'Your message has been successfully deleted',
+        });
+      } catch (error) {
+        console.log(
+          'REST API delete call failed, but socket may still succeed:',
+          error
+        );
+        // Don't show error toast yet as socket operation might succeed
+      }
     } catch (error) {
       console.error('Failed to delete message:', error);
-      toast({
-        title: 'Error',
+      toast.error('Error', {
         description: 'Failed to delete message',
-        variant: 'destructive',
       });
     }
   };
@@ -166,8 +173,10 @@ const Message: React.FC<MessageProps> = ({ message }) => {
     if (!message.attachment)
       return <FileIcon size={20} className="text-gray-400" />;
 
-    const filename = message.attachment.originalname.toLowerCase();
-    const mimetype = message.attachment.mimetype;
+    const filename = message.attachment.originalname
+      ? message.attachment.originalname.toLowerCase()
+      : '';
+    const mimetype = message.attachment.mimetype || '';
 
     if (mimetype && mimetype.startsWith('image/')) {
       return <ImageIcon size={20} className="text-blue-500" />;
@@ -196,21 +205,23 @@ const Message: React.FC<MessageProps> = ({ message }) => {
 
   const isImageAttachment = () => {
     if (!message.attachment) return false;
-    const mimetype = message.attachment.mimetype;
+    const mimetype = message.attachment.mimetype || '';
     return mimetype && mimetype.startsWith('image/');
   };
 
   const isPdfAttachment = () => {
     if (!message.attachment) return false;
     const mimetype = message.attachment.mimetype;
-    const filename = message.attachment.originalname.toLowerCase();
+    const filename = message.attachment.originalname
+      ? message.attachment.originalname.toLowerCase()
+      : '';
     return mimetype === 'application/pdf' || filename.endsWith('.pdf');
   };
 
   const getFileSize = () => {
     if (!message.attachment) return '';
 
-    const size = message.attachment.size;
+    const size = message.attachment.size || 0;
     if (size < 1024) {
       return `${size} bytes`;
     } else if (size < 1024 * 1024) {
@@ -229,9 +240,14 @@ const Message: React.FC<MessageProps> = ({ message }) => {
       return path;
     }
 
+    // Replace backslashes with forward slashes
+    const normalizedPath = path.replace(/\\/g, '/');
+
     // Otherwise, prepend base URL
     const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-    return path.startsWith('/') ? `${baseUrl}${path}` : `${baseUrl}/${path}`;
+    return normalizedPath.startsWith('/')
+      ? `${baseUrl}${normalizedPath}`
+      : `${baseUrl}/${normalizedPath}`;
   };
 
   return (
@@ -241,8 +257,27 @@ const Message: React.FC<MessageProps> = ({ message }) => {
           isCurrentUserMessage
             ? 'hover:bg-green-50 dark:hover:bg-green-900/20 border-l-4 border-green-400 dark:border-green-600'
             : 'hover:bg-gray-50 dark:hover:bg-gray-800'
+        } ${
+          message.isReply
+            ? 'ml-4 border-l-2 border-gray-200 dark:border-gray-700'
+            : ''
         }`}
       >
+        {/* Show reply preview if this is a reply */}
+        {message.isReply && message.replyPreview && (
+          <div className="flex items-center mb-2 text-xs text-gray-500 dark:text-gray-400">
+            <CornerUpLeft size={12} className="mr-1" />
+            <span>Reply to </span>
+            <span className="font-medium ml-1">
+              {message.replyPreview.senderName}
+            </span>
+            <span className="mx-1">:</span>
+            <span className="truncate max-w-[200px]">
+              {message.replyPreview.content}
+            </span>
+          </div>
+        )}
+
         <div className="flex gap-3">
           <Avatar
             className={`h-10 w-10 ring-2 ${
@@ -297,12 +332,33 @@ const Message: React.FC<MessageProps> = ({ message }) => {
                     : undefined
                 }
               >
-                {isImageAttachment() ? (
+                {/* Show loading state for pending attachments */}
+                {message.attachment.isPending ? (
+                  <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+                    <div className="flex items-center">
+                      <div className="p-3 rounded-full bg-gray-100 dark:bg-gray-700 mr-4">
+                        <Loader2
+                          size={24}
+                          className="animate-spin text-gray-500"
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-medium truncate text-gray-800 dark:text-gray-200">
+                          {message.attachment?.originalname ||
+                            'Uploading attachment...'}
+                        </div>
+                        <div className="text-xs text-gray-500 mt-1">
+                          Uploading...
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : isImageAttachment() ? (
                   <div className="rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 shadow-sm">
                     <div className="relative">
                       <img
-                        src={getAttachmentUrl(message.attachment.path)}
-                        alt={message.attachment.originalname}
+                        src={getAttachmentUrl(message.attachment?.path || '')}
+                        alt={message.attachment?.originalname || 'Attachment'}
                         className="max-h-80 w-auto object-contain bg-gray-50 dark:bg-gray-900"
                         onError={(e) => {
                           console.error(
@@ -310,9 +366,10 @@ const Message: React.FC<MessageProps> = ({ message }) => {
                             e,
                             message.attachment
                           );
-                          e.currentTarget.src =
-                            'https://via.placeholder.com/300x200?text=Image+Not+Available';
-                          e.currentTarget.onerror = null;
+                          const imgElement = e.currentTarget;
+                          // Use a local fallback image instead of placeholder.com
+                          imgElement.src = '/images/image-not-found.png';
+                          imgElement.onerror = null; // Prevent infinite loop
                         }}
                       />
                       <div className="absolute top-2 left-2">
@@ -324,7 +381,7 @@ const Message: React.FC<MessageProps> = ({ message }) => {
                     </div>
                     <div className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
                       <div className="text-sm truncate text-gray-700 dark:text-gray-300 font-medium">
-                        {message.attachment.originalname}
+                        {message.attachment?.originalname || 'Attachment'}
                       </div>
                       <Button
                         variant="ghost"
@@ -351,7 +408,7 @@ const Message: React.FC<MessageProps> = ({ message }) => {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="text-sm font-medium truncate text-gray-800 dark:text-gray-200">
-                          {message.attachment.originalname}
+                          {message.attachment?.originalname || 'Attachment'}
                         </div>
                         <div className="text-xs text-gray-500 mt-1">
                           {getFileSize()}
@@ -432,6 +489,11 @@ const Message: React.FC<MessageProps> = ({ message }) => {
               </PopoverContent>
             </Popover>
 
+            {/* Reply button */}
+            {onReply && (
+              <MessageReplyButton message={message} onReply={onReply} />
+            )}
+
             {/* Message Options (Delete, etc.) - Only for user's own messages */}
             {isCurrentUserMessage && (
               <DropdownMenu>
@@ -463,6 +525,11 @@ const Message: React.FC<MessageProps> = ({ message }) => {
         </div>
       </div>
 
+      {/* Show replies if this message has any */}
+      {!message.isReply && (message.replyCount || 0) > 0 && (
+        <MessageReplies message={message} />
+      )}
+
       {/* File Preview Dialog */}
       {message.attachment && (
         <Dialog
@@ -473,14 +540,16 @@ const Message: React.FC<MessageProps> = ({ message }) => {
             <DialogHeader>
               <DialogTitle className="flex items-center">
                 {getFileIcon()}
-                <span className="ml-2">{message.attachment.originalname}</span>
+                <span className="ml-2">
+                  {message.attachment?.originalname || 'Attachment'}
+                </span>
               </DialogTitle>
             </DialogHeader>
             <div className="my-4 flex justify-center bg-gray-50 dark:bg-gray-900 rounded-lg p-2">
               {isImageAttachment() ? (
                 <img
-                  src={getAttachmentUrl(message.attachment.path)}
-                  alt={message.attachment.originalname}
+                  src={getAttachmentUrl(message.attachment?.path || '')}
+                  alt={message.attachment?.originalname || 'Attachment'}
                   className="max-h-[70vh] max-w-full object-contain rounded"
                   onError={(e) => {
                     console.error(
@@ -488,15 +557,15 @@ const Message: React.FC<MessageProps> = ({ message }) => {
                       e,
                       message.attachment
                     );
-                    // If image still fails to load, use placeholder
-                    e.currentTarget.src =
-                      'https://via.placeholder.com/400x300?text=Image+Not+Available';
-                    e.currentTarget.onerror = null; // Prevent infinite loop
+                    const imgElement = e.currentTarget;
+                    // Use a local fallback image instead of placeholder.com
+                    imgElement.src = '/images/image-not-found.png';
+                    imgElement.onerror = null; // Prevent infinite loop
                   }}
                 />
               ) : isPdfAttachment() ? (
                 <iframe
-                  src={getAttachmentUrl(message.attachment.path)}
+                  src={getAttachmentUrl(message.attachment?.path || '')}
                   title="PDF Preview"
                   className="w-full h-[70vh] border-0 rounded"
                   onError={(e) => {

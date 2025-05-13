@@ -15,17 +15,31 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { Sparkles } from '@/components/ui/sparkles';
 
 export function LandingPage() {
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col relative overflow-hidden">
+      <Sparkles
+        className="opacity-90"
+        count={300}
+        colors={[
+          'text-[#00EC96]',
+          'text-[#2ECC71]',
+          'text-[#50C878]',
+          'text-[#00A86B]',
+          'text-[#4CBB17]',
+          'text-[#00EC96]',
+          'text-[#2ECC71]',
+        ]}
+      />
       {/* Hero Section */}
-      <section className="container py-24 md:py-32 bg-gradient-to-b from-background to-background/80">
+      <section className="container py-24 md:py-32 bg-gradient-to-b from-background to-background/80 mx-auto ">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="flex flex-col items-center text-center"
+          className="flex flex-col items-center text-center relative z-10"
         >
           <div className="mb-6">
             <motion.h1
@@ -60,7 +74,7 @@ export function LandingPage() {
                 Join Skilly <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
-            <Link to="/login">
+            <Link to="/marketplace">
               <Button size="lg" variant="outline">
                 Explore Skills
               </Button>
@@ -70,7 +84,7 @@ export function LandingPage() {
       </section>
 
       {/* How It Works Section */}
-      <section className="container py-24 sm:py-32 bg-muted/50 relative overflow-hidden">
+      <section className="container py-24 sm:py-32 bg-muted/50 relative overflow-hidden mx-auto">
         {/* Background Shape */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <svg
@@ -225,7 +239,7 @@ export function LandingPage() {
       </section>
 
       {/* Features Section */}
-      <section className="container py-24 sm:py-32 relative overflow-hidden">
+      <section className="container py-24 sm:py-32 relative overflow-hidden mx-auto">
         {/* Background Shape */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <svg
@@ -490,7 +504,7 @@ export function LandingPage() {
       </section>
 
       {/* Testimonials Section */}
-      <section className="container py-24 sm:py-32 bg-muted/50 overflow-hidden">
+      <section className="container py-24 sm:py-32 bg-muted/50 overflow-hidden mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -510,7 +524,7 @@ export function LandingPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="container py-24 sm:py-32">
+      <section className="container py-24 sm:py-32 mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}

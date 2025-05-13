@@ -7,7 +7,6 @@ import {
 } from '../../redux/features/messaging/channelsSlice';
 import ChannelSidebar from '../../components/messaging/ChannelSidebar';
 import MessageList from '../../components/messaging/MessageList';
-import MessageInput from '../../components/messaging/MessageInput';
 import socketService from '../../services/socket.service';
 import {
   Hash,
@@ -39,7 +38,7 @@ import {
   useJoinChannelMutation,
   useLeaveChannelMutation,
 } from '../../redux/api/messagingApi';
-import { useToast } from '../../hooks/use-toast';
+import { toast } from 'sonner';
 
 const ChannelPage: React.FC = () => {
   const { channelId } = useParams<{ channelId: string }>();
@@ -53,7 +52,6 @@ const ChannelPage: React.FC = () => {
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [joinChannel, { isLoading: isJoining }] = useJoinChannelMutation();
   const [leaveChannel, { isLoading: isLeaving }] = useLeaveChannelMutation();
-  const { toast } = useToast();
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   const { channels, currentChannel, lastSelectedChannelId, messages } =
@@ -77,8 +75,7 @@ const ChannelPage: React.FC = () => {
 
     try {
       await joinChannel(channelId).unwrap();
-      toast({
-        title: 'Joined channel',
+      toast.success('Joined channel', {
         description: 'You have successfully joined the channel',
       });
 
@@ -92,10 +89,8 @@ const ChannelPage: React.FC = () => {
       });
     } catch (error) {
       console.error('Failed to join channel:', error);
-      toast({
-        title: 'Error',
+      toast.error('Error', {
         description: 'Failed to join channel',
-        variant: 'destructive',
       });
     }
   };
@@ -105,29 +100,23 @@ const ChannelPage: React.FC = () => {
     if (!channelId || !user) return;
 
     try {
-      // Manually trigger system message before leaving
-      socketService.triggerSystemMessage('leave', channelId, {
-        _id: user._id || '',
-        name: user.name || 'You',
-      });
+      // Remove manual triggering of system message as it causes duplication
+      // The server will emit userLeftChannel event when we call socketService.leaveChannel
 
       await leaveChannel(channelId).unwrap();
-      toast({
-        title: 'Left channel',
+      toast.success('Left channel', {
         description: 'You have successfully left the channel',
       });
 
-      // Notify via socket
+      // Notify via socket - this will trigger the userLeftChannel event from the server
       socketService.leaveChannel(channelId);
 
       // Redirect to channel list after leaving
       navigate('/messaging');
     } catch (error) {
       console.error('Failed to leave channel:', error);
-      toast({
-        title: 'Error',
+      toast.error('Error', {
         description: 'Failed to leave channel',
-        variant: 'destructive',
       });
     }
   };
@@ -430,8 +419,7 @@ const ChannelPage: React.FC = () => {
                     className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md mb-1 cursor-pointer"
                     onClick={() => {
                       // Scroll to message logic would go here
-                      toast({
-                        title: 'Message found',
+                      toast.success('Message found', {
                         description: 'Scrolled to message',
                       });
                     }}
@@ -465,13 +453,6 @@ const ChannelPage: React.FC = () => {
         <div className="flex-1 overflow-hidden">
           {channelId && <MessageList channelId={channelId} />}
         </div>
-
-        {/* Message input */}
-        {!currentChannel?.isArchived && channelId && (
-          <div className="border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-md">
-            <MessageInput channelId={channelId} />
-          </div>
-        )}
       </div>
     </div>
   );

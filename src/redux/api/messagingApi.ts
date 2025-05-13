@@ -148,6 +148,27 @@ export const messagingApi = baseApi.injectEndpoints({
       invalidatesTags: (_result, error, { messageId }) =>
         error ? [] : [{ type: 'Message', id: messageId }],
     }),
+
+    getMessageReplies: builder.query<
+      { replies: Message[]; total: number },
+      { messageId: string; page?: number; limit?: number }
+    >({
+      query: ({ messageId, page = 1, limit = 20 }) => ({
+        url: `/messaging/messages/${messageId}/replies`,
+        method: 'GET',
+        params: { page, limit },
+      }),
+      providesTags: (result, error, { messageId }) =>
+        result
+          ? [
+              ...result.replies.map(({ _id }) => ({
+                type: 'Message' as const,
+                id: _id,
+              })),
+              { type: 'Message' as const, id: `REPLIES_${messageId}` },
+            ]
+          : [{ type: 'Message' as const, id: `REPLIES_${messageId}` }],
+    }),
   }),
   overrideExisting: false,
 });
@@ -164,4 +185,5 @@ export const {
   useSearchMessagesQuery,
   useAddReactionMutation,
   useRemoveReactionMutation,
+  useGetMessageRepliesQuery,
 } = messagingApi;
