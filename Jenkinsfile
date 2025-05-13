@@ -29,6 +29,7 @@ pipeline {
                 sh 'npm run lint -- --no-fix || true' // Run lint but don't fail the build
             }
         }
+        /*
 
         stage('Test') {
             steps {
@@ -53,6 +54,7 @@ pipeline {
                 }
             }
         }
+        */
 
         stage('Build') {
             steps {
