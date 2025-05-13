@@ -32,8 +32,8 @@ import ManageLessons from "@/pages/marketplace/manage-lessons.tsx";
 import {CreateFeedback} from "@/pages/user/feedback/CreateFeedback.tsx";
 import {FeedbackList} from "@/pages/user/feedback/FeedbackList.tsx";
 import {EditFeedback} from "@/pages/user/feedback/EditFeedback.tsx";
-import {CodingRoomPage} from "@/pages/CodingRooms/CodingRoomPage";
-import {CreateRoomPage} from "@/pages/CodingRooms/CreateRoomPage.tsx";
+import CodingRoomPage from "@/pages/CodingRooms/CodingRoomPage";
+import CreateRoomPage from "@/pages/CodingRooms/CreateRoomPage.tsx";
 import {DiscoverPage} from '@/pages/discover';
 import SummarizerPage from '@/pages/SummarizerPage';
 

@@ -14,6 +14,7 @@ import {useGetUserCreditsQuery} from '@/redux/features/credits/creditsApi';
 import {useCurrentProfile} from '@/redux/features/profile/profileSlice';
 import {useFetchProfileQuery} from '@/redux/features/profile/profileApi';
 import {Badge} from '@/components/ui/badge';
+import {WheelFortuneDialog} from "@/components/wheel/WheelFortuneDialog.tsx";
 
 export function Navbar() {
   const { theme, setTheme } = useTheme();

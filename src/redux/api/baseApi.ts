@@ -68,7 +68,7 @@ export const baseApi = createApi({
     'Message',
     'Lessons',
     'Feedback',
-    'DashboardStats'
+    'DashboardStats',
     'WheelSpin'
   ],
 });

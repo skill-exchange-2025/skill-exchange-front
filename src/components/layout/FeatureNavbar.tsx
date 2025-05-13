@@ -1,6 +1,6 @@
 import {Link, useLocation} from 'react-router-dom';
 import {cn} from '@/lib/utils';
-import {Book, Home, MessageCircle, MessageSquare, Store,} from 'lucide-react';
+import {Book, Home, MessageCircle, MessageSquare, Store, Telescope} from 'lucide-react';
 import {motion, useScroll} from 'framer-motion';
 import {useEffect, useState} from 'react';
 
