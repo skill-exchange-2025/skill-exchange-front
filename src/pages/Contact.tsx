@@ -1,8 +1,8 @@
-import { motion } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { toast } from 'sonner';
+import {motion} from 'framer-motion';
+import {Button} from '@/components/ui/button';
+import {Input} from '@/components/ui/input';
+import {Textarea} from '@/components/ui/textarea';
+import {toast} from 'sonner';
 
 export function Contact() {
   const handleSubmit = (e: React.FormEvent) => {

@@ -1,7 +1,14 @@
-import { baseApi } from "@/redux/api/baseApi";
-import {ChangePasswordRequest,
-    ChangeRoleRequest, CreateUserRequest, PaginatedResponse, PaginationParams, UpdateUserRequest, User, UserMetrics } from "@/types/user";
-
+import {baseApi} from "@/redux/api/baseApi";
+import {
+    ChangePasswordRequest,
+    ChangeRoleRequest,
+    CreateUserRequest,
+    PaginatedResponse,
+    PaginationParams,
+    UpdateUserRequest,
+    User,
+    UserMetrics
+} from "@/types/user";
 
 
 export const usersApi = baseApi.injectEndpoints({

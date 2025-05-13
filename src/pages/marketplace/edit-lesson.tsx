@@ -1,15 +1,12 @@
 // src/pages/marketplace/edit-lesson.tsx
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { toast } from 'sonner';
-import {
-    useGetLessonByIdQuery,
-    useUpdateLessonMutation
-} from '@/redux/features/lessons/lessonApi';
+import React, {useEffect, useState} from 'react';
+import {useNavigate, useParams} from 'react-router-dom';
+import {Button} from '@/components/ui/button';
+import {Card, CardContent, CardHeader, CardTitle} from '@/components/ui/card';
+import {Input} from '@/components/ui/input';
+import {Textarea} from '@/components/ui/textarea';
+import {toast} from 'sonner';
+import {useGetLessonByIdQuery, useUpdateLessonMutation} from '@/redux/features/lessons/lessonApi';
 
 export function EditLesson() {
     const { lessonId } = useParams<{ lessonId: string }>();
@@ -22,7 +19,7 @@ export function EditLesson() {
         title: '',
         description: '',
         duration: 0,
-        content: '',
+        textContent: '',
         materials: '',
         videoUrl: ''
     });
@@ -33,7 +30,7 @@ export function EditLesson() {
                 title: lessonData.title,
                 description: lessonData.description,
                 duration: lessonData.duration,
-                content: lessonData.content,
+                textContent: lessonData.textContent,
                 materials: lessonData.materials?.join(', ') || '',
                 videoUrl: lessonData.videoUrl || ''
             });
@@ -59,7 +56,7 @@ export function EditLesson() {
             title: formData.title,
             description: formData.description,
             duration: Number(formData.duration),
-            content: formData.content,
+            textContent: formData.textContent,
             materials: formData.materials
                 ? formData.materials.split(',').map((s) => s.trim())
                 : [],
@@ -70,9 +67,8 @@ export function EditLesson() {
             const result = await updateLesson({ id: lessonId, data: payload }).unwrap();
             toast.success('Lesson updated successfully!');
             navigate(`/marketplace/item/${result.listing}`);
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Failed to update lesson:', error);
-            toast.error(error?.data?.message || 'Failed to update lesson');
         }
     };
 
@@ -142,7 +138,7 @@ export function EditLesson() {
                             <label className="block font-medium">Content (Markdown/HTML)</label>
                             <Textarea
                                 name="content"
-                                value={formData.content}
+                                value={formData.textContent}
                                 onChange={handleChange}
                                 placeholder="Enter lesson content"
                                 required

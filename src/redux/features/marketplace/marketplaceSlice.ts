@@ -1,6 +1,6 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { RootState } from '@/redux/store';
-import { ListingType, MarketplaceItem } from './marketplaceApi';
+import {createSlice, PayloadAction} from '@reduxjs/toolkit';
+import {RootState} from '@/redux/store';
+import {ListingType, MarketplaceItem} from './marketplaceApi';
 
 interface PriceRange {
   min: number | undefined;

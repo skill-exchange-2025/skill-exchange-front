@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { filesToBase64 } from '@/utils/fileUpload';
+import {useState} from 'react';
+import {filesToBase64} from '@/utils/fileUpload';
 
 interface UseImageUploadReturn {
   uploadImages: (files: File[]) => Promise<string[]>;

@@ -1,4 +1,4 @@
-import { User } from './user';
+import {User} from './user';
 
 export interface ChannelMember extends User {
   role?: string;
@@ -31,6 +31,7 @@ export interface MessageAttachment {
   mimetype: string;
   size: number;
   path: string;
+  isPending?: boolean;
 }
 
 export interface Message {
@@ -45,6 +46,17 @@ export interface Message {
   urlPreview: UrlPreview | null;
   createdAt: string;
   updatedAt: string;
+  clientMessageId?: string;
+
+  // Reply functionality
+  isReply?: boolean;
+  parentMessage?: string | Message;
+  replyPreview?: {
+    content: string;
+    sender: string;
+    senderName: string;
+  };
+  replyCount?: number;
 }
 
 export interface CreateChannelDto {
@@ -57,6 +69,14 @@ export interface CreateMessageDto {
   channel: string;
   content: string;
   attachment?: MessageAttachment;
+  clientMessageId?: string;
+  isReply?: boolean;
+  parentMessageId?: string;
+  replyPreview?: {
+    content: string;
+    sender: string;
+    senderName: string;
+  };
 }
 
 export interface ChannelMessagesResponse {

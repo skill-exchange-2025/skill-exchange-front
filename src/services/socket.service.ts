@@ -1,11 +1,14 @@
-import { io, Socket } from 'socket.io-client';
-import { store } from '../redux/store';
+import {io, Socket} from 'socket.io-client';
+import {store} from '../redux/store';
 import {
-  addMessage,
-  updateMessage,
-  removeMessage,
+    addMessage,
+    removeMessage,
+    setChannels,
+    updateChannel,
+    updateMessage,
 } from '../redux/features/messaging/channelsSlice';
-import { Message, Channel } from '../types/channel';
+import {Message} from '../types/channel';
+
 
 class SocketService {
   private socket: Socket | null = null;
@@ -136,15 +139,62 @@ class SocketService {
       console.log(`Socket event received: ${event}`, args);
     });
 
+    // Re-connect event when socket reconnects
+    this.socket.on('connect', () => {
+      console.log('Socket reconnected, rejoining channels...');
+      this.rejoinChannels();
+    });
+
     this.socket.on('newMessage', (message: any) => {
       console.log('🟢 New message received via socket:', message);
+
+      // Additional logging for attachments
+      if (message.attachment) {
+        console.log('📎 Message contains attachment:', {
+          isPending: message.attachment.isPending,
+          filename: message.attachment.filename,
+          originalname: message.attachment.originalname,
+          channelId:
+            typeof message.channel === 'string'
+              ? message.channel
+              : message.channel?._id,
+        });
+      }
 
       // Normalize message structure if needed
       if (!message._id && message.id) {
         message._id = message.id;
       }
 
-      // Check if this message has already been processed
+      // For messages with pendingAttachment flag, we need special handling
+      if (message.pendingAttachment) {
+        console.log('📎 Message with pending attachment received:', message);
+
+        // This will add it to the store with the isPending=true flag in the attachment
+        store.dispatch(addMessage(message));
+        return;
+      }
+
+      // Check for duplicate messages
+      // If this is a clientMessageId we've seen before, it might be an update to a pending attachment
+      if (message.clientMessageId) {
+        // Get existing messages from store to check
+        const state = store.getState();
+        const existingMessages = state.channels.messages;
+
+        // Look for a message with matching clientMessageId
+        const pendingMessage = existingMessages.find(
+          (msg) => msg.clientMessageId === message.clientMessageId
+        );
+
+        if (pendingMessage?.attachment?.isPending) {
+          console.log('📎 Updating pending attachment with real one:', message);
+          store.dispatch(updateMessage(message));
+          return;
+        }
+      }
+
+      // Check if this message has already been processed by ID
       if (this.processedMessageIds.has(message._id)) {
         console.log(`🔄 Duplicate message detected, skipping: ${message._id}`);
         return;
@@ -173,24 +223,128 @@ class SocketService {
       }
     });
 
-    this.socket.on('messageDeleted', (data: { messageId: string }) => {
-      console.log('Message deleted:', data.messageId);
-      store.dispatch(removeMessage(data.messageId));
-    });
+    this.socket.on(
+      'messageDeleted',
+      (data: { messageId: string; channelId: string; userId: string }) => {
+        console.log('🗑️ Message deleted event received:', data);
+
+        // Force removal from Redux store to ensure real-time updates
+        const state = store.getState();
+        const messageExists = state.channels.messages.some(
+          (msg) => msg._id === data.messageId
+        );
+
+        if (messageExists) {
+          console.log(
+            `Removing message ${data.messageId} from store (deleted by user ${data.userId})`
+          );
+          store.dispatch(removeMessage(data.messageId));
+
+          // Show a toast notification for better UX if someone else deleted the message
+          const currentUserId = state.auth?.user?._id;
+          if (data.userId !== currentUserId) {
+            // Optional: Show notification when someone else deletes a message
+            const event = new CustomEvent('messageDeletedByOther', {
+              detail: { messageId: data.messageId },
+            });
+            document.dispatchEvent(event);
+          }
+        } else {
+          console.warn(
+            `Message ${data.messageId} not found in store for deletion`
+          );
+        }
+
+        // Remove from processed IDs set in case it's resent later
+        if (this.processedMessageIds.has(data.messageId)) {
+          this.processedMessageIds.delete(data.messageId);
+        }
+      }
+    );
 
     this.socket.on(
       'reactionAdded',
-      (data: { messageId: string; emoji: string; userId: string }) => {
-        console.log('Reaction added:', data);
-        // You'll need to handle reaction updates in your store
+      (data: {
+        messageId: string;
+        emoji: string;
+        userId: string;
+        reactions: Record<string, string[]>;
+      }) => {
+        console.log('📢 Reaction added:', data);
+
+        // Update the message in the store with the new reactions
+        const state = store.getState();
+        const messageIndex = state.channels.messages.findIndex(
+          (msg) => msg._id === data.messageId
+        );
+
+        if (messageIndex !== -1) {
+          const message = state.channels.messages[messageIndex];
+
+          // Create a new message object with the updated reactions
+          const updatedMessage = {
+            ...message,
+            reactions: data.reactions,
+          };
+
+          console.log('Updating message with new reactions:', {
+            messageId: data.messageId,
+            emoji: data.emoji,
+            userId: data.userId,
+            reactionCount: Object.keys(data.reactions || {}).length,
+          });
+
+          // Update the message in the store
+          store.dispatch(updateMessage(updatedMessage));
+        } else {
+          console.log(
+            'Message not found in store for reaction update:',
+            data.messageId
+          );
+        }
       }
     );
 
     this.socket.on(
       'reactionRemoved',
-      (data: { messageId: string; emoji: string; userId: string }) => {
-        console.log('Reaction removed:', data);
-        // You'll need to handle reaction updates in your store
+      (data: {
+        messageId: string;
+        emoji: string;
+        userId: string;
+        reactions: Record<string, string[]>;
+      }) => {
+        console.log('🗑️ Reaction removed:', data);
+
+        // Update the message in the store with the updated reactions
+        const state = store.getState();
+        const messageIndex = state.channels.messages.findIndex(
+          (msg) => msg._id === data.messageId
+        );
+
+        if (messageIndex !== -1) {
+          const message = state.channels.messages[messageIndex];
+
+          // Create a new message object with the updated reactions
+          const updatedMessage = {
+            ...message,
+            reactions: data.reactions || {},
+          };
+
+          console.log('Updating message after reaction removal:', {
+            messageId: data.messageId,
+            emoji: data.emoji,
+            userId: data.userId,
+            reactionCount: Object.keys(data.reactions || {}).length,
+          });
+
+          // Update the message in the store
+          store.dispatch(updateMessage(updatedMessage));
+        } else {
+          console.log(
+            'Message not found in store for reaction removal:',
+            data.messageId
+          );
+        }
       }
     );
 
@@ -214,12 +368,16 @@ class SocketService {
 
     this.socket.on(
       'userJoinedChannel',
-      (data: { channelId: string; userId: string }) => {
+      (data: {
+        channelId: string;
+        userId: string;
+        user?: { _id: string; name: string };
+      }) => {
         console.log('User joined channel:', data);
         const event = new CustomEvent('userJoinedChannel', {
           detail: {
             channelId: data.channelId,
-            user: { _id: data.userId, name: 'User' }, // You might want to fetch user details here
+            user: data.user || { _id: data.userId, name: data.userId }, // Use the user object if available
           },
         });
         document.dispatchEvent(event);
@@ -228,12 +386,16 @@ class SocketService {
 
     this.socket.on(
       'userLeftChannel',
-      (data: { channelId: string; userId: string }) => {
+      (data: {
+        channelId: string;
+        userId: string;
+        user?: { _id: string; name: string };
+      }) => {
         console.log('User left channel:', data);
         const event = new CustomEvent('userLeftChannel', {
           detail: {
             channelId: data.channelId,
-            user: { _id: data.userId, name: 'User' }, // You might want to fetch user details here
+            user: data.user || { _id: data.userId, name: data.userId }, // Use the user object if available
           },
         });
         document.dispatchEvent(event);
@@ -247,6 +409,74 @@ class SocketService {
     this.socket.on('diagnostics', (data: any) => {
       console.log('Server diagnostics:', data);
     });
+
+    // Listen for errors and connection issues
+    this.socket.on('error', (error) => {
+      console.error('Socket error:', error);
+    });
+
+    this.socket.on('connect_error', (error) => {
+      console.error('Socket connection error:', error);
+    });
+
+    // Keep socket connection alive with ping/pong
+    setInterval(() => {
+      if (this.socket && this.connected) {
+        this.socket.emit('ping', null, (response: any) => {
+          if (response) {
+            console.log('Socket connection is still alive');
+          }
+        });
+      }
+    }, 30000); // Every 30 seconds
+
+    // Add messageReplied event handler
+    this.socket.on(
+      'messageReplied',
+      (data: { parentMessageId: string; reply: any; replyCount: number }) => {
+        console.log('💬 Message replied event received:', data);
+
+        // First, make sure the reply message is in the store
+        if (data.reply && data.reply._id) {
+          // Check if we already have this reply
+          const state = store.getState();
+          const replyExists = state.channels.messages.some(
+            (msg) => msg._id === data.reply._id
+          );
+
+          if (!replyExists) {
+            // Add the reply to the store if it's not already there
+            store.dispatch(addMessage(data.reply));
+          }
+        }
+
+        // Update the parent message with new reply count
+        const state = store.getState();
+        const parentMessage = state.channels.messages.find(
+          (msg) => msg._id === data.parentMessageId
+        );
+
+        if (parentMessage) {
+          // Update the reply count on the parent message
+          const updatedParentMessage = {
+            ...parentMessage,
+            replyCount: data.replyCount,
+          };
+
+          store.dispatch(updateMessage(updatedParentMessage));
+
+          // Dispatch custom event for UI components to react to
+          const event = new CustomEvent('messageReplied', {
+            detail: {
+              parentMessageId: data.parentMessageId,
+              reply: data.reply,
+              replyCount: data.replyCount,
+            },
+          });
+          document.dispatchEvent(event);
+        }
+      }
+    );
   }
 
   disconnect() {
@@ -342,20 +572,64 @@ class SocketService {
     channelId: string;
     content: string;
     attachment?: File | null;
+    clientMessageId?: string;
   }) {
     try {
+      // Generate a client message ID if not provided
+      const clientMessageId =
+        message.clientMessageId ||
+        `msg-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+
       // Clone and clean up the message object to prevent issues with null values
-      const cleanedMessage = {
+      const cleanedMessage: {
+        channelId: string;
+        content: string;
+        clientMessageId: string;
+        attachment?: {
+          originalname: string;
+          mimetype: string;
+          size: number;
+          isPending: boolean;
+        };
+        pendingAttachment?: boolean;
+      } = {
         channelId: message.channelId,
         content: message.content,
-        attachment: message.attachment || undefined, // Convert null to undefined
+        clientMessageId, // Include the client message ID
       };
 
+      // For attachments, we only send metadata over socket to avoid binary data transfer problems
+      if (message.attachment) {
+        console.log(
+          'Preparing attachment metadata for',
+          message.attachment.name
+        );
+
+        // Send attachment metadata via socket for real-time awareness
+        cleanedMessage.attachment = {
+          originalname: message.attachment.name,
+          mimetype: message.attachment.type,
+          size: message.attachment.size,
+          isPending: true, // Mark as pending since we'll upload separately via API
+        };
+
+        // Tell the server this has a pending attachment
+        cleanedMessage.pendingAttachment = true;
+      }
+
+      console.log(
+        'Sending message via socket with clientMessageId:',
+        clientMessageId,
+        cleanedMessage
+      );
       this.socket?.emit('sendMessage', cleanedMessage, (response: any) => {
         console.log('Message send response:', response);
       });
+
+      return clientMessageId; // Return the clientMessageId for reference
     } catch (error) {
       console.error('Failed to send message:', error);
+      throw error;
     }
   }
 
@@ -399,11 +673,64 @@ class SocketService {
   async addReaction(messageId: string, channelId: string, emoji: string) {
     try {
       await this.connect();
+      console.log(
+        `Adding reaction ${emoji} to message ${messageId} in channel ${channelId}`
+      );
+
+      // Optimistically update UI for better user experience
+      const state = store.getState();
+      const message = state.channels.messages.find(
+        (msg) => msg._id === messageId
+      );
+
+      if (message) {
+        // Create a copy of the current reactions or an empty object
+        const currentReactions = message.reactions || {};
+        const userId = state.auth.user?._id;
+
+        if (userId) {
+          // Clone and update the reactions for this emoji
+          const updatedReactions = { ...currentReactions };
+          const users = updatedReactions[emoji] || [];
+
+          // Only add if not already present
+          if (!users.includes(userId)) {
+            updatedReactions[emoji] = [...users, userId];
+
+            // Update the message in the store
+            store.dispatch(
+              updateMessage({
+                ...message,
+                reactions: updatedReactions,
+              })
+            );
+          }
+        }
+      }
+
+      // Send to server
       this.socket?.emit(
         'addReaction',
         { messageId, channelId, emoji },
         (response: any) => {
           console.log('Add reaction response:', response);
+
+          // If server returned updated reactions, update again with authoritative data
+          if (response?.success && response?.reactions) {
+            const state = store.getState();
+            const message = state.channels.messages.find(
+              (msg) => msg._id === messageId
+            );
+
+            if (message) {
+              store.dispatch(
+                updateMessage({
+                  ...message,
+                  reactions: response.reactions,
+                })
+              );
+            }
+          }
         }
       );
     } catch (error) {
@@ -415,11 +742,65 @@ class SocketService {
   async removeReaction(messageId: string, channelId: string, emoji: string) {
     try {
       await this.connect();
+      console.log(
+        `Removing reaction ${emoji} from message ${messageId} in channel ${channelId}`
+      );
+
+      // Optimistically update UI for better user experience
+      const state = store.getState();
+      const message = state.channels.messages.find(
+        (msg) => msg._id === messageId
+      );
+      const userId = state.auth.user?._id;
+
+      if (message && userId && message.reactions) {
+        // Clone and update the reactions
+        const updatedReactions = { ...message.reactions };
+
+        if (updatedReactions[emoji]) {
+          // Remove the user from this emoji's reactions
+          updatedReactions[emoji] = updatedReactions[emoji].filter(
+            (id) => id !== userId
+          );
+
+          // If no users left for this emoji, remove the emoji entry
+          if (updatedReactions[emoji].length === 0) {
+            delete updatedReactions[emoji];
+          }
+
+          // Update the message in the store
+          store.dispatch(
+            updateMessage({
+              ...message,
+              reactions: updatedReactions,
+            })
+          );
+        }
+      }
+
+      // Send to server
       this.socket?.emit(
         'removeReaction',
         { messageId, channelId, emoji },
         (response: any) => {
           console.log('Remove reaction response:', response);
+
+          // If server returned updated reactions, update again with authoritative data
+          if (response?.success && response?.reactions) {
+            const state = store.getState();
+            const message = state.channels.messages.find(
+              (msg) => msg._id === messageId
+            );
+
+            if (message) {
+              store.dispatch(
+                updateMessage({
+                  ...message,
+                  reactions: response.reactions,
+                })
+              );
+            }
+          }
         }
       );
     } catch (error) {
@@ -431,11 +812,67 @@ class SocketService {
   async deleteMessage(messageId: string, channelId: string) {
     try {
       await this.connect();
+      console.log(`🗑️ Deleting message ${messageId} from channel ${channelId}`);
+
+      // Optimistically remove from local store immediately for better UX
+      const state = store.getState();
+      const messageExists = state.channels.messages.some(
+        (msg) => msg._id === messageId
+      );
+
+      if (messageExists) {
+        console.log(
+          `Optimistically removing message ${messageId} from local store`
+        );
+        store.dispatch(removeMessage(messageId));
+      }
+
+      // Send deletion request via socket with fallback to REST API
       this.socket?.emit(
         'deleteMessage',
-        { messageId, channelId },
-        (response: any) => {
-          console.log('Delete message response:', response);
+        { messageId, channelId, channel: channelId }, // Include both channelId and channel for compatibility
+        async (response: any) => {
+          if (response?.success) {
+            console.log('Delete message response:', response);
+          } else {
+            console.log(
+              'Socket deletion failed, falling back to REST API:',
+              response?.error || 'Unknown error'
+            );
+
+            try {
+              // Get base URL from environment or use default
+              const baseUrl =
+                import.meta.env.VITE_API_URL || 'http://localhost:5000';
+              const token = localStorage.getItem('token') || state.auth.token;
+
+              // Make REST API call as fallback
+              const restResponse = await fetch(
+                `${baseUrl}/messaging/messages/${messageId}/delete`,
+                {
+                  method: 'POST',
+                  headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                  },
+                }
+              );
+
+              if (restResponse.ok) {
+                console.log(
+                  'Message successfully deleted via REST API fallback'
+                );
+              } else {
+                console.error(
+                  'REST API fallback also failed:',
+                  await restResponse.text()
+                );
+                // Could potentially restore the message in the UI here
+              }
+            } catch (error) {
+              console.error('Error in REST API fallback:', error);
+            }
+          }
         }
       );
     } catch (error) {
@@ -493,6 +930,105 @@ class SocketService {
 
   isConnected() {
     return this.connected;
+  }
+
+  // Send a reply to a message
+  async sendReply(reply: {
+    channelId: string;
+    content: string;
+    parentMessageId: string;
+    parentMessagePreview?: {
+      content: string;
+      sender: string;
+      senderName: string;
+    };
+    attachment?: File | null;
+    clientMessageId?: string;
+  }) {
+    try {
+      // Generate a client message ID if not provided
+      const clientMessageId =
+        reply.clientMessageId ||
+        `reply-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+
+      // Clone and clean up the message object
+      const cleanedReply: any = {
+        channelId: reply.channelId,
+        content: reply.content,
+        clientMessageId,
+        isReply: true,
+        parentMessageId: reply.parentMessageId,
+      };
+
+      // Add parent message preview if provided
+      if (reply.parentMessagePreview) {
+        cleanedReply.replyPreview = reply.parentMessagePreview;
+      }
+
+      // Handle attachment like normal message
+      if (reply.attachment) {
+        console.log(
+          'Preparing attachment metadata for reply',
+          reply.attachment.name
+        );
+
+        // Send attachment metadata via socket for real-time awareness
+        cleanedReply.attachment = {
+          originalname: reply.attachment.name,
+          mimetype: reply.attachment.type,
+          size: reply.attachment.size,
+          isPending: true,
+        };
+
+        // Tell the server this has a pending attachment
+        cleanedReply.pendingAttachment = true;
+      }
+
+      console.log(
+        'Sending reply via socket with clientMessageId:',
+        clientMessageId,
+        cleanedReply
+      );
+
+      this.socket?.emit('sendMessage', cleanedReply, (response: any) => {
+        console.log('Reply send response:', response);
+      });
+
+      return clientMessageId;
+    } catch (error) {
+      console.error('Failed to send reply:', error);
+      throw error;
+    }
+  }
+
+  // Get replies for a message
+  async getMessageReplies(
+    messageId: string,
+    page: number = 1,
+    limit: number = 20
+  ) {
+    try {
+      await this.connect();
+      return new Promise((resolve, reject) => {
+        this.socket?.emit(
+          'getMessageReplies',
+          { messageId, page, limit },
+          (response: any) => {
+            console.log('Get message replies response:', response);
+            if (response.success) {
+              resolve(response);
+            } else {
+              reject(
+                new Error(response.error || 'Failed to get message replies')
+              );
+            }
+          }
+        );
+      });
+    } catch (error) {
+      console.error('Failed to get message replies:', error);
+      throw error;
+    }
   }
 }
 

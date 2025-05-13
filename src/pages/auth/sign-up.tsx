@@ -1,36 +1,29 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Button } from '@/components/ui/button';
+import {useState} from 'react';
+import {Link, useNavigate} from 'react-router-dom';
+import {useForm} from 'react-hook-form';
+import {z} from 'zod';
+import {zodResolver} from '@hookform/resolvers/zod';
+import {Button} from '@/components/ui/button';
+import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage,} from '@/components/ui/form';
+import {Input} from '@/components/ui/input';
+import {toast} from 'sonner';
+import {IT_SKILLS} from './skills';
+import {useRegisterMutation} from '@/redux/features/auth/authApi';
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { toast } from 'sonner';
-import { IT_SKILLS } from './skills';
-import { useRegisterMutation } from '@/redux/features/auth/authApi';
-import {
-  Stepper,
-  StepperContent,
-  StepperDescription,
-  StepperFooter,
-  StepperHeader,
-  StepperPrevious,
-  StepperTitle,
-  Step,
+    Step,
+    Stepper,
+    StepperContent,
+    StepperDescription,
+    StepperFooter,
+    StepperHeader,
+    StepperPrevious,
+    StepperTitle,
 } from '@/components/ui/stepper';
-import { BadgeSelector } from '@/components/ui/badge-selector';
-import { PostSignupDialog } from '@/components/ui/PostSignupDialog';
-import { CheckEmailDialog } from '@/components/ui/check-email-dialog';
-import { PasswordInput } from './PasswordInput';
+import {BadgeSelector} from '@/components/ui/badge-selector';
+import {PostSignupDialog} from '@/components/ui/PostSignupDialog';
+import {CheckEmailDialog} from '@/components/ui/check-email-dialog';
+import {PasswordInput} from './PasswordInput';
 
 // Move steps and formSchema outside of component
 const steps = [

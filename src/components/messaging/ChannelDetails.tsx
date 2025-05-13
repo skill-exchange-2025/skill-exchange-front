@@ -1,38 +1,16 @@
-import React, { useMemo } from 'react';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-  SheetFooter,
-  SheetDescription,
-} from '../ui/sheet';
-import { Button } from '../ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
-import { Channel } from '@/types/channel';
-import { useAppSelector } from '../../redux/hooks';
-import {
-  useJoinChannelMutation,
-  useLeaveChannelMutation,
-} from '../../redux/api/messagingApi';
-import {
-  Users,
-  Hash,
-  Info,
-  ExternalLink,
-  LogOut,
-  LogIn,
-  CalendarClock,
-  PenSquare,
-  Archive,
-  Sparkles,
-} from 'lucide-react';
-import { toast } from 'sonner';
-import { Badge } from '../ui/badge';
+import React, {useMemo} from 'react';
+import {Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger,} from '../ui/sheet';
+import {Button} from '../ui/button';
+import {Avatar, AvatarFallback} from '../ui/avatar';
+import {Channel} from '@/types/channel';
+import {useAppSelector} from '../../redux/hooks';
+import {useJoinChannelMutation, useLeaveChannelMutation,} from '../../redux/api/messagingApi';
+import {Archive, CalendarClock, Hash, Info, LogIn, PenSquare, Sparkles, Users,} from 'lucide-react';
+import {useToast} from '../../hooks/use-toast';
+import {Badge} from '../ui/badge';
 import socketService from '../../services/socket.service';
-import { format } from 'date-fns';
-import { Link } from 'react-router-dom';
+import {format} from 'date-fns';
+import {Link} from 'react-router-dom';
 
 interface ChannelDetailsProps {
   channel: Channel;
@@ -63,21 +41,11 @@ const ChannelDetails: React.FC<ChannelDetailsProps> = ({
       toast.success('Joined channel', {
         description: `You've successfully joined #${channel.name}`,
       });
-      // Notify other members via socket
+      // Notify other members via socket - this will trigger the userJoinedChannel event from the server
       socketService.joinChannel(channel._id);
 
-      // Manually trigger the system message event
-      const joinEvent = new CustomEvent('userJoinedChannel', {
-        detail: {
-          channelId: channel._id,
-          user: {
-            _id: user?._id || '',
-            name: user?.name || 'Unknown User',
-          },
-        },
-      });
-
-      document.dispatchEvent(joinEvent);
+      // Remove manual triggering of system message as it causes duplication
+      // The server will emit userJoinedChannel event which will be handled automatically
     } catch (error) {
       console.error('Failed to join channel:', error);
       toast.error('Error', {
@@ -85,7 +53,6 @@ const ChannelDetails: React.FC<ChannelDetailsProps> = ({
       });
     }
   };
-
 
   const getMemberInitials = (name: string) => {
     return name

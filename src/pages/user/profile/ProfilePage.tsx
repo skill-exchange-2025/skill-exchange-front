@@ -1,18 +1,14 @@
-import { useState, useEffect } from 'react';
-import { useAppSelector } from '@/redux/hooks';
-import {
-  useProfileStatus,
-  useProfileError,
-} from '@/redux/features/profile/profileSlice';
-import { ProfileView } from '@/components/Profile/ProfileView';
-import { ProfileForm } from '@/components/Profile/ProfileForm';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Skeleton } from '@/components/ui/skeleton';
-import { useParams } from 'react-router-dom';
-import { useFetchProfileQuery } from '@/redux/features/profile/profileApi';
+import {useEffect, useState} from 'react';
+import {useAppSelector} from '@/redux/hooks';
+import {useProfileError, useProfileStatus,} from '@/redux/features/profile/profileSlice';
+import {ProfileView} from '@/components/Profile/ProfileView';
+import {ProfileForm} from '@/components/Profile/ProfileForm';
+import {Button} from '@/components/ui/button';
+import {Card} from '@/components/ui/card';
+import {Alert, AlertDescription} from '@/components/ui/alert';
+import {useCurrentProfile} from '@/redux/features/profile/profileSlice.ts';
+import {Tabs, TabsContent, TabsList, TabsTrigger} from '@/components/ui/tabs';
+import {Skeleton} from '@/components/ui/skeleton';
 
 // Profile skeleton component
 const ProfileSkeleton = () => {
@@ -74,16 +70,7 @@ const ProfilePage = () => {
   const [activeTab, setActiveTab] = useState<string>('view');
   const status = useAppSelector(useProfileStatus);
   const error = useAppSelector(useProfileError);
-  const { userId } = useParams<{ userId: string }>();
-
-  const currentUser = useAppSelector((state) => state.auth.user);
-  const isOwnProfile = !userId || userId === currentUser?._id;
-
-  const { data: profile } = useFetchProfileQuery(    
-    isOwnProfile ? undefined : userId
-  );
-
-
+  const profile = useAppSelector(useCurrentProfile);
 
   // Set tab to view when profile loads
   useEffect(() => {
@@ -139,7 +126,6 @@ const ProfilePage = () => {
           </p>
         </div>
 
-        {isOwnProfile ? (
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <div className="flex justify-center mb-6">
             <TabsList className="grid w-full max-w-md grid-cols-2">
@@ -156,10 +142,6 @@ const ProfilePage = () => {
             <ProfileForm />
           </TabsContent>
         </Tabs>
-        ) : (
-          <ProfileView userId={userId} />
-
-        )}
       </div>
     </div>
   );

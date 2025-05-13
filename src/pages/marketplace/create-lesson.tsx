@@ -1,32 +1,49 @@
-import { useParams, useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { useCreateLessonMutation } from '@/redux/features/lessons/lessonApi';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-    FileTextIcon,
-    Clock,
-    FileText,
-    Save,
-    ChevronLeft,
-    Eye,
     CheckCircle,
+    ChevronLeft,
+    Clock,
+    Eye,
+    FileText,
+    FileTextIcon,
+    HelpCircle,
+    Moon,
+    Save,
+    Sun,
     Upload,
-    X,
-    File
+    X
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import ReactMarkdown from 'react-markdown';
-import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import React, { useState, useEffect, useCallback, Suspense } from "react";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle
+} from "@/components/ui/alert-dialog";
+import React, { useCallback, useEffect, useState } from "react";
 import { filesToBase64 } from '@/utils/fileUpload';
-const MarkdownEditor = React.lazy(() => import("@uiw/react-markdown-editor"));
+import dynamic from 'next/dynamic';
+import { useTheme } from 'next-themes';
+import { cn } from '@/lib/utils';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import ReactMarkdown from "react-markdown";
 
-
+// Dynamically import markdown editor with SSR disabled
+const MarkdownEditor = dynamic(
+    () => import('@uiw/react-markdown-editor'),
+    { ssr: false }
+);
 
 interface UploadedFile {
     name: string;
@@ -35,44 +52,58 @@ interface UploadedFile {
     url: string;
 }
 
-// Custom MarkdownTextarea component
-const MarkdownTextarea = ({
-                              name = 'textContent',
-                              value,
-                              onChange,
-                              initialRows = 20,
-                              className = '',
-                              placeholder = ''
-                          }) => {
+// Define a type for MarkdownEditor options
+interface MarkdownTextareaProps {
+    name?: string;
+    value: string;
+    onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+    initialRows?: number;
+    className?: string;
+    placeholder?: string;
+}
+const MarkdownTextarea: React.FC<MarkdownTextareaProps> = ({
+                                                               name = 'textContent',
+                                                               value,
+                                                               onChange,
+                                                               initialRows = 20,
+                                                               className = '',
+                                                               placeholder = ''
+                                                           }) => {
     return (
         <div className={`markdown-editor-container ${className}`}>
-            <Suspense fallback={<div>Loading markdown editor...</div>}>
-                <MarkdownEditor
-                    value={value}
-                    onChange={(val) => {
-                        onChange({ target: { name, value: val } });
-                    }}
-                    height={`${initialRows * 24}px`}
-                    visible={true}
-                    placeholder={placeholder}
-                    options={{
-                        scrollbarStyle: 'overlay',
-                        lineWrapping: true,
-                        theme: 'light',
-                        mode: 'markdown',
-                        lineNumbers: true,
-                        styleActiveLine: true
-                    }}
-                    enablePreview={true}
-                    previewWidth="50%"
-                    className="border rounded-md overflow-hidden"
-                />
-            </Suspense>
+            <MarkdownEditor value={value} onChange={(val) => {
+                onChange({
+                    target: {
+                        name,
+                        value: val,
+                        type: 'textarea',
+                    }
+                } as React.ChangeEvent<HTMLTextAreaElement>);
+            }} height={`${initialRows * 24}px`} visible={true} placeholder={placeholder} enablePreview={true} previewWidth="50%" className="border rounded-md overflow-hidden"/>
         </div>
     );
 };
 
-const PreviewContent = ({ content }) => {
+// Add type declarations for the editor props
+declare module '@uiw/react-markdown-editor' {
+    interface EditorProps {
+        editorProps?: {
+            options?: {
+                lineWrapping?: boolean;
+                lineNumbers?: boolean;
+                styleActiveLine?: boolean;
+                mode?: string;
+                theme?: string;
+            };
+        };
+    }
+}
+
+interface PreviewContentProps {
+    content: string;
+}
+
+const PreviewContent: React.FC<PreviewContentProps> = ({ content }) => {
     if (!content) {
         return (
             <div className="flex flex-col items-center justify-center h-[300px] text-gray-400">
@@ -86,21 +117,55 @@ const PreviewContent = ({ content }) => {
         <div className="prose prose-slate max-w-none">
             <ReactMarkdown
                 components={{
-                    h1: ({ children }) => <h1 className="text-3xl font-bold mb-4">{children}</h1>,
-                    h2: ({ children }) => <h2 className="text-2xl font-semibold mb-3 mt-6">{children}</h2>,
-                    h3: ({ children }) => <h3 className="text-xl font-medium mb-2 mt-4">{children}</h3>,
-                    p: ({ children }) => <p className="mb-4 text-gray-700 leading-relaxed">{children}</p>,
-                    ul: ({ children }) => <ul className="list-disc pl-6 mb-4 space-y-2">{children}</ul>,
-                    ol: ({ children }) => <ol className="list-decimal pl-6 mb-4 space-y-2">{children}</ol>,
-                    li: ({ children }) => <li className="text-gray-700">{children}</li>,
-                    blockquote: ({ children }) => (
-                        <blockquote className="border-l-4 border-primary pl-4 italic my-4">{children}</blockquote>
+                    h1: ({ children, ...props }) => (
+                        <h1 className="text-3xl font-bold mb-4" {...props}>
+                            {children}
+                        </h1>
                     ),
-                    code: ({ children }) => (
-                        <code className="bg-gray-100 rounded px-1.5 py-0.5 text-sm font-mono">{children}</code>
+                    h2: ({ children, ...props }) => (
+                        <h2 className="text-2xl font-semibold mb-3 mt-6" {...props}>
+                            {children}
+                        </h2>
                     ),
-                    pre: ({ children }) => (
-                        <pre className="bg-gray-900 text-white rounded-lg p-4 overflow-x-auto">{children}</pre>
+                    h3: ({ children, ...props }) => (
+                        <h3 className="text-xl font-medium mb-2 mt-4" {...props}>
+                            {children}
+                        </h3>
+                    ),
+                    p: ({ children, ...props }) => (
+                        <p className="mb-4 text-gray-700 leading-relaxed" {...props}>
+                            {children}
+                        </p>
+                    ),
+                    ul: ({ children, ...props }) => (
+                        <ul className="list-disc pl-6 mb-4 space-y-2" {...props}>
+                            {children}
+                        </ul>
+                    ),
+                    ol: ({ children, ...props }) => (
+                        <ol className="list-decimal pl-6 mb-4 space-y-2" {...props}>
+                            {children}
+                        </ol>
+                    ),
+                    li: ({ children, ...props }) => (
+                        <li className="text-gray-700" {...props}>
+                            {children}
+                        </li>
+                    ),
+                    blockquote: ({ children, ...props }) => (
+                        <blockquote className="border-l-4 border-primary pl-4 italic my-4" {...props}>
+                            {children}
+                        </blockquote>
+                    ),
+                    code: ({ children, ...props }) => (
+                        <code className="bg-gray-100 rounded px-1.5 py-0.5 text-sm font-mono" {...props}>
+                            {children}
+                        </code>
+                    ),
+                    pre: ({ children, ...props }) => (
+                        <pre className="bg-gray-900 text-white rounded-lg p-4 overflow-x-auto" {...props}>
+              {children}
+            </pre>
                     ),
                 }}
             >
@@ -110,25 +175,33 @@ const PreviewContent = ({ content }) => {
     );
 };
 
+interface LessonData {
+    title: string;
+    description: string;
+    duration: number;
+    textContent: string;
+    materials: string[];
+}
+
 export function CreateLesson() {
-    const { id: listingId } = useParams();
+    const { id: listingId } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const [createLesson, { isLoading }] = useCreateLessonMutation();
-    const [previewMode, setPreviewMode] = useState(false);
     const [successDialogOpen, setSuccessDialogOpen] = useState(false);
-    const [createdLesson, setCreatedLesson] = useState(null);
+    const [createdLesson, setCreatedLesson] = useState<any>(null);
     const [editorLoaded, setEditorLoaded] = useState(false);
     const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
     const [fileUploadError, setFileUploadError] = useState<string | null>(null);
-    const [markdownScore, setMarkdownScore] = useState(0);
+    const [, setMarkdownScore] = useState(0);
     const [achievements, setAchievements] = useState<string[]>([]);
+    const { theme, setTheme } = useTheme();
 
-    const [lessonData, setLessonData] = useState({
+    const [lessonData, setLessonData] = useState<LessonData>({
         title: '',
         description: '',
         duration: 0,
         textContent: '',
-        materials: [] as string[]
+        materials: []
     });
 
     // Add this new state for split view
@@ -185,7 +258,7 @@ export function CreateLesson() {
         }
     };
 
-    const handleChange = (e) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
 
         setLessonData((prev) => {
@@ -269,7 +342,7 @@ export function CreateLesson() {
         return `${(size / (1024 * 1024)).toFixed(1)} MB`;
     };
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!listingId) {
             toast.error('No listing ID provided.');
@@ -280,7 +353,7 @@ export function CreateLesson() {
             title: lessonData.title,
             description: lessonData.description,
             duration: Number(lessonData.duration),
-            content: lessonData.textContent,
+            textContent: lessonData.textContent,
             materials: lessonData.materials
         };
 
@@ -291,11 +364,10 @@ export function CreateLesson() {
             setSuccessDialogOpen(true);
         } catch (error) {
             console.error('Failed to create lesson:', error);
-            toast.error(error?.data?.message || 'Failed to create lesson');
         }
     };
 
-    const insertTemplate = (template) => {
+    const insertTemplate = (template: string) => {
         setLessonData((prev) => ({
             ...prev,
             textContent: prev.textContent ? `${prev.textContent}\n\n${template}` : template
@@ -331,50 +403,126 @@ This is where you can add your content, including:
 Continue organizing your lesson with additional sections.`;
 
     return (
-        <div className="container py-8">
-            <div className="flex items-center mb-6">
-                <Button
-                    variant="outline"
-                    size="sm"
-                    className="mr-2"
-                    onClick={() => navigate(`/marketplace/item/${listingId}/lessons`)}
-                >
-                    <ChevronLeft className="h-4 w-4 mr-1" /> Back to Lessons
-                </Button>
-                <h1 className="text-3xl font-bold">Create New Lesson</h1>
+        <div className={cn(
+            "container py-8",
+            "transition-colors duration-200",
+            "dark:bg-gray-900"
+        )}>
+            <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-2">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => navigate(`/marketplace/item/${listingId}/lessons`)}
+                        className={cn(
+                            "dark:bg-gray-800 dark:hover:bg-gray-700",
+                            "transition-all duration-200"
+                        )}
+                    >
+                        <ChevronLeft className="h-4 w-4 mr-1" /> Back to Lessons
+                    </Button>
+                    <h1 className="text-3xl font-bold dark:text-white">Create New Lesson</h1>
+                </div>
+                <div className="flex items-center gap-2">
+                    <TooltipProvider>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                                    className={cn(
+                                        "dark:bg-gray-800 dark:hover:bg-gray-700",
+                                        "transition-all duration-200"
+                                    )}
+                                >
+                                    {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>Toggle theme</p>
+                            </TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
+                </div>
             </div>
 
-            <Card className="shadow-md">
-                <CardHeader className="bg-gray-50 border-b">
+            <Card className={cn(
+                "shadow-md",
+                "dark:bg-gray-800 dark:border-gray-700",
+                "transition-all duration-200"
+            )}>
+                <CardHeader className={cn(
+                    "bg-gray-50 border-b",
+                    "dark:bg-gray-800/50 dark:border-gray-700",
+                    "transition-colors duration-200"
+                )}>
                     <div className="flex justify-between items-center">
                         <div>
-                            <CardTitle className="text-2xl">Lesson Details</CardTitle>
-                            <CardDescription>Create educational content for your students</CardDescription>
+                            <CardTitle className="text-2xl dark:text-white">Lesson Details</CardTitle>
+                            <CardDescription className="dark:text-gray-400">Create educational content for your students</CardDescription>
                         </div>
-                        <Badge variant="outline" className="bg-primary text-white">
+                        <Badge variant="outline" className={cn(
+                            "bg-primary text-white",
+                            "dark:bg-primary/20 dark:text-primary-foreground"
+                        )}>
                             <FileTextIcon className="h-4 w-4 mr-1" /> New Lesson
                         </Badge>
                     </div>
                 </CardHeader>
 
                 <form onSubmit={handleSubmit}>
-                    <CardContent className="space-y-6 p-6">
+                    <CardContent className={cn(
+                        "space-y-6 p-6",
+                        "dark:bg-gray-800/50"
+                    )}>
                         <div className="grid md:grid-cols-2 gap-6">
-                            <div>
-                                <label className="block text-sm font-medium mb-1">Lesson Title</label>
+                            <div className="space-y-2">
+                                <label className="block text-sm font-medium dark:text-gray-200">
+                                    <TooltipProvider>
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <div className="flex items-center gap-1">
+                                                    Lesson Title
+                                                    <HelpCircle className="h-4 w-4 text-gray-400" />
+                                                </div>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                                <p>Choose a clear and engaging title for your lesson</p>
+                                            </TooltipContent>
+                                        </Tooltip>
+                                    </TooltipProvider>
+                                </label>
                                 <Input
                                     name="title"
                                     value={lessonData.title}
                                     onChange={handleChange}
                                     placeholder="Enter an engaging lesson title"
                                     required
-                                    className="w-full"
+                                    className={cn(
+                                        "w-full",
+                                        "dark:bg-gray-900 dark:border-gray-700 dark:text-white",
+                                        "focus:ring-primary dark:focus:ring-primary/50",
+                                        "transition-colors duration-200"
+                                    )}
                                 />
                             </div>
 
-                            <div>
-                                <label className="block text-sm font-medium mb-1">
-                                    <Clock className="h-4 w-4 inline mr-1" /> Duration (minutes)
+                            <div className="space-y-2">
+                                <label className="block text-sm font-medium dark:text-gray-200">
+                                    <TooltipProvider>
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <div className="flex items-center gap-1">
+                                                    <Clock className="h-4 w-4" /> Duration (minutes)
+                                                    <HelpCircle className="h-4 w-4 text-gray-400" />
+                                                </div>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                                <p>Estimated time to complete the lesson</p>
+                                            </TooltipContent>
+                                        </Tooltip>
+                                    </TooltipProvider>
                                 </label>
                                 <Input
                                     type="number"
@@ -383,33 +531,49 @@ Continue organizing your lesson with additional sections.`;
                                     onChange={handleChange}
                                     placeholder="e.g., 60"
                                     required
+                                    className={cn(
+                                        "dark:bg-gray-900 dark:border-gray-700 dark:text-white",
+                                        "focus:ring-primary dark:focus:ring-primary/50",
+                                        "transition-colors duration-200"
+                                    )}
                                 />
                             </div>
                         </div>
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Description</label>
+
+                        <div className="space-y-2">
+                            <label className="block text-sm font-medium dark:text-gray-200">Description</label>
                             <Textarea
                                 name="description"
                                 value={lessonData.description}
                                 onChange={handleChange}
                                 placeholder="Provide a brief overview of what students will learn"
                                 required
-                                className="resize-none"
+                                className={cn(
+                                    "resize-none",
+                                    "dark:bg-gray-900 dark:border-gray-700 dark:text-white",
+                                    "focus:ring-primary dark:focus:ring-primary/50",
+                                    "transition-colors duration-200"
+                                )}
                                 rows={3}
                             />
                         </div>
 
-                        <Separator />
+
+                        <Separator className="dark:border-gray-700" />
 
                         <div>
                             <div className="flex justify-between items-center mb-2">
-                                <label className="block text-sm font-medium">Lesson Content</label>
+                                <label className="block text-sm font-medium dark:text-gray-200">Lesson Content</label>
                                 <div className="flex items-center space-x-2">
                                     <Button
                                         type="button"
                                         variant={viewMode === 'edit' ? "default" : "outline"}
                                         size="sm"
                                         onClick={() => setViewMode('edit')}
+                                        className={cn(
+                                            "dark:bg-gray-800 dark:hover:bg-gray-700",
+                                            "transition-all duration-200"
+                                        )}
                                     >
                                         <FileText className="h-4 w-4 mr-1" /> Edit
                                     </Button>
@@ -418,6 +582,10 @@ Continue organizing your lesson with additional sections.`;
                                         variant={viewMode === 'split' ? "default" : "outline"}
                                         size="sm"
                                         onClick={() => setViewMode('split')}
+                                        className={cn(
+                                            "dark:bg-gray-800 dark:hover:bg-gray-700",
+                                            "transition-all duration-200"
+                                        )}
                                     >
                                         <Eye className="h-4 w-4 mr-1" /> Split View
                                     </Button>
@@ -426,6 +594,10 @@ Continue organizing your lesson with additional sections.`;
                                         variant={viewMode === 'preview' ? "default" : "outline"}
                                         size="sm"
                                         onClick={() => setViewMode('preview')}
+                                        className={cn(
+                                            "dark:bg-gray-800 dark:hover:bg-gray-700",
+                                            "transition-all duration-200"
+                                        )}
                                     >
                                         <Eye className="h-4 w-4 mr-1" /> Preview
                                     </Button>
@@ -434,12 +606,19 @@ Continue organizing your lesson with additional sections.`;
 
                             <div className={viewMode === 'split' ? 'grid grid-cols-2 gap-4' : ''}>
                                 {(viewMode === 'edit' || viewMode === 'split') && (
-                                    <div className={viewMode === 'split' ? 'border-r pr-4' : ''}>
-                                        <Tabs defaultValue="editor">
-                                            <TabsList className="mb-2">
-                                                <TabsTrigger value="editor">Editor</TabsTrigger>
-                                                <TabsTrigger value="templates">Templates</TabsTrigger>
-                                                <TabsTrigger value="help">Markdown Help</TabsTrigger>
+                                    <div className={cn(
+                                        viewMode === 'split' ? 'border-r pr-4' : '',
+                                        "dark:border-gray-700"
+                                    )}>
+                                        <Tabs defaultValue="editor" className="dark:border-gray-700">
+                                            <TabsList className={cn(
+                                                "mb-2",
+                                                "dark:bg-gray-800",
+                                                "transition-colors duration-200"
+                                            )}>
+                                                <TabsTrigger value="editor" className="dark:text-gray-200 dark:data-[state=active]:bg-gray-700">Editor</TabsTrigger>
+                                                <TabsTrigger value="templates" className="dark:text-gray-200 dark:data-[state=active]:bg-gray-700">Templates</TabsTrigger>
+                                                <TabsTrigger value="help" className="dark:text-gray-200 dark:data-[state=active]:bg-gray-700">Markdown Help</TabsTrigger>
                                             </TabsList>
 
                                             <TabsContent value="editor" className="mt-0">
@@ -612,12 +791,12 @@ console.log('Hello');
                                                                     <span className="text-xs text-primary">+20 points</span>
                                                                 </h4>
                                                                 <pre className="bg-gray-50 p-3 rounded-md text-sm">
-&lt;details&gt;
-                                                                    &lt;summary&gt;Expandable Section&lt;/summary&gt;
-                                                                    Hidden content here
-                                                                    &lt;/details&gt;
+<details>
+                                  <summary>Expandable Section</summary>
+                                  Hidden content here
+                                  </details>
 
-                                                                    - [x] Completed task
+                                  - [x] Completed task
 - [ ] Pending task</pre>
                                                             </div>
                                                         </div>
@@ -646,11 +825,23 @@ console.log('Hello');
                             </div>
                         </div>
 
-                        <Separator />
+                        <Separator className="dark:border-gray-700" />
 
                         <div>
-                            <label className="block text-sm font-medium mb-1">
-                                <Upload className="h-4 w-4 inline mr-1" /> Upload Materials
+                            <label className="block text-sm font-medium dark:text-gray-200">
+                                <TooltipProvider>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <div className="flex items-center gap-1">
+                                                <Upload className="h-4 w-4 inline mr-1" /> Upload Materials
+                                                <HelpCircle className="h-4 w-4 text-gray-400" />
+                                            </div>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>Upload PDF and Word documents (max 10MB each)</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
                             </label>
                             <div className="mt-2">
                                 <Input
@@ -660,9 +851,6 @@ console.log('Hello');
                                     accept=".pdf,.doc,.docx"
                                     className="w-full"
                                 />
-                                <p className="text-xs text-gray-500 mt-1">
-                                    Upload PDF and Word documents (max 10MB each)
-                                </p>
                                 {fileUploadError && (
                                     <p className="text-sm text-red-500 mt-1">{fileUploadError}</p>
                                 )}
@@ -724,7 +912,10 @@ console.log('Hello');
             </Card>
 
             <AlertDialog open={successDialogOpen} onOpenChange={setSuccessDialogOpen}>
-                <AlertDialogContent>
+                <AlertDialogContent className={cn(
+                    "dark:bg-gray-800 dark:border-gray-700",
+                    "transition-colors duration-200"
+                )}>
                     <AlertDialogHeader>
                         <AlertDialogTitle className="flex items-center text-green-600">
                             <CheckCircle className="h-5 w-5 mr-2" />
@@ -734,22 +925,20 @@ console.log('Hello');
                             Your lesson "{createdLesson?.title}" has been created successfully. What would you like to do next?
                         </AlertDialogDescription>
                     </AlertDialogHeader>
-                    <div className="bg-gray-50 p-4 rounded-md mb-4">
-                        <h3 className="text-sm font-medium mb-2">Lesson Content Preview</h3>
-                        <div className="max-h-40 overflow-y-auto prose prose-sm">
-                            {createdLesson?.textContent ? (
-                                <ReactMarkdown>
-                                    {createdLesson.textContent.substring(0, 300)}
-                                </ReactMarkdown>
-                            ) : (
-                                <p className="text-gray-500 italic">No content available.</p>
-                            )}
-                            {createdLesson?.textContent && createdLesson.textContent.length > 300 && (
-                                <div className="text-primary text-sm">
-                                    ... (content continues)
-                                </div>
-                            )}
-                        </div>
+                    <h3 className="text-sm font-medium mb-2">Lesson Content Preview</h3>
+                    <div className="max-h-40 overflow-y-auto prose prose-sm">
+                        {createdLesson?.textContent ? (
+                            <ReactMarkdown>
+                                {createdLesson.textContent.substring(0, 300)}
+                            </ReactMarkdown>
+                        ) : (
+                            <p className="text-gray-500 italic">No content available.</p>
+                        )}
+                        {createdLesson?.textContent && createdLesson.textContent.length > 300 && (
+                            <div className="text-primary text-sm">
+                                ... (content continues)
+                            </div>
+                        )}
                     </div>
                     <AlertDialogFooter>
                         <AlertDialogAction onClick={handleReturnToLessons}>
@@ -767,5 +956,3 @@ console.log('Hello');
 }
 
 export default CreateLesson;
-
-

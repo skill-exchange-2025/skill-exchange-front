@@ -1,8 +1,8 @@
-import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
-import { Check, Star, Sparkles, GraduationCap } from "lucide-react";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { motion, AnimatePresence } from "framer-motion";
+import {Badge} from "@/components/ui/badge";
+import {cn} from "@/lib/utils";
+import {Check, GraduationCap, Sparkles, Star} from "lucide-react";
+import {ToggleGroup, ToggleGroupItem} from "@/components/ui/toggle-group";
+import {AnimatePresence, motion} from "framer-motion";
 
 export interface SelectedSkill {
   name: string;

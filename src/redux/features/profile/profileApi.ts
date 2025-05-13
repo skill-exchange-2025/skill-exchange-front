@@ -1,6 +1,6 @@
 // features/profile/profileApi.ts
-import { baseApi } from "@/redux/api/baseApi";
-import { Profile } from "@/types/profile";
+import {baseApi} from "@/redux/api/baseApi";
+import {Profile} from "@/types/profile";
 import {CompletionStatus} from "@/types/status.ts";
 
 export const profileApi = baseApi.injectEndpoints({

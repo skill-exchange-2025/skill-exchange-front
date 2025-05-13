@@ -1,5 +1,5 @@
 // components/UserMetrics.tsx
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import {Card, CardContent, CardHeader, CardTitle} from '@/components/ui/card';
 
 export const UserMetrics: React.FC<{ metrics?: any }> = ({ metrics }) => (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

@@ -1,17 +1,16 @@
-import { useState, useMemo, useEffect } from 'react';
-import { Menu } from 'antd';
-import type { MenuProps } from 'antd';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { adminPaths } from '@/routes/admin.routes';
-import { userPaths } from "@/routes/user.routes.tsx";
-import { TUserPath } from '@/types';
-import { useAppDispatch, useAppSelector } from '@/redux/hooks';
-import { logout, useCurrentUser } from '@/redux/features/auth/authSlice';
-import { ChevronLeft, ChevronRight, GraduationCap, Moon, Sun } from 'lucide-react';
-import React from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
+import type {MenuProps} from 'antd';
+import {Menu} from 'antd';
+import {Link, useLocation, useNavigate} from 'react-router-dom';
+import {adminPaths} from '@/routes/admin.routes';
+import {userPaths} from "@/routes/user.routes.tsx";
+import {TUserPath} from '@/types';
+import {useAppDispatch, useAppSelector} from '@/redux/hooks';
+import {logout, useCurrentUser} from '@/redux/features/auth/authSlice';
+import {ChevronLeft, ChevronRight, GraduationCap, Moon, Sun} from 'lucide-react';
 import Sider from 'antd/es/layout/Sider';
-import { useTheme } from '@/components/theme-provider';
-import { Button } from '@/components/ui/button';
+import {useTheme} from '@/components/theme-provider';
+import {Button} from '@/components/ui/button';
 
 // Types
 interface User {
@@ -51,6 +50,7 @@ const hasUserPermission = (userPermissions: string[] | undefined, requiredPermis
     if (!userPermissions) return false;
     return requiredPermissions.some(p => userPermissions.includes(p));
 };
+
 
 // Component for the logo
 const SkillyLogo: React.FC<SkillyLogoProps> = ({ collapsed }) => {

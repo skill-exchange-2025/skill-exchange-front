@@ -1,56 +1,47 @@
-import { useEffect, useState, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Button } from '@/components/ui/button';
+import {useEffect, useRef, useState} from 'react';
+import {useNavigate, useParams} from 'react-router-dom';
+import {motion} from 'framer-motion';
+import {Button} from '@/components/ui/button';
+import {Card, CardContent, CardFooter, CardHeader, CardTitle,} from '@/components/ui/card';
+import {Badge} from '@/components/ui/badge';
+import {toast} from 'sonner';
 import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { toast } from 'sonner';
-import {
-  useGetMarketplaceItemByIdQuery,
-  usePurchaseMarketplaceItemMutation,
-  useDeleteMarketplaceItemMutation,
-  useCompleteTransactionMutation,
-  useCreateReviewMutation,
-  useGetWalletQuery,
-  Transaction,
-  useUpdateMarketplaceItemMutation,
+    ListingType,
+    marketplaceApi,
+    Transaction,
+    useCompleteTransactionMutation,
+    useCreateReviewMutation,
+    useDeleteMarketplaceItemMutation,
+    useGetMarketplaceItemByIdQuery,
+    useGetWalletQuery,
+    usePurchaseMarketplaceItemMutation,
+    useUpdateMarketplaceItemMutation,
 } from '@/redux/features/marketplace/marketplaceApi';
-import { setSelectedItem } from '@/redux/features/marketplace/marketplaceSlice';
-import { useCurrentUser } from '@/redux/features/auth/authSlice';
-import { useDispatch, useSelector } from 'react-redux';
+import {setSelectedItem} from '@/redux/features/marketplace/marketplaceSlice';
+import {useCurrentUser} from '@/redux/features/auth/authSlice';
+import {useDispatch, useSelector} from 'react-redux';
 import {
-  ArrowLeft,
-  Edit,
-  Trash,
-  ShoppingCart,
-  Calendar,
-  User,
-  Star,
-  Eye,
-  Clock,
-  Tag,
-  Sparkles,
-  MapPin,
-  Users,
-  BookOpen,
-  List as ListIcon, // Added for lesson management icon
+    ArrowLeft,
+    BookOpen,
+    Calendar,
+    Clock,
+    Edit,
+    Eye,
+    List as ListIcon,
+    MapPin,
+    ShoppingCart,
+    Sparkles,
+    Star,
+    Tag,
+    Trash,
+    User,
+    Users,
 } from 'lucide-react';
-import { ConfirmationDialog } from '@/pages/marketplace/confirmation-dialog';
-import { CreditPurchaseDialog } from '@/components/credits/CreditPurchaseDialog';
+import {ConfirmationDialog} from '@/pages/marketplace/confirmation-dialog';
+import {CreditPurchaseDialog} from '@/components/credits/CreditPurchaseDialog';
 import cryptoIcon from '@/assets/icons/crypto.png';
-import { Skeleton } from '@/components/ui/skeleton';
-import {
-  getListingTypeInfo,
-  renderListingContent,
-} from '@/utils/marketplaceUtils';
-import { ListingType } from '@/redux/features/marketplace/marketplaceApi';
-import { marketplaceApi } from '@/redux/features/marketplace/marketplaceApi';
+import {Skeleton} from '@/components/ui/skeleton';
+import {getListingTypeInfo, renderListingContent,} from '@/utils/marketplaceUtils';
 
 // Item detail skeleton component
 const ItemDetailSkeleton = () => {

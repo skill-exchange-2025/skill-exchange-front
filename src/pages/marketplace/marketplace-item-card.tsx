@@ -1,19 +1,12 @@
-import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { MarketplaceItem } from '@/types/marketplace';
-import { formatDistanceToNow, isValid } from 'date-fns';
+import {Link} from 'react-router-dom';
+import {motion} from 'framer-motion';
+import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle,} from '@/components/ui/card';
+import {Badge} from '@/components/ui/badge';
+import {MarketplaceItem} from '@/types/marketplace';
+import {formatDistanceToNow, isValid} from 'date-fns';
 import cryptoIcon from '@/assets/icons/crypto.png';
-import { Eye, Clock, Tag, User, Sparkles } from 'lucide-react';
-import { getListingTypeInfo } from '@/utils/marketplaceUtils';
+import {Clock, Eye, Sparkles, Tag, User} from 'lucide-react';
+import {getListingTypeInfo} from '@/utils/marketplaceUtils';
 
 interface MarketplaceItemCardProps {
   item: MarketplaceItem;

@@ -1,9 +1,9 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { BadgeSelector, SelectedSkill } from "@/components/ui/badge-selector";
-import { Button } from "@/components/ui/button";
-import { useState } from "react";
-import { User } from "@/types/user";
-import { IT_SKILLS } from "@/pages/auth/skills";
+import {Dialog, DialogContent, DialogHeader, DialogTitle} from "@/components/ui/dialog";
+import {BadgeSelector, SelectedSkill} from "@/components/ui/badge-selector";
+import {Button} from "@/components/ui/button";
+import {useState} from "react";
+import {User} from "@/types/user";
+import {IT_SKILLS} from "@/pages/auth/skills";
 
 interface SkillsEditDialogProps {
     open: boolean;

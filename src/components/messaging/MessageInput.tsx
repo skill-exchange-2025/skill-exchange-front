@@ -1,48 +1,22 @@
-import React, { useState, useRef, ChangeEvent, useEffect } from 'react';
-import { useAppSelector } from '../../redux/hooks';
-import {
-  useCreateMessageMutation,
-  useUploadFileWithMessageMutation,
-} from '../../redux/api/messagingApi';
-import { Button } from '../ui/button';
-import { Textarea } from '../ui/textarea';
-import {
-  Send,
-  Paperclip,
-  X,
-  FileText,
-  ImageIcon,
-  File,
-  Smile,
-  AlertCircle,
-  Info,
-  Plus,
-  Mic,
-  Camera,
-} from 'lucide-react';
-import { CreateMessageDto } from '../../types/channel';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '../ui/dialog';
-import { Badge } from '../ui/badge';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '../ui/tooltip';
-import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
+import React, {ChangeEvent, useEffect, useRef, useState} from 'react';
+import {useCreateMessageMutation, useUploadFileWithMessageMutation,} from '../../redux/api/messagingApi';
+import {Button} from '../ui/button';
+import {Textarea} from '../ui/textarea';
+import {Camera, File, FileText, ImageIcon, Mic, Paperclip, Plus, Send, Smile, X,} from 'lucide-react';
+import {CreateMessageDto} from '../../types/channel';
+import {Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle,} from '../ui/dialog';
+import {useToast} from '../../hooks/use-toast';
+import {Badge} from '../ui/badge';
+import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,} from '../ui/tooltip';
+import {Popover, PopoverContent, PopoverTrigger} from '../ui/popover';
 import data from '@emoji-mart/data';
 import Picker from '@emoji-mart/react';
-import { useTheme } from 'next-themes';
-import socketService from '../../services/socket.service';
-import { toast } from 'sonner';
+import {useTheme} from 'next-themes';
+
 interface MessageInputProps {
   channelId: string;
+  replyingTo?: Message | null;
+  onCancelReply?: () => void;
 }
 
 // Emoji categories to filter
@@ -87,9 +61,28 @@ const quickEmojis = [
   '👖',
   '👗',
   '👘',
+  '👙',
+  '👚',
+  '👛',
+  '👜',
+  '👝',
+  '👞',
+  '👟',
+  '👠',
+  '👡',
+  '👢',
+  '👣',
+  '👤',
+  '👥',
+  '👦',
+  '👧',
 ];
 
-const MessageInput: React.FC<MessageInputProps> = ({ channelId }) => {
+const MessageInput: React.FC<MessageInputProps> = ({
+  channelId,
+  replyingTo = null,
+  onCancelReply = () => {},
+}) => {
   const [message, setMessage] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -244,28 +237,120 @@ const MessageInput: React.FC<MessageInputProps> = ({ channelId }) => {
         clearTimeout(typingTimeoutRef.current);
         socketService.emitStopTyping(channelId);
       }
-      // First send via Socket.IO for real-time update
-      socketService.sendMessage({
-        channelId,
-        content: message,
-        attachment: selectedFile,
-      });
 
-      // Then use API for persistent storage
+      // Generate a client-side ID for this message (for optimistic updates)
+      const clientMessageId = `temp_${Date.now()}_${Math.random()
+        .toString(36)
+        .substring(2, 9)}`;
+
+      console.log(
+        `Message submission with clientMessageId: ${clientMessageId}`
+      );
+
+      // Create reply preview if replying to a message
+      let replyPreview = null;
+      if (replyingTo) {
+        const senderName =
+          typeof replyingTo.sender === 'object'
+            ? replyingTo.sender.name
+            : 'Unknown User';
+
+        replyPreview = {
+          content: replyingTo.content
+            ? replyingTo.content.substring(0, 100)
+            : 'Attachment',
+          sender:
+            typeof replyingTo.sender === 'object'
+              ? replyingTo.sender._id
+              : replyingTo.sender,
+          senderName,
+        };
+      }
+
+      // Step 1: For files, we'll do a dual approach:
+      // a) Send metadata via socket for real-time updates
+      // b) Upload the actual file via REST API
       if (selectedFile) {
+        // First, send a message with attachment metadata via socket
+        // This will show a "pending" preview of the attachment immediately
+        console.log(
+          `Sending attachment metadata via socket: ${selectedFile.name}`
+        );
+        socketService.sendMessage({
+          channelId,
+          content: message,
+          attachment: selectedFile,
+          clientMessageId,
+          // Add reply data if replying
+          ...(replyingTo && {
+            isReply: true,
+            parentMessageId: replyingTo._id,
+            parentMessagePreview: replyPreview,
+          }),
+        });
+
+        // Create FormData for file upload via REST API
         const formData = new FormData();
         formData.append('file', selectedFile);
         formData.append('channel', channelId);
+        formData.append('channelId', channelId); // Add both channel and channelId for safety
         formData.append('content', message || '');
+        formData.append('clientMessageId', clientMessageId); // Send the client ID to link with socket message
 
-        await uploadFileWithMessage(formData).unwrap();
+        // Add reply data to formData if replying
+        if (replyingTo) {
+          formData.append('isReply', 'true');
+          formData.append('parentMessageId', replyingTo._id);
+          if (replyPreview) {
+            formData.append('replyPreview', JSON.stringify(replyPreview));
+          }
+        }
+
+        // Notify user about upload
+        toast.info('Uploading file...', {
+          id: clientMessageId,
+          duration: 3000,
+        });
+
+        // Upload the file via API
+        console.log(`Uploading file via REST API: ${selectedFile.name}`);
+        await uploadFileWithMessage(formData)
+          .unwrap()
+          .then(() => {
+            console.log(`File upload successful: ${selectedFile.name}`);
+            toast.success('File uploaded successfully', {
+              id: clientMessageId,
+              duration: 2000,
+            });
+          })
+          .catch((error) => {
+            console.error('Error with file upload via API:', error);
+            toast.error('File upload issue', {
+              id: clientMessageId,
+              description:
+                'Your message was sent but file upload may have issues',
+            });
+          });
       } else {
-        const messageData = {
-          channel: channelId,
-          content: message,
-        };
-
-        await createMessage(messageData).unwrap();
+        // Step 2: For text-only messages, use socket for real-time delivery
+        console.log(`Sending text-only message via socket`);
+        if (replyingTo) {
+          // If replying, use the sendReply method
+          await socketService.sendReply({
+            channelId,
+            content: message,
+            parentMessageId: replyingTo._id,
+            parentMessagePreview: replyPreview || undefined,
+            clientMessageId,
+          });
+        } else {
+          // Regular message
+          socketService.sendMessage({
+            channelId,
+            content: message,
+            clientMessageId,
+          });
+        }
       }
 
       // Clear form after successful submission
@@ -280,6 +365,11 @@ const MessageInput: React.FC<MessageInputProps> = ({ channelId }) => {
       if (textareaRef.current) {
         textareaRef.current.style.height = 'auto';
         textareaRef.current.focus();
+      }
+
+      // Clear reply state after sending
+      if (replyingTo) {
+        onCancelReply();
       }
     } catch (error) {
       console.error('Failed to send message:', error);
@@ -345,6 +435,14 @@ const MessageInput: React.FC<MessageInputProps> = ({ channelId }) => {
         className="border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 pt-2 pb-3 px-4 shadow-md z-10"
         onSubmit={handleSubmit}
       >
+        {/* Show reply preview if replying to a message */}
+        {replyingTo && (
+          <MessageReplyPreview
+            parentMessage={replyingTo}
+            onCancel={onCancelReply}
+          />
+        )}
+
         {/* Quick emoji bar */}
         <div className="flex items-center justify-between mb-1">
           <div className="flex items-center space-x-1">

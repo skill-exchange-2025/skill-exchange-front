@@ -1,43 +1,30 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
+import {useState} from 'react';
+import {useNavigate} from 'react-router-dom';
+import {Button} from '@/components/ui/button';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle,} from '@/components/ui/card';
+import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow,} from '@/components/ui/table';
+import {Badge} from '@/components/ui/badge';
+import {Tabs, TabsContent, TabsList, TabsTrigger} from '@/components/ui/tabs';
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-  useGetTransactionsQuery,
-  useCompleteTransactionMutation,
-  useCreateReviewMutation,
-  Transaction,
+    Transaction,
+    useCompleteTransactionMutation,
+    useCreateReviewMutation,
+    useGetTransactionsQuery,
 } from '@/redux/features/marketplace/marketplaceApi';
-import { ArrowLeft, Star } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
-import { toast } from 'sonner';
+import {ArrowLeft, Star} from 'lucide-react';
+import {formatDistanceToNow} from 'date-fns';
+import {toast} from 'sonner';
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
 } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Skeleton } from '@/components/ui/skeleton';
+import {Label} from '@/components/ui/label';
+import {Textarea} from '@/components/ui/textarea';
+import {Skeleton} from '@/components/ui/skeleton';
 
 // Define an extended Transaction type that includes review
 interface ExtendedTransaction extends Transaction {

@@ -1,25 +1,20 @@
-import { configureStore } from '@reduxjs/toolkit';
-import {
-  FLUSH,
-  PAUSE,
-  PERSIST,
-  persistReducer,
-  PURGE,
-  REGISTER,
-  REHYDRATE,
-} from 'redux-persist';
+import {configureStore} from '@reduxjs/toolkit';
+import {FLUSH, PAUSE, PERSIST, persistReducer, PURGE, REGISTER, REHYDRATE,} from 'redux-persist';
 import persistStore from 'redux-persist/es/persistStore';
 import storage from 'redux-persist/lib/storage';
-import { baseApi } from './api/baseApi';
+import {baseApi} from './api/baseApi';
 import authReducer from './features/auth/authSlice';
 import profileReducer from './features/profile/profileSlice';
 import usersReducer from './features/users/usersSlice.ts';
 import marketplaceReducer from './features/marketplace/marketplaceSlice';
 import creditsReducer from './features/credits/creditsSlice';
 import channelsReducer from './features/messaging/channelsSlice';
-// import lessonReducer from './features/lessons/lessonsSlice.ts';
 import friendRequestsReducer from './features/friends/friendRequestsSlice';
 import privateMessagesReducer from './features/privatemsgs/privateMessagesSlice';
+import codingRoomsReducer from './features/codingRoom/codingRoomsSlice';
+import lessonsReducer from './features/lessons/lessonsSlice';
+import feedbackReducer from './features/feedback/feedbackSlice';
+import dashboardReducer from './features/dashboard/dashboardSlice';
 
 const persistConfig = {
   key: 'auth',
@@ -30,6 +25,7 @@ const persistedAuthReducer = persistReducer(persistConfig, authReducer);
 
 export const store = configureStore({
   reducer: {
+    codingRooms: codingRoomsReducer,
     [baseApi.reducerPath]: baseApi.reducer,
     profile: profileReducer,
     users: usersReducer,
@@ -37,13 +33,11 @@ export const store = configureStore({
     marketplace: marketplaceReducer,
     credits: creditsReducer,
     channels: channelsReducer,
-    // lesson:lessonReducer,
     friendRequests: friendRequestsReducer,
     privateMessages: privateMessagesReducer,
-
-
-
-  
+    lessons: lessonsReducer,
+    feedback: feedbackReducer,
+    dashboard: dashboardReducer
   },
   middleware: (getDefaultMiddlewares) =>
     getDefaultMiddlewares({

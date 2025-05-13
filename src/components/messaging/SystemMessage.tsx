@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, UserPlus, UserMinus } from 'lucide-react';
+import {User, UserMinus, UserPlus} from 'lucide-react';
 
 interface SystemMessageProps {
   type: 'join' | 'leave' | 'info';
@@ -23,14 +23,14 @@ const SystemMessage: React.FC<SystemMessageProps> = ({
         return (
           <>
             <UserPlus className="h-4 w-4 mr-1 text-green-500" />
-            <span className="font-medium">{username}</span> joined the channel
+            <span className="font-medium">{username}</span> joined the channel;;
           </>
         );
       case 'leave':
         return (
           <>
             <UserMinus className="h-4 w-4 mr-1 text-red-500" />
-            <span className="font-medium">{username}</span> left the channel
+            <span className="font-medium">{username}</span> left the channel;;
           </>
         );
       case 'info':

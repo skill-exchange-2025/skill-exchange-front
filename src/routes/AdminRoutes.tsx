@@ -1,9 +1,9 @@
 // src/routes/AdminRoutes.tsx
 import {Navigate, useRoutes} from 'react-router-dom';
-import { routeGenerator } from "@/utils/routeGenerator";
-import { adminPaths } from "./admin.routes";
-import { useAppSelector } from '@/redux/hooks';
-import { useCurrentUser } from '@/redux/features/auth/authSlice';
+import {routeGenerator} from "@/utils/routeGenerator";
+import {adminPaths} from "./admin.routes";
+import {useAppSelector} from '@/redux/hooks';
+import {useCurrentUser} from '@/redux/features/auth/authSlice';
 
 // src/routes/AdminRoutes.tsx
 const AdminRoutes = () => {

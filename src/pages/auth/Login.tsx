@@ -1,24 +1,17 @@
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+import {useForm} from 'react-hook-form';
+import {zodResolver} from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Loader2, Eye, EyeOff } from 'lucide-react';
-import { Card, CardContent, CardFooter } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { toast } from 'sonner';
-import { Link, useNavigate } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
-import { setUser } from '@/redux/features/auth/authSlice';
-import { useLoginMutation } from '@/redux/features/auth/authApi';
-import { useState } from 'react';
+import {Eye, EyeOff, Loader2} from 'lucide-react';
+import {Card, CardContent, CardFooter} from '@/components/ui/card';
+import {Button} from '@/components/ui/button';
+import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage,} from '@/components/ui/form';
+import {Input} from '@/components/ui/input';
+import {toast} from 'sonner';
+import {Link, useNavigate} from 'react-router-dom';
+import {useDispatch} from 'react-redux';
+import {setUser} from '@/redux/features/auth/authSlice';
+import {useLoginMutation} from '@/redux/features/auth/authApi';
+import {useState} from 'react';
 
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email address'),

@@ -1,7 +1,7 @@
 import * as React from "react";
-import { Check, Circle, Dot } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { Button } from "./button";
+import {Check, Circle, Dot} from "lucide-react";
+import {cn} from "@/lib/utils";
+import {Button} from "./button";
 
 const StepperContext = React.createContext<{
   index: number;
