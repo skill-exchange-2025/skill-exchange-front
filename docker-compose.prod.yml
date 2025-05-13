@@ -1,0 +1,48 @@
+version: "3.8"
+
+services:
+  frontend:
+    image: skill-exchange-frontend:latest
+    container_name: skill_exchange_frontend_prod
+    ports:
+      - "80:80"
+    restart: always
+    networks:
+      - production-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Add a separate container for serving frontend assets with caching
+  nginx-proxy:
+    image: nginx:alpine
+    container_name: skill_exchange_nginx_proxy
+    ports:
+      - "443:443"
+    volumes:
+      - ./nginx-prod.conf:/etc/nginx/conf.d/default.conf
+      - ./ssl:/etc/nginx/ssl
+    depends_on:
+      - frontend
+    networks:
+      - production-network
+    restart: always
+
+  # Add a Watchtower for automatic updates
+  watchtower:
+    image: containrrr/watchtower
+    container_name: skill_exchange_watchtower
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: --interval 86400 # Check for updates once per day
+    restart: always
+
+networks:
+  production-network:
+    driver: bridge
+
+volumes:
+  app_data:
