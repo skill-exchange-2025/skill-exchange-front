@@ -18,22 +18,7 @@ pipeline {
             }
         }
 
-        stage('Install Dependencies') {
-            steps {
-                sh '''
-            rm -rf node_modules package-lock.json
-            npm cache clean --force
-            npm install
-        '''
-            }
-        }
 
-
-        stage('Lint') {
-            steps {
-                sh 'npm run lint -- --no-fix || true' // Run lint but don't fail the build
-            }
-        }
         /*
         stage('Test') {
             steps {
@@ -58,15 +43,6 @@ pipeline {
             }
         }
 */
-        stage('Build') {
-            steps {
-                // Set environment variables for build
-                withEnv(['TSC_COMPILE_ON_ERROR=true', 'ESLINT_NO_DEV_ERRORS=true', 'DISABLE_ESLINT_PLUGIN=true']) {
-                    sh 'npm run build'
-                }
-            }
-        }
-
         stage('Build Docker Image') {
             steps {
                 sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} ."
