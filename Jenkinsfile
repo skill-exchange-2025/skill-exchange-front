@@ -76,6 +76,30 @@ pipeline {
 
         stage('Start Services') {
             steps {
+                // Create prometheus.yml if it doesn't exist
+        sh '''
+        cat > prometheus.yml << EOL
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'frontend'
+    static_configs:
+      - targets: ['frontend:5173']
+EOL
+        '''
+        sh 'docker-compose down || true' // Don't fail if services aren't running
+        sh 'docker-compose up -d'
+    }
+}
+
+        stage('Start Services') {
+            steps {
                 sh 'docker-compose down || true' // Don't fail if services aren't running
                 sh 'docker-compose up -d'
             }
