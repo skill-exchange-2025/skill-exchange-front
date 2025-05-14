@@ -20,9 +20,14 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                sh 'npm i'
+                sh '''
+            rm -rf node_modules package-lock.json
+            npm cache clean --force
+            npm install
+        '''
             }
         }
+
 
         stage('Lint') {
             steps {
