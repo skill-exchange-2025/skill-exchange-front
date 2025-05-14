@@ -1,28 +1,33 @@
 # Build stage
-FROM node:20-alpine AS build
+FROM node:20.13.1 AS build
 
 WORKDIR /app
 
-# Install dependencies
-COPY package.json package-lock.json ./
-RUN npm install
+# Copy package files
+COPY package.json package-lock.json* ./
+
+# Clean npm cache and reinstall to avoid optional dependency issues
+RUN npm cache clean --force \
+  && rm -rf node_modules package-lock.json \
+  && npm install
 
 # Copy source code
 COPY . .
 
-# Build the application with type checking disabled
-ENV TSC_COMPILE_ON_ERROR=true
-ENV ESLINT_NO_DEV_ERRORS=true
-ENV DISABLE_ESLINT_PLUGIN=true
+# Build the application using Vite
 RUN npm run build
 
 # Production stage
 FROM nginx:alpine
 
-# Copy the built app to nginx
+# Copy the built app to nginx (Vite outputs to dist by default)
 COPY --from=build /app/dist /usr/share/nginx/html
-# Copy nginx configuration (create this file if you don't have it)
+
+# Copy nginx configuration
 COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Add runtime configuration for API URL
+RUN echo 'window.RUNTIME_CONFIG = { API_URL: "/api" };' > /usr/share/nginx/html/config.js
 
 EXPOSE 80
 
