@@ -98,13 +98,6 @@ EOL
     }
 }
 
-        stage('Start Services') {
-            steps {
-                sh 'docker-compose down || true' // Don't fail if services aren't running
-                sh 'docker-compose up -d'
-            }
-        }
-
         stage('Deploy to Development') {
             when {
                 branch 'develop'
