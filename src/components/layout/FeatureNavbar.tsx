@@ -1,6 +1,6 @@
 import {Link, useLocation} from 'react-router-dom';
 import {cn} from '@/lib/utils';
-import {Book, Home, MessageCircle, MessageSquare, Store, Telescope} from 'lucide-react';
+import {Book, Home, MessageSquare, Store, Telescope} from 'lucide-react';
 import {motion, useScroll} from 'framer-motion';
 import {useEffect, useState} from 'react';
 
@@ -23,7 +23,6 @@ export function FeatureNavbar() {
     { name: 'Discover', path: '/discover', icon: Telescope },
     { name: 'Channels', path: '/messaging', icon: MessageSquare },
     { name: 'Marketplace', path: '/marketplace', icon: Store },
-    { name: 'Chat', path: '/chat', icon: MessageCircle },
     { name: 'Courses', path: '/courses', icon: Book },
   ];
 
